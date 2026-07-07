@@ -1,56 +1,38 @@
 # PR1 Communication Channel
 
-This file overrides the message-channel instructions in `AI_HANDOFF.md` where they conflict.
-
 ## Source-of-truth split
 
-- **GitHub:** code, locked specifications, documentation, commits, and test artifacts
-- **Notion:** GPT/Claude requests, replies, reviews, and handoff messages
+- **GitHub:** code, locked specifications, documentation, commits, CI, and test artifacts
+- **Notion:** project dashboard and concise status/handoff messages
 
-## Notion collaboration page
+## Active Notion pages
 
-- Title: `PR1 AI 협업 허브 — GPT ↔ Claude`
-- Page ID: `396eaac5-5bf7-818f-9dc8-c834d7956038`
-- URL: https://app.notion.com/p/396eaac55bf7818f9dc8c834d7956038
-- Created and currently accessible from Claude's Notion connection
-- GPT's current Notion connector cannot access this page yet; GPT must not claim a comment was posted until direct fetch/comment succeeds
+- Project dashboard: `396c1440-e16c-8194-b97c-cad3e663274f`
+- AI collaboration hub: `396c1440-e16c-817c-8056-e9dd386f344e`
+
+Both pages are accessible from the current GPT Notion connection.
+
+## Active GitHub work
+
+- Branch: `agent/sx1280-flrc-poc`
+- Draft PR: #3 `Prototype v2: LILYGO SX1280 FLRC PC-audio PoC`
+- Locked specification: `AI_HANDOFF.md`
+- Detailed specification: `docs/prototype_v2.md`
 
 ## Workflow
 
-1. Read `AI_HANDOFF.md` for locked technical specifications.
-2. Read the latest page comments in the Notion collaboration page before starting work.
-3. GPT writes implementation and approved specification changes to GitHub.
-4. Claude reads GitHub and posts review findings in Notion page comments.
-5. Do not paste full source files or the full specification into Notion comments. Reference GitHub paths and commit SHAs.
-6. Claude should provide minimal diffs rather than full-file rewrites.
-7. Neither AI may claim build or hardware success unless the command or test was actually run.
-8. Until GPT's Notion connector is granted access to the page, GPT messages may be relayed by the human operator. Once access is confirmed, direct comments become the canonical channel.
-
-## Comment format
-
-```text
-[MESSAGE-ID] Sender -> Recipient
-Reply to: MESSAGE-ID or none
-Status: REQUEST | IN_PROGRESS | DONE | BLOCKED | REVIEW
-Scope: exact files or subsystem
-
-Goal: one sentence
-Result: completed work or findings
-Evidence: commit SHA, build/test output, official reference, or not run
-Files: related GitHub paths
-Risk: remaining issues
-Next: one specific action for the recipient
-```
-
-Message IDs:
-
-- GPT: `GPT-YYYYMMDD-NN`
-- Claude: `CLAUDE-YYYYMMDD-NN`
+1. Read `AI_HANDOFF.md` before changing hardware, radio, audio, packet, or pin decisions.
+2. Use GitHub for implementation and validation evidence.
+3. Use the Notion dashboard for the current human-readable status.
+4. Use Notion comments only for concise handoff messages.
+5. Do not claim a physical test unless a human performed it and supplied the result.
+6. Do not revive the closed Wi-Fi/UDP PRs as the active prototype.
 
 ## Current state
 
-- Current owner: GPT
-- Current task: create the first complete M0 implementation draft
-- Claude's next task: after GPT posts an M0 commit SHA in Notion, review only the requested source files
-- No ESP-IDF build or physical hardware test has been completed yet
-- The previous Notion page ID beginning with `396c1440` is obsolete and must not be used
+- Prototype v2 replaces the former ESP32-S3 Wi-Fi/UDP design.
+- TX PlatformIO build: passed.
+- RX PlatformIO build: passed.
+- PC sender syntax and native packet tests: passed.
+- Physical boards have not been flashed or tested.
+- Next human dependency: purchase the v2 BOM, then run `docs/test_procedure_v2.md`.
