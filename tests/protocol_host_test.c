@@ -40,6 +40,14 @@ int main(void)
     assert(pr1_sequence_tracker_observe(&tracker, 13u).classification == PR1_SEQUENCE_OUT_OF_ORDER);
     assert(pr1_sequence_tracker_observe(&tracker, 13u).classification == PR1_SEQUENCE_DUPLICATE);
 
+    pr1_sequence_tracker_reset(&tracker);
+    assert(pr1_sequence_tracker_observe(&tracker, UINT32_MAX).classification == PR1_SEQUENCE_FIRST);
+    assert(pr1_sequence_tracker_observe(&tracker, 0u).classification == PR1_SEQUENCE_IN_ORDER);
+    result = pr1_sequence_tracker_observe(&tracker, 2u);
+    assert(result.classification == PR1_SEQUENCE_GAP);
+    assert(result.missing_before == 1u);
+    assert(pr1_sequence_tracker_observe(&tracker, 1u).classification == PR1_SEQUENCE_OUT_OF_ORDER);
+
     puts("protocol tests passed");
     return 0;
 }
