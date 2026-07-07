@@ -7,7 +7,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build TX
-        run: cd m0_tx && (idf.py set-target esp32s3 && idf.py build) > build.log 2>&1
+        run: . /opt/esp/idf/export.sh && cd m0_tx && (idf.py set-target esp32s3 && idf.py build) > build.log 2>&1
       - name: Upload TX log
         if: always()
         uses: actions/upload-artifact@v4
@@ -20,7 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build RX
-        run: cd m0_rx && (idf.py set-target esp32s3 && idf.py build) > build.log 2>&1
+        run: . /opt/esp/idf/export.sh && cd m0_rx && (idf.py set-target esp32s3 && idf.py build) > build.log 2>&1
       - name: Upload RX log
         if: always()
         uses: actions/upload-artifact@v4
