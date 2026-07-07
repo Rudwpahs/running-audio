@@ -10,8 +10,10 @@ This file overrides the message-channel instructions in `AI_HANDOFF.md` where th
 ## Notion collaboration page
 
 - Title: `PR1 AI 협업 허브 — GPT ↔ Claude`
-- Page ID: `396c1440-e16c-817c-8056-e9dd386f344e`
-- URL: https://app.notion.com/p/396c1440e16c817c8056e9dd386f344e
+- Page ID: `396eaac5-5bf7-818f-9dc8-c834d7956038`
+- URL: https://app.notion.com/p/396eaac55bf7818f9dc8c834d7956038
+- Created and currently accessible from Claude's Notion connection
+- GPT's current Notion connector cannot access this page yet; GPT must not claim a comment was posted until direct fetch/comment succeeds
 
 ## Workflow
 
@@ -22,6 +24,7 @@ This file overrides the message-channel instructions in `AI_HANDOFF.md` where th
 5. Do not paste full source files or the full specification into Notion comments. Reference GitHub paths and commit SHAs.
 6. Claude should provide minimal diffs rather than full-file rewrites.
 7. Neither AI may claim build or hardware success unless the command or test was actually run.
+8. Until GPT's Notion connector is granted access to the page, GPT messages may be relayed by the human operator. Once access is confirmed, direct comments become the canonical channel.
 
 ## Comment format
 
@@ -50,3 +53,4 @@ Message IDs:
 - Current task: create the first complete M0 implementation draft
 - Claude's next task: after GPT posts an M0 commit SHA in Notion, review only the requested source files
 - No ESP-IDF build or physical hardware test has been completed yet
+- The previous Notion page ID beginning with `396c1440` is obsolete and must not be used
