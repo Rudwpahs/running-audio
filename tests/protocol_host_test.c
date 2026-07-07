@@ -34,6 +34,12 @@ int main(void)
     assert(pr1_sequence_tracker_observe(&tracker, 10u).classification == PR1_SEQUENCE_FIRST);
     assert(pr1_sequence_tracker_observe(&tracker, 11u).classification == PR1_SEQUENCE_IN_ORDER);
 
+    pr1_sequence_result_t result = pr1_sequence_tracker_observe(&tracker, 14u);
+    assert(result.classification == PR1_SEQUENCE_GAP);
+    assert(result.missing_before == 2u);
+    assert(pr1_sequence_tracker_observe(&tracker, 13u).classification == PR1_SEQUENCE_OUT_OF_ORDER);
+    assert(pr1_sequence_tracker_observe(&tracker, 13u).classification == PR1_SEQUENCE_DUPLICATE);
+
     puts("protocol tests passed");
     return 0;
 }
