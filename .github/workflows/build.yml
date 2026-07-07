@@ -1,0 +1,20 @@
+name: build
+on: [push, pull_request]
+jobs:
+  m0-tx:
+    runs-on: ubuntu-latest
+    container: espressif/idf:v6.0.2
+    steps:
+      - uses: actions/checkout@v4
+      - run: cd m0_tx && idf.py set-target esp32s3 && idf.py build
+  m0-rx:
+    runs-on: ubuntu-latest
+    container: espressif/idf:v6.0.2
+    steps:
+      - uses: actions/checkout@v4
+      - run: cd m0_rx && idf.py set-target esp32s3 && idf.py build
+  protocol-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: cc -std=c11 -Wall -Wextra -Werror -Icomponents/pr1_protocol/include components/pr1_protocol/pr1_protocol.c tests/protocol_host_test.c -o /tmp/pr1_protocol_test && /tmp/pr1_protocol_test
