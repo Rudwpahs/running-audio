@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #include "pr1_protocol.h"
+#include "pr1_sequence.h"
 
 int main(void)
 {
@@ -27,6 +28,11 @@ int main(void)
     assert(pr1_seq_after(0u, UINT32_MAX));
     assert(pr1_seq_before(UINT32_MAX, 0u));
     assert(!pr1_seq_after(7u, 7u));
+
+    pr1_sequence_tracker_t tracker;
+    pr1_sequence_tracker_reset(&tracker);
+    assert(pr1_sequence_tracker_observe(&tracker, 10u).classification == PR1_SEQUENCE_FIRST);
+    assert(pr1_sequence_tracker_observe(&tracker, 11u).classification == PR1_SEQUENCE_IN_ORDER);
 
     puts("protocol tests passed");
     return 0;
