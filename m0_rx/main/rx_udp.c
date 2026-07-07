@@ -11,11 +11,11 @@
 #include "lwip/inet.h"
 #include "lwip/sockets.h"
 #include "pr1_protocol.h"
+#include "pr1_sequence.h"
 
 #define RX_TASK_STACK_SIZE       7168
 #define STATS_TASK_STACK_SIZE    4096
 #define TASK_PRIORITY            5
-#define SEQUENCE_WINDOW_BITS     64u
 
 static const char *TAG = "pr1_m0_rx_udp";
 static portMUX_TYPE s_stats_lock = portMUX_INITIALIZER_UNLOCKED;
@@ -30,7 +30,9 @@ typedef struct {
     uint64_t out_of_order_packets;
     uint64_t payload_errors;
     uint64_t header_errors;
+    uint64_t sample_index_errors;
     uint64_t bad_size_packets;
+    uint64_t foreign_source_packets;
     uint64_t socket_restarts;
     uint64_t wifi_disconnects;
     uint64_t wifi_reconnects;
@@ -87,60 +89,47 @@ static int create_bound_socket(void)
     return sock;
 }
 
-typedef struct {
-    bool initialized;
-    uint32_t highest_sequence;
-    uint64_t seen_bitmap;
-} sequence_tracker_t;
-
-static void account_sequence(sequence_tracker_t *tracker, uint32_t sequence)
+static void account_sequence(pr1_sequence_tracker_t *tracker, uint32_t sequence)
 {
+    const pr1_sequence_result_t result = pr1_sequence_tracker_observe(tracker, sequence);
+
     portENTER_CRITICAL(&s_stats_lock);
-
-    if (!tracker->initialized) {
-        tracker->initialized = true;
-        tracker->highest_sequence = sequence;
-        tracker->seen_bitmap = 1u;
+    switch (result.classification) {
+    case PR1_SEQUENCE_FIRST:
+    case PR1_SEQUENCE_IN_ORDER:
         s_stats.received_unique++;
-    } else if (pr1_seq_after(sequence, tracker->highest_sequence)) {
-        const uint32_t advance = sequence - tracker->highest_sequence;
-        if (advance > 1u) {
-            s_stats.lost_packets += (uint64_t)(advance - 1u);
-        }
-        tracker->seen_bitmap = advance >= SEQUENCE_WINDOW_BITS
-                                   ? 1u
-                                   : (tracker->seen_bitmap << advance) | 1u;
-        tracker->highest_sequence = sequence;
+        break;
+    case PR1_SEQUENCE_GAP:
+        s_stats.lost_packets += result.missing_before;
         s_stats.received_unique++;
-    } else {
-        const uint32_t age = tracker->highest_sequence - sequence;
-        if (age < SEQUENCE_WINDOW_BITS) {
-            const uint64_t mask = UINT64_C(1) << age;
-            if ((tracker->seen_bitmap & mask) != 0u) {
-                s_stats.duplicate_packets++;
-            } else {
-                tracker->seen_bitmap |= mask;
-                s_stats.out_of_order_packets++;
-                s_stats.received_unique++;
-            }
-        } else {
-            s_stats.out_of_order_packets++;
-        }
+        break;
+    case PR1_SEQUENCE_DUPLICATE:
+        s_stats.duplicate_packets++;
+        break;
+    case PR1_SEQUENCE_OUT_OF_ORDER:
+        s_stats.out_of_order_packets++;
+        s_stats.received_unique++;
+        break;
+    case PR1_SEQUENCE_TOO_OLD:
+    default:
+        s_stats.out_of_order_packets++;
+        break;
     }
-
     portEXIT_CRITICAL(&s_stats_lock);
 }
 
 static void udp_pattern_rx_task(void *arg)
 {
     (void)arg;
-    uint8_t packet[PR1_PACKET_SIZE];
+    uint8_t packet[PR1_PACKET_SIZE + 1u];
+    const uint32_t expected_source = ipaddr_addr(PR1_TX_IPV4);
 
     while (true) {
         xEventGroupWaitBits(s_wifi_events, s_connected_bit,
                             pdFALSE, pdTRUE, portMAX_DELAY);
 
-        sequence_tracker_t tracker = {0};
+        pr1_sequence_tracker_t tracker;
+        pr1_sequence_tracker_reset(&tracker);
         int sock = create_bound_socket();
         if (sock < 0) {
             vTaskDelay(pdMS_TO_TICKS(1000));
@@ -170,6 +159,13 @@ static void udp_pattern_rx_task(void *arg)
             s_stats.total_datagrams++;
             portEXIT_CRITICAL(&s_stats_lock);
 
+            if (source_address.sin_addr.s_addr != expected_source) {
+                portENTER_CRITICAL(&s_stats_lock);
+                s_stats.foreign_source_packets++;
+                portEXIT_CRITICAL(&s_stats_lock);
+                continue;
+            }
+
             if (received != (int)PR1_PACKET_SIZE) {
                 portENTER_CRITICAL(&s_stats_lock);
                 s_stats.bad_size_packets++;
@@ -182,6 +178,15 @@ static void udp_pattern_rx_task(void *arg)
                                   PR1_FLAG_M0, &header) != PR1_PACKET_OK) {
                 portENTER_CRITICAL(&s_stats_lock);
                 s_stats.header_errors++;
+                portEXIT_CRITICAL(&s_stats_lock);
+                continue;
+            }
+
+            const uint32_t expected_sample_index =
+                header.sequence * PR1_SAMPLES_PER_PACKET;
+            if (header.sample_index != expected_sample_index) {
+                portENTER_CRITICAL(&s_stats_lock);
+                s_stats.sample_index_errors++;
                 portEXIT_CRITICAL(&s_stats_lock);
                 continue;
             }
@@ -245,13 +250,15 @@ static void stats_task(void *arg)
         ESP_LOGI(TAG,
                  "pps=%" PRIu64 " unique=%" PRIu64 " lost=%" PRIu64
                  " dup=%" PRIu64 " ooo=%" PRIu64 " payload_err=%" PRIu64
-                 " header_err=%" PRIu64 " size_err=%" PRIu64
+                 " header_err=%" PRIu64 " sample_err=%" PRIu64
+                 " size_err=%" PRIu64 " foreign=%" PRIu64
                  " loss_1s=%.4f%% loss_total=%.4f%% disconnects=%" PRIu64
                  " reconnects=%" PRIu64 " socket_restarts=%" PRIu64 " rssi=%d",
                  interval_total, snapshot.received_unique, snapshot.lost_packets,
                  snapshot.duplicate_packets, snapshot.out_of_order_packets,
                  snapshot.payload_errors, snapshot.header_errors,
-                 snapshot.bad_size_packets,
+                 snapshot.sample_index_errors, snapshot.bad_size_packets,
+                 snapshot.foreign_source_packets,
                  loss_percent(interval_lost, interval_unique),
                  loss_percent(snapshot.lost_packets, snapshot.received_unique),
                  snapshot.wifi_disconnects, snapshot.wifi_reconnects,
