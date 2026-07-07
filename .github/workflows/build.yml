@@ -1,5 +1,7 @@
 name: build
-on: [push, pull_request]
+on:
+  pull_request:
+  workflow_dispatch:
 jobs:
   m0-tx:
     runs-on: ubuntu-latest
@@ -14,6 +16,15 @@ jobs:
         with:
           name: m0-tx-build-log
           path: m0_tx/build.log
+      - name: Upload TX firmware
+        uses: actions/upload-artifact@v4
+        with:
+          name: m0-tx-firmware
+          path: |
+            m0_tx/build/pr1_m0_tx.bin
+            m0_tx/build/bootloader/bootloader.bin
+            m0_tx/build/partition_table/partition-table.bin
+            m0_tx/build/flash_args
   m0-rx:
     runs-on: ubuntu-latest
     container: espressif/idf:v6.0.2
@@ -27,8 +38,17 @@ jobs:
         with:
           name: m0-rx-build-log
           path: m0_rx/build.log
+      - name: Upload RX firmware
+        uses: actions/upload-artifact@v4
+        with:
+          name: m0-rx-firmware
+          path: |
+            m0_rx/build/pr1_m0_rx.bin
+            m0_rx/build/bootloader/bootloader.bin
+            m0_rx/build/partition_table/partition-table.bin
+            m0_rx/build/flash_args
   protocol-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: cc -std=c11 -Wall -Wextra -Werror -Icomponents/pr1_protocol/include components/pr1_protocol/pr1_protocol.c tests/protocol_host_test.c -o /tmp/pr1_protocol_test && /tmp/pr1_protocol_test
+      - run: cc -std=c11 -Wall -Wextra -Werror -Icomponents/pr1_protocol/include components/pr1_protocol/pr1_protocol.c components/pr1_protocol/pr1_sequence.c tests/protocol_host_test.c -o /tmp/pr1_protocol_test && /tmp/pr1_protocol_test
