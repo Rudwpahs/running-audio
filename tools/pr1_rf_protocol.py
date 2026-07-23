@@ -153,21 +153,47 @@ class _FrameAssembly:
 class Reassembler:
     """Small bounded frame reassembler for PC tests and later firmware parity.
 
-    Incomplete old frames are evicted when max_inflight is reached. Production
-    firmware should additionally expire assemblies using a time deadline.
+    Incomplete old frames are evicted when max_inflight is reached. Recently
+    completed frame sequence numbers are also retained for a bounded window so
+    that a duplicate whole frame cannot be emitted twice. Production firmware
+    should additionally expire incomplete assemblies using a time deadline.
     """
 
-    def __init__(self, max_inflight: int = 8) -> None:
+    def __init__(
+        self,
+        max_inflight: int = 8,
+        completed_history: int = 64,
+    ) -> None:
         if max_inflight < 1:
             raise ValueError("max_inflight must be at least 1")
+        if completed_history < 1:
+            raise ValueError("completed_history must be at least 1")
+
         self.max_inflight = max_inflight
+        self.completed_history = completed_history
         self._frames: dict[int, _FrameAssembly] = {}
         self._order: list[int] = []
+        self._completed: set[int] = set()
+        self._completed_order: list[int] = []
+
+    def _remember_completed(self, frame_seq: int) -> None:
+        self._completed.add(frame_seq)
+        self._completed_order.append(frame_seq)
+
+        if len(self._completed_order) > self.completed_history:
+            oldest = self._completed_order.pop(0)
+            self._completed.discard(oldest)
 
     def push(self, packet: bytes) -> Optional[tuple[int, bytes]]:
         header = unpack_header(packet)
         payload = packet[HEADER_SIZE:]
         frame_seq = header.frame_seq
+
+        # A complete frame may itself be duplicated by the RF/link layer. Do
+        # not recreate and emit it a second time. The history is deliberately
+        # bounded so uint16 frame sequence numbers can be reused after wrap.
+        if frame_seq in self._completed:
+            return None
 
         if frame_seq not in self._frames:
             if len(self._order) >= self.max_inflight:
@@ -194,4 +220,5 @@ class Reassembler:
         )
         self._frames.pop(frame_seq, None)
         self._order.remove(frame_seq)
+        self._remember_completed(frame_seq)
         return frame_seq, frame
