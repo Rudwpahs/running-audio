@@ -3,18 +3,36 @@
 Date: 2026-07-23
 Status: **implementation supplement, not a new product pivot**
 
-## 0. Document hierarchy
+## 0. Document and protocol hierarchy
 
 When documents disagree, use this order:
 
 1. `docs/DECISIONS_2026-07-23.md` — product/customer decisions
-2. `docs/TECHNICAL_MVP.md` — technical stage gates and current voice v0 profile
-3. this document — concrete SX1280 transport/firmware implementation details
-4. individual experiment logs — measured evidence that may trigger a documented revision
+2. `docs/TECHNICAL_MVP.md` — technical stage gates and voice v0 profile
+3. `firmware/common/pr1_packet.hpp` — current canonical application-packet codec
+4. this document — SX1280 RF transport/firmware implementation details
+5. experiment logs — measured evidence that may trigger a documented revision
 
-The current product direction remains **voice-first, phone-free, one-to-many,
+Current product direction remains **voice-first, phone-free, one-to-many,
 open-ear group audio**. This file does not restore the older Hi-Fi/music-first
 scope.
+
+Two layers now have deliberately different jobs:
+
+```text
+voice/application layer
+  pr1_packet.hpp
+  16 B application header + 160 B voice v0 = 176 B
+                 ↓ serialized application packet
+RF transport layer
+  pr1_rf_protocol.h / pr1_rf_protocol.py
+  10 B transport envelope + fragmentation metadata
+                 ↓
+SX1280 packet mode
+```
+
+The 10-byte transport header does **not** replace the 16-byte application
+header.
 
 ---
 
@@ -53,7 +71,7 @@ physical board first.
 References:
 
 - https://github.com/Xinyuan-LilyGO/T3-S3-MVSRBoard
-- https://github.com/Xinyuan-LilyGO/LilyGo-LoRa-Series
+- https://github.com/Xinyuan-LILYGO/LilyGo-LoRa-Series
 - https://jgromes.github.io/RadioLib/class_s_x1280.html
 
 ---
@@ -66,21 +84,23 @@ References:
 - unsigned PCM 8-bit
 - mono
 - 20 ms frame
-- 160 application audio bytes/frame
+- 160 audio bytes/frame
 - 50 audio frames/s
 - 64 kbps raw audio
 
-Do **not** add ADPCM/Opus before the raw path and modulation limits have been
-measured.
+The canonical application packet adds its 16-byte header, producing a **176-byte
+serialized voice v0 application packet**.
 
-Compression becomes a later experiment only when evidence shows the raw profile
-needs more margin.
+Do **not** add ADPCM/Opus before the raw path and modulation limits have been
+measured. Compression becomes a later experiment only when evidence shows the
+raw profile needs more margin.
 
 ---
 
 ## 3. Packet-size reality by radio mode
 
-The implementation tools use these SX1280 payload ceilings for budgeting:
+The implementation tools currently use these SX1280 payload ceilings for packet
+budgeting:
 
 | Packet mode | Payload ceiling used by tools |
 |---|---:|
@@ -88,18 +108,22 @@ The implementation tools use these SX1280 payload ceilings for budgeting:
 | LoRa / GFSK | 255 B |
 
 These are packet-format budgets, not a statement that a particular mode,
-frequency, power or antenna configuration is lawful for an open-air test in
-Korea.
+frequency, power or antenna configuration is lawful for open-air use in Korea.
 
-With the current 10-byte compact transport header:
+The 10-byte RF transport envelope leaves:
 
-| Application frame | 127-B ceiling | 255-B ceiling |
+- 117 bytes of transport payload under a 127-byte ceiling
+- 245 bytes of transport payload under a 255-byte ceiling
+
+Therefore:
+
+| Transport payload | 127-B ceiling | 255-B ceiling |
 |---|---:|---:|
-| T1 deterministic data: 90 B | 1 packet | 1 packet |
-| Voice v0 raw PCM: 160 B | 2 packets | 1 packet |
-| Old 32 kHz/16-bit/10 ms PCM: 640 B | 6 packets | 3 packets |
+| M0 deterministic payload: 90 B | 1 RF packet | 1 RF packet |
+| Voice v0 canonical app packet: 176 B | 2 RF packets | 1 RF packet |
+| Old 32 kHz PCM + 16-B app header: 656 B | 6 RF packets | 3 RF packets |
 
-Run the calculator rather than hand-copying the table:
+Run the calculator instead of hand-copying the table:
 
 ```bash
 python tools/rf_packet_budget.py
@@ -107,41 +131,41 @@ python tools/rf_packet_budget.py
 
 ---
 
-## 4. Compact PR1 transport v2 — M0/T1 implementation
+## 4. RF transport v2
 
-The code currently implements this 10-byte header:
+The lower layer currently implements this 10-byte transport envelope:
 
 | Offset | Bytes | Field | Purpose |
 |---:|---:|---|---|
 | 0 | 2 | magic | ASCII `P1` |
-| 2 | 1 | version | `2` |
-| 3 | 1 | flags | test/codec/future bits |
-| 4 | 2 | packet_seq | RF packet loss/order |
-| 6 | 2 | frame_seq | application/audio frame grouping/order |
+| 2 | 1 | transport_version | `2` |
+| 3 | 1 | flags | transport/test/future state |
+| 4 | 2 | packet_seq | sequence per physical RF packet |
+| 6 | 2 | frame_seq | groups fragments of one upper-layer frame |
 | 8 | 1 | fragment_index | zero-based fragment index |
-| 9 | 1 | fragment_count | fragments in the frame |
+| 9 | 1 | fragment_count | fragments in the upper-layer frame |
 
-Why it is smaller than the 16-byte `Application Packet v1` proposal in
-`TECHNICAL_MVP.md`:
+C++ types live in `namespace pr1::rf` specifically so they can coexist with the
+canonical application-layer `pr1::Header` from `pr1_packet.hpp`.
 
-- payload length can be inferred from the received packet length
-- sample rate is fixed by the active test profile
-- M0 has one stream, so a stream identifier is not yet required
-- a TX clock timestamp cannot by itself provide true one-way latency unless the
-  clocks are synchronized; latency needs an explicit measurement method
-- fragmentation fields are useful when comparing 127-B and 255-B packet modes
+### T2 wrapping rule
 
-### Protocol decision gate before T2
+When prerecorded voice is implemented:
 
-Do **not** maintain two production packet formats.
+1. build the 176-byte application packet using `pr1_packet.hpp`
+2. treat those serialized bytes as one RF-transport frame
+3. set transport `frame_seq` to the same logical sequence as the application
+   packet where practical
+4. fragment according to the selected SX1280 packet-mode ceiling
+5. transmit each fragment with its own `packet_seq`
+6. receiver reassembles the transport frame
+7. only after complete reassembly, decode the canonical application packet
 
-After T1 measurements, before prerecorded audio T2:
+This keeps the audio/application format identical across LoRa, FLRC and GFSK;
+only the lower RF fragmentation behavior changes.
 
-1. decide whether the compact v2 header becomes the audio packet header, or
-2. adopt a revised header that restores fields such as `stream_id` if the
-   measured/operational need justifies the bytes.
-
-Record that decision in `DECISIONS_2026-07-23.md` or a dated successor.
+M0 is intentionally simpler: it uses the RF transport directly around a
+90-byte deterministic pattern and does not create an application voice packet.
 
 ---
 
@@ -159,9 +183,9 @@ Portable C++ implementation:
 
 Rules:
 
-1. `max_rf_payload` includes the PR1 header.
+1. `max_rf_payload` includes the 10-byte transport header.
 2. `packet_seq` increments for every RF packet.
-3. `frame_seq` identifies all fragments belonging to one application frame.
+3. `frame_seq` identifies all fragments belonging to one upper-layer frame.
 4. fragments may arrive out of order.
 5. duplicate fragments before completion are ignored.
 6. recently completed frame sequences are remembered for a bounded window so a
@@ -169,9 +193,8 @@ Rules:
 7. incomplete frames must eventually expire in real firmware.
 8. sequence history is bounded so uint16 wrap/reuse remains possible.
 
-The PC code intentionally handles fragmentation even though the first T1 packet
-fits in one packet. That prevents another architecture rewrite when a later mode
-or audio profile needs multiple packets.
+Fragmentation exists even though M0 fits in one packet, because the canonical
+176-byte voice packet exceeds a 127-byte FLRC packet budget.
 
 ---
 
@@ -183,13 +206,14 @@ Path:
 
 M0 answers one question:
 
-> Can the two exact MVSR/SX1280 boards exchange measurable 100-byte PR1 data
+> Can the two exact MVSR/SX1280 boards exchange measurable 100-byte transport
 > packets without silent corruption?
 
 It deliberately excludes:
 
 - microphone
 - microSD audio streaming
+- application voice packet
 - codec
 - jitter buffer
 - UI
@@ -198,33 +222,33 @@ It deliberately excludes:
 ### M0 packet
 
 ```text
-10 B compact header
+10 B RF transport header
 90 B deterministic pattern
--------------------------
-100 B total
+----------------------------
+100 B total RF packet
 ```
 
 The payload pattern is derived from `packet_seq`, allowing the receiver to
 separate:
 
 - radio receive error
-- invalid PR1 header
-- valid header + corrupt application bytes
+- invalid transport header
+- valid header + corrupt payload bytes
 - valid packet
 
 ### Safe build
 
 The checked-in default sets `PR1_ENABLE_RF_TEST=0`.
 
-No checked-in guessed frequency or output-power value exists. A live RF build
+No guessed frequency or output-power value is checked in. A live RF build
 requires explicit local compile-time values after the exact bench-test route and
 conditions are confirmed.
 
 ### Initial M0 modulation
 
 M0 currently uses FLRC 650 kbps as **one initial data-link baseline**, not a
-final modulation decision. `TECHNICAL_MVP.md` still requires comparison with
-other SX1280 modes using measurements.
+final modulation decision. `TECHNICAL_MVP.md` still requires measured comparison
+with other relevant SX1280 modes.
 
 ---
 
@@ -262,8 +286,8 @@ Before PR1 firmware:
 - preserve full TX/RX logs
 
 The current `TECHNICAL_MVP.md` T1 minimum is 1,000 packets at 20 m LOS. The
-analysis tools support a larger 10,000-packet bench run when useful, but a larger
-number does not replace the prescribed environment/distance test.
+analysis tools also support a larger 10,000-packet bench run, but a larger packet
+count does not replace the prescribed environment/distance test.
 
 ---
 
@@ -285,15 +309,15 @@ The second tool compares successful TX sequence numbers with valid RX sequence
 numbers, so losses before the receiver's first observed packet are not silently
 missed.
 
-It also reports:
+It reports:
 
 - TX failures
 - matched valid packets
 - missing after successful TX
 - duplicate RX
 - unexpected/stale RX
-- bad header
-- bad payload pattern
+- bad transport header
+- bad deterministic payload pattern
 - radio errors
 
 Keep one controlled M0 run below 65,536 successful TX packets so the uint16
@@ -301,24 +325,20 @@ sequence value is unique within that run.
 
 ---
 
-## 9. Local verification
+## 9. Verification
 
-Run:
+Existing main CI validates the canonical application packet in both Python and
+portable C++. This integration adds independent lower-layer RF transport tests.
+
+Run all checks available in the merged tree with:
 
 ```bash
 bash scripts/ci.sh
 ```
 
-This combines:
-
-- the existing v0 packet simulator from main
-- compact protocol Python tests
-- M0 log-analysis tests
-- packet-budget calculator
-- portable C++ protocol compile with strict warnings
-
-The Arduino/RadioLib project still requires a real PlatformIO build; the agent
-environment used for this integration did not have PlatformIO installed.
+The Arduino/RadioLib M0 project still requires a real PlatformIO build. The agent
+environment used for this integration did not have PlatformIO installed, so no
+board-firmware compile success is claimed yet.
 
 ---
 
