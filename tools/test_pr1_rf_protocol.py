@@ -1,4 +1,4 @@
-"""Unit tests for the compact PR1 RF application protocol."""
+"""Unit tests for the lower-layer PR1 RF transport protocol."""
 
 import unittest
 
@@ -42,27 +42,37 @@ class HeaderTests(unittest.TestCase):
 
 
 class FragmentationTests(unittest.TestCase):
-    def test_voice_v0_160_bytes_fits_one_255_byte_packet(self) -> None:
+    def test_m0_90_byte_payload_makes_one_100_byte_rf_packet(self) -> None:
         packets = fragment_frame(
-            bytes(160), max_rf_payload=255, frame_seq=1
+            bytes(90), max_rf_payload=127, frame_seq=1
         )
         self.assertEqual(len(packets), 1)
-        self.assertEqual(len(packets[0]), 170)
+        self.assertEqual(len(packets[0]), 100)
 
-    def test_voice_v0_160_bytes_needs_two_127_byte_packets(self) -> None:
+    def test_voice_v0_176_byte_application_packet_fits_one_255_packet(self) -> None:
+        # Canonical application packet on current main:
+        # 16-byte app header + 160-byte raw voice payload = 176 bytes.
         packets = fragment_frame(
-            bytes(160), max_rf_payload=127, frame_seq=1
+            bytes(176), max_rf_payload=255, frame_seq=1
+        )
+        self.assertEqual(len(packets), 1)
+        self.assertEqual(len(packets[0]), 186)
+
+    def test_voice_v0_176_byte_application_packet_needs_two_127_packets(self) -> None:
+        packets = fragment_frame(
+            bytes(176), max_rf_payload=127, frame_seq=1
         )
         self.assertEqual(len(packets), 2)
         self.assertTrue(all(len(packet) <= 127 for packet in packets))
 
-    def test_old_32khz_pcm_regression_budget(self) -> None:
+    def test_old_32khz_application_packet_regression_budget(self) -> None:
+        # Historical 640-byte raw PCM + current 16-byte application header.
         self.assertEqual(
-            len(fragment_frame(bytes(640), max_rf_payload=127, frame_seq=1)),
+            len(fragment_frame(bytes(656), max_rf_payload=127, frame_seq=1)),
             6,
         )
         self.assertEqual(
-            len(fragment_frame(bytes(640), max_rf_payload=255, frame_seq=1)),
+            len(fragment_frame(bytes(656), max_rf_payload=255, frame_seq=1)),
             3,
         )
 
