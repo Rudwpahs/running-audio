@@ -5,12 +5,12 @@
 #include "../common/pr1_rf_protocol.h"
 
 int main() {
-  using namespace pr1;
+  using namespace pr1::rf;
 
-  static_assert(kHeaderSize == 10);
+  static_assert(kTransportHeaderSize == 10);
 
-  uint8_t raw[kHeaderSize]{};
-  const Header source{
+  uint8_t raw[kTransportHeaderSize]{};
+  const TransportHeader source{
       3,      // flags
       65535,  // packet_seq
       1234,   // frame_seq
@@ -18,24 +18,24 @@ int main() {
       4,      // fragment_count
   };
 
-  assert(EncodeHeader(source, raw, sizeof(raw)) == Error::kOk);
+  assert(EncodeTransportHeader(source, raw, sizeof(raw)) == Error::kOk);
 
-  Header decoded{};
-  assert(DecodeHeader(raw, sizeof(raw), &decoded) == Error::kOk);
+  TransportHeader decoded{};
+  assert(DecodeTransportHeader(raw, sizeof(raw), &decoded) == Error::kOk);
   assert(decoded.flags == source.flags);
   assert(decoded.packet_seq == source.packet_seq);
   assert(decoded.frame_seq == source.frame_seq);
   assert(decoded.fragment_index == source.fragment_index);
   assert(decoded.fragment_count == source.fragment_count);
 
-  // Current TECHNICAL_MVP voice diagnostic profile:
-  // 8 kHz * 8-bit mono * 20 ms = 160 application bytes.
-  // It fits one 255-byte LoRa/GFSK-sized payload with the compact header,
-  // but would require two fragments under a 127-byte FLRC payload ceiling.
-  assert(FragmentCount(160, 255) == 1);
-  assert(FragmentCount(160, 127) == 2);
+  // Canonical voice v0 application packet on current main:
+  // 16-byte app header + 160-byte PCM = 176 bytes. The lower RF transport
+  // can carry it in one 255-byte packet or fragment it into two 127-byte
+  // packets without changing the application codec.
+  assert(FragmentCount(176, 255) == 1);
+  assert(FragmentCount(176, 127) == 2);
 
-  // Regression check for the older 32 kHz / 16-bit / 10 ms raw PCM frame.
+  // Regression check for the older 640-byte raw PCM application frame.
   assert(FragmentCount(640, 127) == 6);
   assert(FragmentCount(640, 255) == 3);
 
@@ -45,6 +45,6 @@ int main() {
   assert(offset == 585);
   assert(length == 55);
 
-  std::cout << "PR1 C++ protocol host tests PASS\n";
+  std::cout << "PR1 C++ RF transport host tests PASS\n";
   return 0;
 }
