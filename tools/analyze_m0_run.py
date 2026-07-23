@@ -3,10 +3,11 @@
 Usage:
     python tools/analyze_m0_run.py tx.log rx.log
     python tools/analyze_m0_run.py tx.log rx.log --json
+    python -m tools.analyze_m0_run tx.log rx.log
 
 Keep a single M0 run below 65,536 successful TX packets so the uint16 packet
-sequence value is unique within the run. The planned 10,000-packet gate is
-safely inside that limit.
+sequence value is unique within the run. The official T1 gate uses 1,000
+packets; a longer 10,000-packet bench run remains safely inside this limit.
 """
 
 from __future__ import annotations
@@ -17,7 +18,12 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Iterable
 
-from tools.analyze_m0_serial import parse_pr1_line
+try:
+    # Module form: python -m tools.analyze_m0_run ...
+    from tools.analyze_m0_serial import parse_pr1_line
+except ModuleNotFoundError:
+    # Direct-script form: python tools/analyze_m0_run.py ...
+    from analyze_m0_serial import parse_pr1_line
 
 
 @dataclass
