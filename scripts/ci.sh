@@ -5,7 +5,7 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$repo_root"
 
 echo "== Python protocol tests =="
-python -m unittest tools.test_pr1_rf_protocol -v
+python -m unittest tools.test_pr1_rf_protocol tools.test_analyze_m0_serial -v
 
 echo
 echo "== Packet budget smoke test =="
