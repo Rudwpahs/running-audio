@@ -27,34 +27,37 @@ The current goal is not to build a consumer earbud or a park-wide Hi-Fi network.
 - [Radio architecture options](docs/ARCHITECTURE_OPTIONS.md)
 - [Korea regulatory gate](docs/REGULATORY_GATE.md)
 
+## Packet layers
+
+The current canonical voice/application packet is:
+
+- application header: 16 bytes
+- voice v0 audio: 160 bytes
+- serialized application packet: **176 bytes**
+
+The M0 SX1280 work adds a separate lower-layer **10-byte RF transport envelope**
+for packet sequencing and fragmentation. It does not replace the 16-byte
+application header.
+
+For example, the serialized 176-byte voice application packet can remain the
+same while the RF transport sends it as one packet under a 255-byte payload
+ceiling or fragments it under a smaller packet-mode ceiling.
+
 ## Tools
 
-Validate the original v0 application packet proposal:
+Validate the existing v0 application packet:
 
 ```bash
 python tools/audio_packet_sim.py --packets 10000
 ```
 
-The initial `TECHNICAL_MVP.md` application-packet proposal is:
-
-- header: 16 bytes
-- audio: 160 bytes
-- total: 176 bytes
-- SX1280 LoRa payload ceiling used for that first design check: 255 bytes
-
-The M0 deterministic RF implementation separately uses a **10-byte compact
-transport header + 90-byte test pattern = 100 bytes total** so packet loss,
-corruption and mode constraints can be measured before audio. The final audio
-header is intentionally not frozen until the T1 data-link measurements are
-available.
-
-Run all local protocol checks:
+Run the integrated local protocol checks:
 
 ```bash
 bash scripts/ci.sh
 ```
 
-Controlled M0 logs can be compared with:
+Controlled M0 TX/RX logs can be compared with:
 
 ```bash
 python tools/analyze_m0_run.py tx.log rx.log
