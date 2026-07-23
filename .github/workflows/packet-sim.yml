@@ -36,3 +36,30 @@ jobs:
 
       - name: Validate 10,000 C++ packets and invalid-input cases
         run: /tmp/pr1_packet_test
+
+      - name: Validate SX1280 RF transport and M0 log analyzers
+        run: >-
+          python -m unittest
+          tools.test_pr1_rf_protocol
+          tools.test_analyze_m0_serial
+          tools.test_analyze_m0_run
+          -v
+
+      - name: Validate RF packet budget calculator
+        run: python tools/rf_packet_budget.py
+
+      - name: Compile C++ RF transport test
+        run: >-
+          g++ -std=c++17 -Wall -Wextra -Werror -pedantic
+          firmware/host_tests/test_pr1_rf_protocol.cpp
+          -o /tmp/pr1_rf_transport_test
+
+      - name: Validate C++ RF transport
+        run: /tmp/pr1_rf_transport_test
+
+      - name: Install PlatformIO
+        run: python -m pip install --disable-pip-version-check platformio
+
+      - name: Build M0 safe firmware
+        working-directory: firmware/m0_sx1280_packet_link
+        run: pio run -e safe
