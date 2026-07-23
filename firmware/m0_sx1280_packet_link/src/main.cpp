@@ -28,7 +28,7 @@ constexpr int kRadioRxEnable = 21;
 // Align M0 with TECHNICAL_MVP T1: 100-byte deterministic RF data packet.
 constexpr std::size_t kTestPacketBytes = 100;
 constexpr std::size_t kTestPayloadBytes =
-    kTestPacketBytes - pr1::kHeaderSize;
+    kTestPacketBytes - pr1::rf::kTransportHeaderSize;
 constexpr uint8_t kFlagTestPattern = 0x80;
 
 static_assert(kTestPacketBytes <= 127,
@@ -47,7 +47,7 @@ static_assert(kTestPacketBytes <= 127,
 constexpr float kTestFrequencyMHz = PR1_TEST_FREQ_MHZ;
 constexpr int8_t kTestPowerDbm = PR1_TEST_POWER_DBM;
 constexpr uint16_t kFlrcBitrateKbps = 650;
-constexpr uint8_t kFlrcCodingRate = 3;  // RadioLib FLRC coding rate 3/4.
+constexpr uint8_t kFlrcCodingRate = 3;
 constexpr uint16_t kFlrcPreambleBits = 16;
 
 SX1280 radio = new Module(
@@ -98,8 +98,6 @@ bool InitRadio() {
     return false;
   }
 
-  // Vendor pin_config.h defines LORA_RX=21 and LORA_TX=10 for SX1280.
-  // RadioLib expects RX-enable first and TX-enable second.
   radio.setRfSwitchPins(kRadioRxEnable, kRadioTxEnable);
 
   Serial.println("PR1,radio_init_ok");
@@ -108,7 +106,7 @@ bool InitRadio() {
 
 void TransmitOne() {
   uint8_t packet[kTestPacketBytes]{};
-  const pr1::Header header{
+  const pr1::rf::TransportHeader header{
       kFlagTestPattern,
       g_packet_seq,
       g_frame_seq,
@@ -116,15 +114,17 @@ void TransmitOne() {
       1,
   };
 
-  const pr1::Error header_state =
-      pr1::EncodeHeader(header, packet, sizeof(packet));
-  if (header_state != pr1::Error::kOk) {
-    Serial.println("PR1,tx_internal_error,reason=header_encode");
+  const pr1::rf::Error header_state =
+      pr1::rf::EncodeTransportHeader(header, packet, sizeof(packet));
+  if (header_state != pr1::rf::Error::kOk) {
+    Serial.println("PR1,tx_internal_error,reason=transport_header_encode");
     ++g_tx_fail;
     return;
   }
 
-  FillPattern(packet + pr1::kHeaderSize, kTestPayloadBytes, g_packet_seq);
+  FillPattern(packet + pr1::rf::kTransportHeaderSize,
+              kTestPayloadBytes,
+              g_packet_seq);
 
   const uint32_t started_us = micros();
   const int16_t state = radio.transmit(packet, sizeof(packet));
@@ -164,10 +164,10 @@ void ReceiveOne() {
     return;
   }
 
-  pr1::Header header{};
-  const pr1::Error header_state =
-      pr1::DecodeHeader(packet, sizeof(packet), &header);
-  if (header_state != pr1::Error::kOk) {
+  pr1::rf::TransportHeader header{};
+  const pr1::rf::Error header_state =
+      pr1::rf::DecodeTransportHeader(packet, sizeof(packet), &header);
+  if (header_state != pr1::rf::Error::kOk) {
     ++g_rx_bad_header;
     Serial.printf(
         "PR1,rx_bad_header,count=%lu,rssi=%.1f,snr=%.1f\n",
@@ -177,7 +177,7 @@ void ReceiveOne() {
     return;
   }
 
-  if (!VerifyPattern(packet + pr1::kHeaderSize,
+  if (!VerifyPattern(packet + pr1::rf::kTransportHeaderSize,
                      kTestPayloadBytes,
                      header.packet_seq)) {
     ++g_rx_bad_pattern;
@@ -208,10 +208,11 @@ void ReceiveOne() {
 void PrintBuildConfiguration() {
   Serial.println();
   Serial.println("PR1 M0 SX1280 deterministic packet link");
-  Serial.printf("PR1,protocol_version=%u,header_bytes=%u,test_packet_bytes=%u\n",
-                pr1::kVersion,
-                static_cast<unsigned>(pr1::kHeaderSize),
-                static_cast<unsigned>(kTestPacketBytes));
+  Serial.printf(
+      "PR1,transport_version=%u,transport_header_bytes=%u,test_packet_bytes=%u\n",
+      pr1::rf::kTransportVersion,
+      static_cast<unsigned>(pr1::rf::kTransportHeaderSize),
+      static_cast<unsigned>(kTestPacketBytes));
   Serial.printf(
       "PR1,pins,sclk=%d,miso=%d,mosi=%d,cs=%d,rst=%d,dio1=%d,busy=%d,tx_en=%d,rx_en=%d\n",
       kRadioSclk,
@@ -252,7 +253,7 @@ void loop() {
 #if PR1_ENABLE_RF_TEST
 #if PR1_NODE_ROLE_TX
   TransmitOne();
-  delay(100);  // 10 packets/s baseline. Audio-rate traffic comes later.
+  delay(100);
 #else
   ReceiveOne();
 #endif
