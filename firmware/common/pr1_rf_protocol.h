@@ -3,14 +3,19 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace pr1 {
+// Lower-layer RF transport framing.
+//
+// The canonical PR1 voice/application packet is defined separately in
+// `pr1_packet.hpp`. This namespace intentionally avoids colliding with the
+// application-layer `pr1::Header` type.
+namespace pr1::rf {
 
 constexpr uint8_t kMagic0 = 'P';
 constexpr uint8_t kMagic1 = '1';
-constexpr uint8_t kVersion = 2;
-constexpr std::size_t kHeaderSize = 10;
+constexpr uint8_t kTransportVersion = 2;
+constexpr std::size_t kTransportHeaderSize = 10;
 
-struct Header {
+struct TransportHeader {
   uint8_t flags;
   uint16_t packet_seq;
   uint16_t frame_seq;
@@ -38,9 +43,9 @@ inline uint16_t ReadU16Be(const uint8_t* p) {
       (static_cast<uint16_t>(p[0]) << 8) | p[1]);
 }
 
-inline Error EncodeHeader(const Header& header, uint8_t* out,
-                          std::size_t out_len) {
-  if (out == nullptr || out_len < kHeaderSize) {
+inline Error EncodeTransportHeader(const TransportHeader& header, uint8_t* out,
+                                   std::size_t out_len) {
+  if (out == nullptr || out_len < kTransportHeaderSize) {
     return Error::kBufferTooSmall;
   }
   if (header.fragment_count == 0 ||
@@ -50,7 +55,7 @@ inline Error EncodeHeader(const Header& header, uint8_t* out,
 
   out[0] = kMagic0;
   out[1] = kMagic1;
-  out[2] = kVersion;
+  out[2] = kTransportVersion;
   out[3] = header.flags;
   WriteU16Be(out + 4, header.packet_seq);
   WriteU16Be(out + 6, header.frame_seq);
@@ -59,15 +64,15 @@ inline Error EncodeHeader(const Header& header, uint8_t* out,
   return Error::kOk;
 }
 
-inline Error DecodeHeader(const uint8_t* data, std::size_t len,
-                          Header* out) {
-  if (data == nullptr || out == nullptr || len < kHeaderSize) {
+inline Error DecodeTransportHeader(const uint8_t* data, std::size_t len,
+                                   TransportHeader* out) {
+  if (data == nullptr || out == nullptr || len < kTransportHeaderSize) {
     return Error::kBufferTooSmall;
   }
   if (data[0] != kMagic0 || data[1] != kMagic1) {
     return Error::kBadMagic;
   }
-  if (data[2] != kVersion) {
+  if (data[2] != kTransportVersion) {
     return Error::kBadVersion;
   }
   if (data[9] == 0 || data[8] >= data[9]) {
@@ -83,7 +88,9 @@ inline Error DecodeHeader(const uint8_t* data, std::size_t len,
 }
 
 inline std::size_t PayloadCapacity(std::size_t max_rf_payload) {
-  return max_rf_payload > kHeaderSize ? max_rf_payload - kHeaderSize : 0;
+  return max_rf_payload > kTransportHeaderSize
+             ? max_rf_payload - kTransportHeaderSize
+             : 0;
 }
 
 inline std::size_t FragmentCount(std::size_t frame_len,
@@ -121,4 +128,4 @@ inline Error FragmentBounds(std::size_t frame_len,
   return Error::kOk;
 }
 
-}  // namespace pr1
+}  // namespace pr1::rf
