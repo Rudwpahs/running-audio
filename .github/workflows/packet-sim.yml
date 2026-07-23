@@ -17,8 +17,16 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Compile simulator
+      - name: Compile Python simulator
         run: python -m py_compile tools/audio_packet_sim.py
 
-      - name: Validate 10,000 packets
+      - name: Validate 10,000 Python packets
         run: python tools/audio_packet_sim.py --packets 10000
+
+      - name: Compile C++ packet codec test
+        run: >-
+          g++ -std=c++17 -Wall -Wextra -Werror -pedantic
+          tests/test_packet_codec.cpp -o /tmp/pr1_packet_test
+
+      - name: Validate 10,000 C++ packets and invalid-input cases
+        run: /tmp/pr1_packet_test
