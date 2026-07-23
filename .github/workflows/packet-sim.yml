@@ -1,0 +1,24 @@
+name: PR1 packet simulator
+
+on:
+  push:
+    branches: [main, "codex/**"]
+  pull_request:
+
+jobs:
+  packet-round-trip:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Compile simulator
+        run: python -m py_compile tools/audio_packet_sim.py
+
+      - name: Validate 10,000 packets
+        run: python tools/audio_packet_sim.py --packets 10000
