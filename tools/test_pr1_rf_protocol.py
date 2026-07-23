@@ -105,6 +105,34 @@ class FragmentationTests(unittest.TestCase):
         completed = reassembler.push(packets[1])
         self.assertEqual(completed, (7, original))
 
+    def test_duplicate_completed_single_fragment_frame_is_ignored(self) -> None:
+        original = bytes(range(84))
+        packet = fragment_frame(
+            original, max_rf_payload=127, frame_seq=99
+        )[0]
+
+        reassembler = Reassembler()
+        self.assertEqual(reassembler.push(packet), (99, original))
+        self.assertIsNone(reassembler.push(packet))
+
+    def test_completed_history_is_bounded_and_allows_sequence_reuse(self) -> None:
+        reassembler = Reassembler(completed_history=2)
+
+        packets = {
+            seq: fragment_frame(
+                bytes([seq]), max_rf_payload=127, frame_seq=seq
+            )[0]
+            for seq in (1, 2, 3)
+        }
+
+        self.assertEqual(reassembler.push(packets[1]), (1, b"\x01"))
+        self.assertEqual(reassembler.push(packets[2]), (2, b"\x02"))
+        self.assertEqual(reassembler.push(packets[3]), (3, b"\x03"))
+
+        # Sequence 1 has fallen out of the two-frame duplicate history, so it
+        # may be reused later (important for uint16 wrap-around).
+        self.assertEqual(reassembler.push(packets[1]), (1, b"\x01"))
+
 
 if __name__ == "__main__":
     unittest.main()
