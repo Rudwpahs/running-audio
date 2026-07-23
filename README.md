@@ -20,6 +20,7 @@ The current goal is not to build a consumer earbud or a park-wide Hi-Fi network.
 
 - [Decision record](docs/DECISIONS_2026-07-23.md)
 - [Technical MVP and stage gates](docs/TECHNICAL_MVP.md)
+- [SX1280 implementation and M0 runbook](docs/SX1280_IMPLEMENTATION.md)
 - [Buyer validation and paid pilot plan](docs/MARKET_VALIDATION.md)
 - [Unit economics hypotheses](docs/UNIT_ECONOMICS.md)
 - [30-day execution roadmap](docs/30_DAY_EXECUTION.md)
@@ -28,18 +29,36 @@ The current goal is not to build a consumer earbud or a park-wide Hi-Fi network.
 
 ## Tools
 
-Validate the v0 application packet shape before hardware code:
+Validate the original v0 application packet proposal:
 
 ```bash
 python tools/audio_packet_sim.py --packets 10000
 ```
 
-Expected v0 application packet:
+The initial `TECHNICAL_MVP.md` application-packet proposal is:
 
 - header: 16 bytes
 - audio: 160 bytes
 - total: 176 bytes
-- SX1280 LoRa payload ceiling used for the first design check: 255 bytes
+- SX1280 LoRa payload ceiling used for that first design check: 255 bytes
+
+The M0 deterministic RF implementation separately uses a **10-byte compact
+transport header + 90-byte test pattern = 100 bytes total** so packet loss,
+corruption and mode constraints can be measured before audio. The final audio
+header is intentionally not frozen until the T1 data-link measurements are
+available.
+
+Run all local protocol checks:
+
+```bash
+bash scripts/ci.sh
+```
+
+Controlled M0 logs can be compared with:
+
+```bash
+python tools/analyze_m0_run.py tx.log rx.log
+```
 
 ## 30-day gate
 
