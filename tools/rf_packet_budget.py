@@ -4,8 +4,9 @@ This is a design calculator, not an RF-performance or regulatory simulator.
 It deliberately excludes PHY overhead, airtime, interference, retries and legal
 operating limits; those must be measured/verified separately.
 
-Run:
+Run either form:
     python tools/rf_packet_budget.py
+    python -m tools.rf_packet_budget
 """
 
 from __future__ import annotations
@@ -13,7 +14,12 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 
-from pr1_rf_protocol import HEADER_SIZE as RF_TRANSPORT_HEADER_BYTES
+try:
+    # Module form: python -m tools.rf_packet_budget
+    from tools.pr1_rf_protocol import HEADER_SIZE as RF_TRANSPORT_HEADER_BYTES
+except ModuleNotFoundError:
+    # Direct-script form: python tools/rf_packet_budget.py
+    from pr1_rf_protocol import HEADER_SIZE as RF_TRANSPORT_HEADER_BYTES
 
 FLRC_MAX_PAYLOAD = 127
 LORA_GFSK_MAX_PAYLOAD = 255
