@@ -1,56 +1,17 @@
-# PR1 Communication Channel
+# PR1 작업 상태
 
-This file overrides the message-channel instructions in `AI_HANDOFF.md` where they conflict.
+## 2026-07-23 — Codex prototype v3
 
-## Source-of-truth split
+- 목적: pre-study가 아닌 실제 T3-S3 MVSR 두 대용 펌웨어 완성
+- 이전 Draft PR #3의 252-byte FLRC 오류 확인
+- Semtech 127-byte 제한에 맞춘 3-fragment protocol 구현
+- LILYGO 공식 MVSR amp/RF switch 핀 반영
+- PC test tone·loopback sender 구현
+- CRC·중복·누락·순서변경·sequence wrap 시험 구현
+- sender 재시작용 stream ID와 RX 재동기화 시험 구현
+- SX1280 고트래픽 정오표에 따라 single RX 재시작 모드 적용
+- TX/RX PlatformIO build PASS
+- WAV lossy-link end-to-end PASS
 
-- **GitHub:** code, locked specifications, documentation, commits, and test artifacts
-- **Notion:** GPT/Claude requests, replies, reviews, and handoff messages
-
-## Notion collaboration page
-
-- Title: `PR1 AI 협업 허브 — GPT ↔ Claude`
-- Page ID: `396eaac5-5bf7-818f-9dc8-c834d7956038`
-- URL: https://app.notion.com/p/396eaac55bf7818f9dc8c834d7956038
-- Created and currently accessible from Claude's Notion connection
-- GPT's current Notion connector cannot access this page yet; GPT must not claim a comment was posted until direct fetch/comment succeeds
-
-## Workflow
-
-1. Read `AI_HANDOFF.md` for locked technical specifications.
-2. Read the latest page comments in the Notion collaboration page before starting work.
-3. GPT writes implementation and approved specification changes to GitHub.
-4. Claude reads GitHub and posts review findings in Notion page comments.
-5. Do not paste full source files or the full specification into Notion comments. Reference GitHub paths and commit SHAs.
-6. Claude should provide minimal diffs rather than full-file rewrites.
-7. Neither AI may claim build or hardware success unless the command or test was actually run.
-8. Until GPT's Notion connector is granted access to the page, GPT messages may be relayed by the human operator. Once access is confirmed, direct comments become the canonical channel.
-
-## Comment format
-
-```text
-[MESSAGE-ID] Sender -> Recipient
-Reply to: MESSAGE-ID or none
-Status: REQUEST | IN_PROGRESS | DONE | BLOCKED | REVIEW
-Scope: exact files or subsystem
-
-Goal: one sentence
-Result: completed work or findings
-Evidence: commit SHA, build/test output, official reference, or not run
-Files: related GitHub paths
-Risk: remaining issues
-Next: one specific action for the recipient
-```
-
-Message IDs:
-
-- GPT: `GPT-YYYYMMDD-NN`
-- Claude: `CLAUDE-YYYYMMDD-NN`
-
-## Current state
-
-- Current owner: GPT
-- Current task: create the first complete M0 implementation draft
-- Claude's next task: after GPT posts an M0 commit SHA in Notion, review only the requested source files
-- No ESP-IDF build or physical hardware test has been completed yet
-- The previous Notion page ID beginning with `396c1440` is obsolete and must not be used
+다음 사람 작업은 새 기능 추가가 아니라
+`docs/test_procedure_v3.md`에 따른 두 보드 플래시와 실측입니다.
