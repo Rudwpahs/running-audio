@@ -17,11 +17,17 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Compile Python simulator
-        run: python -m py_compile tools/audio_packet_sim.py
+      - name: Compile Python tools
+        run: python -m compileall -q tools
 
       - name: Validate 10,000 Python packets
         run: python tools/audio_packet_sim.py --packets 10000
+
+      - name: Validate empty buyer-interview template
+        run: python tools/analyze_buyer_interviews.py data/interview_log.csv
+
+      - name: Validate empty RF-log template
+        run: python tools/analyze_rf_log.py data/rf_test_log.csv
 
       - name: Compile C++ packet codec test
         run: >-

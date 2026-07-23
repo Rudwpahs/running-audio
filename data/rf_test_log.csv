@@ -1,0 +1,1 @@
+run_id,date,time,location,tx_board,rx_board,firmware_commit,mode,freq_mhz,bandwidth_khz,sf_or_bitrate,coding_rate,power_setting_dbm,distance_m,los_condition,tx_packets,rx_packets,loss_pct,rssi_avg_dbm,snr_avg_db,latency_p50_ms,latency_p95_ms,audio_profile,phrase_total,phrase_correct,phrase_accuracy,notes
