@@ -35,15 +35,16 @@ int main() {
   assert(FragmentCount(176, 255) == 1);
   assert(FragmentCount(176, 127) == 2);
 
-  // Regression check for the older 640-byte raw PCM application frame.
-  assert(FragmentCount(640, 127) == 6);
-  assert(FragmentCount(640, 255) == 3);
+  // Regression check for the historical 32 kHz / 16-bit / 10 ms design:
+  // 640-byte raw PCM + current 16-byte application header = 656 bytes.
+  assert(FragmentCount(656, 127) == 6);
+  assert(FragmentCount(656, 255) == 3);
 
   std::size_t offset = 0;
   std::size_t length = 0;
-  assert(FragmentBounds(640, 127, 5, &offset, &length) == Error::kOk);
+  assert(FragmentBounds(656, 127, 5, &offset, &length) == Error::kOk);
   assert(offset == 585);
-  assert(length == 55);
+  assert(length == 71);
 
   std::cout << "PR1 C++ RF transport host tests PASS\n";
   return 0;
