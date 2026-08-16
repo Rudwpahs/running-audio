@@ -1,173 +1,135 @@
-# PR1 30-Day Execution Roadmap
+# PR1 30-Day Execution Plan — Exchange System
 
-Period: **2026-07-23 → 2026-08-22**
+Date: 2026-08-16
 
-## North Star for this month
+Goal: prove or disprove the corrected PR1 concept:
 
-By 2026-08-22, prove all three:
-
-1. **Buyer problem** — a real operator has a repeated problem and pays/acts to solve it.
-2. **Technical proof** — live voice works through the PR1 radio/audio path in a real outdoor test.
-3. **Paid intent** — at least two buyers agree to a concrete paid pilot amount and date.
-
-Do not expand PR2, public-site polish, mass purchasing, or final industrial design before this gate.
+> 스터디카페와 공원에서 휴대폰을 맡기고 수신기를 받아 소리만 듣는 시스템.
 
 ---
 
-# Week 1 — Buyer evidence + technical preparation
-## 2026-07-23 ~ 2026-07-29
+# Week 1 — Rewrite and evidence cleanup
 
-### Business
-- [ ] Build a list of 20 buyer candidates.
-- [ ] Contact at least 10.
-- [ ] Complete at least 5 buyer interviews.
-- [ ] Record current equipment, price, group size, usage frequency, approval process.
-- [ ] Ask for one introduction at the end of every useful interview.
+## Outcomes
 
-### Technical
-- [ ] Confirm exact board variants/revisions when hardware is available.
-- [ ] Prepare official LILYGO examples and RadioLib toolchain.
-- [ ] Create packet/log schema before writing audio transport.
-- [ ] Prepare 8 kHz/8-bit/mono speech test file.
+- Website copy uses phone ↔ receiver exchange framing.
+- Survey interpretation is reset around study cafe and park.
+- Old “outdoor group audio / youth camp” language is removed from core docs.
 
-### Week 1 exit gate
-- 5 buyer interviews complete.
-- At least 2 show a repeated problem.
-- T0 bring-up checklist is ready or completed if hardware has arrived.
+## Tasks
 
----
+- Update homepage copy from `docs/WEBSITE_COPY_KR.md`.
+- Update all pitch docs to begin with phone deposit + receiver handoff.
+- Sort existing survey responses by:
+  - study cafe / 독서실 use
+  - park / walking / running use
+  - willingness to hand in phone
+  - audio-only need
+  - prototype test interest
 
-# Week 2 — RF → prerecorded voice → live voice
-## 2026-07-30 ~ 2026-08-05
+## Gate
 
-### Technical order — do not skip
-1. T0 board bring-up
-2. T1 1,000 packet RF test
-3. T2 prerecorded speech
-4. T3 live microphone
-
-### Deliverables
-- [ ] CSV RF logs
-- [ ] modulation settings recorded
-- [ ] packet loss calculated
-- [ ] audio recording/video of successful test
-- [ ] known-failures list
-
-### Business
-- [ ] Finish all 10 buyer interviews.
-- [ ] Rank segments again using actual evidence.
-- [ ] Choose only one pilot segment.
-
-### Week 2 exit gate
-- Live voice 1→1 works for 10 minutes.
-- Median latency target ≤250ms or the actual measured result and bottleneck are known.
-- 10 buyer interviews complete.
+Can a stranger understand PR1 in 10 seconds without thinking it is earbuds?
 
 ---
 
-# Week 3 — Outdoor validation + pilot design
-## 2026-08-06 ~ 2026-08-12
+# Week 2 — User interviews
 
-### Technical
-- [ ] 20m LOS test
-- [ ] 50m LOS test
-- [ ] 100m LOS test
-- [ ] body-block / partial NLOS test
-- [ ] compare at least two SX1280 modulation configurations
-- [ ] open-ear/bone-conduction output comfort test
+## Goal
 
-### UX operations
-Time the full process:
-- devices out of case
-- power on
-- channel ready
-- distribute
-- collect
-- charge/store
+Interview at least 10 people.
 
-Target setup time: ≤3 minutes for a small pilot set.
+## Composition
 
-### Pilot package
-Prepare:
-- one-page concept
-- 60-minute test script
-- safety/operation checklist
-- feedback form
-- paid-pilot quote hypothesis
+- 5 study cafe / 독서실 users
+- 3 park walkers/runners
+- 2 operators or staff candidates
 
-### Week 3 exit gate
-- 50m result is measured, not guessed.
-- one buyer gives a real pilot date.
+## Must ask
+
+- Would you actually hand in your phone?
+- What makes that unsafe or annoying?
+- Is audio-only still useful?
+- Would you test it for real?
+
+## Gate
+
+At least 3 people agree to a real phone-deposit / receiver-only test.
 
 ---
 
-# Week 4 — Field pilots + decision
-## 2026-08-13 ~ 2026-08-22
+# Week 3 — Technical + exchange mock test
 
-### Field
-- [ ] Pilot #1
-- [ ] Pilot #2
-- [ ] Pilot #3 if possible
+## Technical tasks
 
-For each pilot record:
-- participant count
-- environment
-- setup time
-- voice intelligibility
-- dropout incidents
-- battery use
-- participant comfort
-- surroundings awareness
-- operator problem solved/not solved
-- operator's next action
+- Build basic station/transmitter → receiver audio test.
+- Record packet/audio stability.
+- Test short indoor distance first.
+- Test short park-like movement second.
 
-### Commercial ask
-At the end of the pilot, do not ask only "어떠셨어요?"
+## Exchange-flow tasks
 
-Ask:
-> 다음 회차를 같은 규모로 유료 운영한다면 ₩50,000 / ₩100,000 수준에서 실제 일정을 잡으실 수 있습니까?
+- Make mock phone slots.
+- Make receiver IDs.
+- Create check-in/check-out sheet.
+- Run a manual session:
+  - phone deposited
+  - receiver issued
+  - audio used
+  - receiver returned
+  - phone returned
 
-Record exact response.
+## Gate
 
-### Final decision — 2026-08-22
-
-## GO
-- Technical T3/T5 is usable for the target scenario.
-- 2+ paid pilot commitments.
-- target unit economics can plausibly reach ≥40% GM.
-
-## PIVOT
-Problem is strong but the solution needs different radio, form factor, or OEM architecture.
-
-## STOP / PARK
-No real buyer problem or no paid behavior after 10+ buyer interviews and pilot exposure.
+A user can complete the whole flow without confusion.
 
 ---
 
-# Daily operating rule
+# Week 4 — Pilot decision
 
-At the beginning of each work session write:
+## Study cafe pilot decision
 
-> 오늘 끝났다고 말하려면 어떤 **파일 / 수치 / 증거**가 남아야 하는가?
+Proceed if:
 
-At the end write only four lines:
-1. What I tested
-2. What happened
-3. What failed / surprised me
-4. Exact next test
+- users are willing to deposit phones
+- audio-only works for study
+- operator workflow looks manageable
+
+## Park pilot decision
+
+Proceed if:
+
+- users accept leaving phone at a station
+- receiver range/comfort is acceptable
+- return path feels natural
+
+## No-go
+
+Stop or pivot if:
+
+- users reject phone deposit
+- audio need is weak
+- operators reject phone/receiver management
+- product keeps being seen as earbuds
 
 ---
 
-# Do-Not-Do List for these 30 days
+# Deliverables by Day 30
 
-- [ ] redesign the whole brand
-- [ ] restart the project from zero
-- [ ] buy many additional receivers before T3
-- [ ] develop a phone app
-- [ ] develop PR2 hardware
-- [ ] build AI features
-- [ ] claim a final range before outdoor measurement
-- [ ] use teen survey responses as buyer willingness-to-pay evidence
-- [ ] spend time estimating giant global TAM before first paid pilot
+- corrected website copy applied
+- survey summary by study cafe / park
+- 10 interview records
+- 3 prototype-test candidates
+- station/receiver audio test log
+- exchange-flow test log
+- next decision: study cafe first, park first, or pivot
 
-The rule is: **one gate at a time.**
+---
+
+# Daily rule
+
+Every day, answer one question:
+
+> Did today’s work prove that someone will hand in their phone and use only the receiver?
+
+If not, the work may be technical practice, but it is not product validation.
