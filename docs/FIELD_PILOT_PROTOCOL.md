@@ -1,259 +1,191 @@
-# PR1 Field Pilot Protocol
+# PR1 Field Pilot Protocol — Phone ↔ Receiver Exchange
 
-Version: 0.1 — 2026-07-23
+Date: 2026-08-16
 
-## Purpose
-
-A field pilot is **not a demo**.
-
-It must answer four questions with evidence:
-
-1. Can participants understand spoken instructions while moving?
-2. Does the system stay reliable at the target distance/environment?
-3. Is distribution/collection easier enough to matter to the operator?
-4. Will the operator take a concrete next step, including a paid next session?
+This protocol tests PR1 as a **phone deposit + receiver handoff + audio-only** system.
 
 ---
 
-# 0. Do not run a field pilot before these gates
+# 1. Pilot purpose
 
-- T1 RF packet link measured
-- T2 prerecorded speech stable
-- T3 live voice usable, if the pilot requires live voice
-- equipment has no exposed/loose power wiring likely to short during movement
-- batteries are physically secured
-- correct 2.4 GHz antenna is attached before RF transmission
-- local radio configuration has been reviewed for the intended test conditions
-- operator/site permission received
+The pilot does not test whether wireless audio is interesting.
 
-For a minor developer, use an adult/guardian or responsible site staff member for institutional field tests, equipment responsibility and participant consent logistics.
+It tests whether this flow works:
+
+```text
+phone in → receiver out → audio only → receiver back → phone back
+```
 
 ---
 
-# 1. First pilot environment
+# 2. Pilot types
 
-Do **not** begin next to vehicle traffic, bicycles, roads, water or other hazards.
+## Pilot A — Study cafe / 독서실
 
-First live field pilot should be:
-- closed or controlled outdoor area
-- flat walking surface
-- easy visual contact between operator and participants
-- no requirement for the audio system to carry safety-critical commands
+### Setup
 
-PR1 is still a prototype; participants must be able to stop the test and hear normal surroundings without relying on PR1 for safety.
+- mock PR1 station near entrance/counter
+- phone slot numbers
+- receiver numbers
+- simple check-in/check-out sheet
+- audio source connected to transmitter
 
----
+### Session
 
-# 2. Pilot structure — 60 to 90 minutes
-
-## Phase A — preflight, 10 min
-
-Record:
-- date/time
-- location
-- weather
-- participant count
-- radio mode/configuration
-- TX power setting
-- battery start level/voltage if available
-- device IDs
-
-Set all receiver volumes low first, then raise to a comfortable speech level.
-
-Start timer when the equipment leaves the case.
-
-### Deployment metric
-
-`setup_time_sec = ready_to_use_time - case_open_time`
-
-Initial target for a small pilot set: **≤180 seconds**.
-
-This is an internal product target, not a customer-facing promise.
-
----
-
-## Phase B — stationary intelligibility, 10 min
-
-Distance: short controlled range, e.g. 10–20 m.
-
-Use 20 phrases from `data/voice_test_phrases_ko.csv` in random order.
-
-For each phrase, participant records or repeats the key information.
+- 30–60 minutes
+- user deposits phone
+- user receives matched receiver
+- user sits away from phone
+- user listens to audio only
+- user returns receiver
+- matched phone is returned
 
 ### Measure
 
-`intelligibility = correct_phrases / total_phrases`
+- trust in phone deposit
+- audio usefulness
+- urge to check phone
+- confusion in matching/return
+- willingness to repeat
 
-Initial internal gate:
-- 20 m: **≥95%** phrase accuracy
+## Pilot B — Park / walking / running
 
-If this fails, do not move to a longer range pilot. Diagnose audio level, RF loss, buffering and output hardware first.
+### Setup
 
----
+- fixed mock station at bench/entrance/meeting point
+- phone slot numbers
+- receiver numbers
+- short walking/running path
 
-## Phase C — moving group test, 15–20 min
+### Session
 
-Participants walk/jog at the normal pace of the target program in the controlled area.
+- 10–30 minutes
+- user deposits phone
+- user receives receiver
+- user walks/runs/rests with receiver only
+- user returns receiver
+- matched phone is returned
 
-Operator gives short real instructions such as:
-- stop/start
-- direction change
-- regroup instruction
-- pace change
-- numbered instruction
+### Measure
 
-Record:
-- missed instructions
-- audible dropouts
-- operator repeats
-- receiver resets/disconnections
-- participant stops caused by device trouble
-
-### Core operational metric
-
-`repeat_rate = repeated_instructions / total_instructions`
-
-Compare this with the operator's normal method when possible.
-
----
-
-## Phase D — distance test, 15 min
-
-Do not turn this into an unstructured “how far can it go?” test.
-
-Use fixed checkpoints:
-- 20 m
-- 50 m
-- 100 m only when T5 engineering tests justify it
-
-At every checkpoint run the same phrase/intelligibility method and log:
-- packet loss
-- RSSI
-- SNR
-- latency if available
-- phrase accuracy
-
-Initial business-use gate:
-- **50 m LOS: ≥90% phrase accuracy** in the intended spoken-instruction scenario
-
-Again, this is an internal MVP gate, not a final range specification.
+- comfort without phone
+- anxiety about phone storage
+- range/audio dropouts
+- convenience of return path
+- willingness to repeat
 
 ---
 
-## Phase E — surroundings awareness, 5–10 min
+# 3. Safety and trust rules
 
-The open-ear value must be measured, not assumed.
+Before any test:
 
-Ask participants to rate 1–5:
-- speech clarity
-- comfort
-- awareness of nearby normal conversation/environment
-- distraction caused by the device
+- explain that this is a prototype test
+- explain where the phone will be stored
+- assign visible phone slot ID and receiver ID
+- do not open the user's phone
+- do not view notifications
+- do not collect private data from phone screen
+- return phone only after receiver return and ID match
 
-Do **not** create safety tests involving approaching vehicles, bicycles, alarms or deliberately dangerous situations.
-
----
-
-## Phase F — collection and operator interview, 10–15 min
-
-Start timer when operator asks for devices back.
-
-Record:
-- collection_time_sec
-- missing devices
-- devices requiring reset
-- dirty/damaged devices
-- charging/storage friction
-
-Then ask the operator:
-
-1. What problem did this actually solve today?
-2. What became worse or harder?
-3. Would you use it in your next real session?
-4. What would prevent adoption?
-5. Who would approve a purchase/rental?
-6. What is the next realistic date?
-7. Would you schedule the next session at the proposed paid-pilot price?
-
-The last question must include a real amount and date when the prototype is ready for paid use.
+If user is uncomfortable handing in phone, do not pressure them. Record the reason.
 
 ---
 
-# 3. Pilot scorecard
+# 4. Check-in sheet
 
-## Technical
+```csv
+session_id,date,scenario,user_type,phone_slot_id,receiver_id,start_time,planned_duration,consent,notes
+```
 
-| Metric | Gate |
-|---|---:|
-| 20m phrase accuracy | ≥95% |
-| 50m phrase accuracy | ≥90% |
-| unexplained receiver reboot | 0 |
-| setup time for small set | ≤180 sec |
-| device loss at collection | 0 |
+# 5. Check-out sheet
 
-## User
+```csv
+session_id,end_time,receiver_returned,phone_returned,matching_ok,issue,notes
+```
 
-Do not average everything into one vanity score.
+# 6. User feedback sheet
 
-Record separately:
-- clarity 1–5
-- comfort 1–5
-- surroundings awareness 1–5
-- dropout noticed yes/no
+```csv
+session_id,deposit_trust_1_5,audio_useful_1_5,screen_urge_reduced_1_5,receiver_comfort_1_5,process_easy_1_5,would_repeat,main_reason,main_friction
+```
 
-## Buyer
+# 7. Technical log
 
-Strongest signals, in order:
-1. gives detailed criticism
-2. asks for another test
-3. introduces another operator
-4. asks for price/quote
-5. schedules a paid date
-6. pays/repeats
-
-The pilot is a commercial success only when behavior moves up this ladder.
+```csv
+run_id,session_id,scenario,distance_m,source_type,tx_packets,rx_packets,loss_pct,latency_p50_ms,latency_p95_ms,audio_clear_1_5,dropouts,notes
+```
 
 ---
 
-# 4. Stop conditions during a pilot
+# 8. Pass criteria
 
-Stop the test immediately if:
-- battery becomes abnormally hot/swollen/damaged
-- exposed wire or connector creates a short risk
-- participant reports pain/discomfort from audio or wearable
-- participant needs to enter an unsafe traffic/environment condition
-- radio/audio hardware repeatedly crashes and distracts from safe movement
-- site operator asks to stop
+## Study cafe pass
 
-A failed pilot is useful evidence. Do not keep running only to produce a success video.
+- user completes session without phone access
+- audio remains useful
+- deposit trust score ≥ 3/5
+- would_repeat = yes or maybe
+- main friction is specific and fixable
 
----
+## Park pass
 
-# 5. Required artifacts after every pilot
-
-Within the same day save:
-- `pilot_log.csv` row(s)
-- RF log if engineering telemetry was available
-- phrase-test results
-- operator interview notes
-- hardware/software version
-- exact next action
-
-Write four lines:
-1. What we tested
-2. What happened
-3. What failed/surprised us
-4. Exact next test
+- user completes route with receiver only
+- phone storage anxiety is manageable
+- receiver is not too annoying
+- audio remains usable
+- return process is clear
 
 ---
 
-# 6. No-publicity-by-default rule
+# 9. Fail signals
 
-Do not publicly upload identifiable participant faces/voices or institutional pilot material merely because it was technically useful.
+- user refuses to hand in phone
+- user says audio is not needed
+- user sees no difference from earbuds
+- user is too anxious about phone storage
+- operator says workflow is impossible
+- receiver adds hassle without reducing phone temptation
 
-Separate:
-- engineering evidence
-- research/feedback records
-- marketing/publicity media
+---
 
-Get appropriate permission before using the third category.
+# 10. Post-pilot interview
+
+Ask after every session:
+
+1. Did you feel okay leaving your phone there?
+2. Did you need your phone during the session?
+3. Did the receiver give you enough audio?
+4. Was this better than just using earbuds?
+5. What made it annoying or unsafe?
+6. Would you use it again in a study cafe or park?
+7. Would you pay for this, or should it be included by the facility?
+
+---
+
+# 11. Pilot conclusion format
+
+After each pilot write:
+
+```md
+## Pilot conclusion
+
+- Scenario:
+- Did user hand in phone?: yes/no
+- Did receiver-only audio work?: yes/no
+- Biggest friction:
+- Biggest value:
+- Repeat interest:
+- Operator feasibility:
+- Decision: GO / FIX / PIVOT / STOP
+```
+
+---
+
+# 12. Core reminder
+
+A good audio test is not enough.
+
+PR1 succeeds only if the exchange behavior works:
+
+> 휴대폰 맡김 → 수신기 받음 → 소리만 듣기 → 수신기 반납 → 휴대폰 찾기
