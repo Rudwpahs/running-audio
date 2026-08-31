@@ -147,6 +147,7 @@ def main():
             results.append(burst_case(b, mode))
 
     out = Path(__file__).resolve().parents[1] / "results" / "fec_loss_sim.json"
+    out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps([asdict(r) for r in results], indent=2) + "\n")
     print(f"{'model':<10} {'mode':<4} {'post-loss%':>10} {'recovered':>10} {'overhead%':>10}")
     for r in results:
