@@ -1,0 +1,25 @@
+name: PR1-DART host tests
+
+on:
+  push:
+    paths:
+      - 'firmware/common/**'
+      - 'tests/**'
+      - 'tools/pr1_dart_sim.py'
+      - '.github/workflows/pr1-dart-host-tests.yml'
+  pull_request:
+    paths:
+      - 'firmware/common/**'
+      - 'tests/**'
+      - 'tools/pr1_dart_sim.py'
+      - '.github/workflows/pr1-dart-host-tests.yml'
+
+jobs:
+  host:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: C++ unit and sanitizer tests
+        run: bash tests/run_host_tests.sh
+      - name: PR1-DART synthetic ablation matrix
+        run: python3 tools/pr1_dart_sim.py --frames 20000 --seed 12345
