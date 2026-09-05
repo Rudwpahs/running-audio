@@ -4,14 +4,14 @@ on:
   push:
     paths:
       - 'firmware/t3s3_sx1280_runtime/**'
-      - 'firmware/common/pr1_packet.hpp'
-      - 'tests/test_runtime_config.cpp'
+      - 'firmware/common/**'
+      - 'tests/**'
       - '.github/workflows/pr1-runtime-safe-build.yml'
   pull_request:
     paths:
       - 'firmware/t3s3_sx1280_runtime/**'
-      - 'firmware/common/pr1_packet.hpp'
-      - 'tests/test_runtime_config.cpp'
+      - 'firmware/common/**'
+      - 'tests/**'
       - '.github/workflows/pr1-runtime-safe-build.yml'
 
 jobs:
@@ -19,6 +19,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: C++ host and sanitizer regression tests
+        run: bash tests/run_host_tests.sh
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
