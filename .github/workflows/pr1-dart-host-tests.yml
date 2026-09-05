@@ -23,3 +23,5 @@ jobs:
         run: bash tests/run_host_tests.sh
       - name: PR1-DART synthetic ablation matrix
         run: python3 tools/pr1_dart_sim.py --frames 20000 --seed 12345
+      - name: Deadline ARQ blind-vs-deadline A/B
+        run: python3 tools/pr1_dart_sim.py --arq-ab --frames 20000 --seed 12345
