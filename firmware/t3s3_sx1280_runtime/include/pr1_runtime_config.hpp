@@ -6,6 +6,9 @@
 #include "../../common/pr1_packet.hpp"
 #include "pr1_board_config.hpp"
 
+static_assert(__cplusplus >= 201703L,
+              "PR1 T3-S3/SX1280 runtime requires C++17 or newer");
+
 #ifndef PR1_RF_ENABLED
 #define PR1_RF_ENABLED 0
 #endif
