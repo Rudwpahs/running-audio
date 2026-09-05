@@ -72,6 +72,7 @@ int main() {
   assert(allowed.remaining_slack_us == 8000U);
   assert(allowed.estimated_eta_us == 2300U);
   assert(stats.requested == 1U && stats.sent == 1U);
+  stats.recordArrival(true);
 
   const auto second = evaluateAndReserve(good_fb, request, &tracker, &stats);
   assert(!second.retransmit);
@@ -131,10 +132,28 @@ int main() {
   assert(!not_nacked_decision.retransmit);
   assert(not_nacked_decision.reason == RejectReason::NotNacked);
 
-  stats.recordArrival(true);
+  RepairRequest disabled_not_nacked = request;
+  disabled_not_nacked.enabled = false;
+  const auto disabled_not_nacked_decision = evaluateRepair(not_nacked, disabled_not_nacked, false);
+  assert(disabled_not_nacked_decision.reason == RejectReason::NotNacked);
+
+  RepairRequest disabled_nacked = request;
+  disabled_nacked.enabled = false;
+  const auto disabled_without_tracker = evaluateAndReserve(good_fb, disabled_nacked,
+                                                            static_cast<RetransmissionTracker<>*>(nullptr),
+                                                            nullptr);
+  assert(disabled_without_tracker.reason == RejectReason::Disabled);
+
+  RepairRequest late_request = request;
+  late_request.sequence = 98;
+  Feedback late_feedback = good_fb;
+  late_feedback.recent_loss_bitmap = 1U << 1U;
+  const auto late_allowed = evaluateAndReserve(late_feedback, late_request, &tracker, &stats);
+  assert(late_allowed.retransmit);
   stats.recordArrival(false);
   assert(stats.useful == 1U && stats.late == 1U);
-  assert(stats.usefulRatioPpm() == 1000000U);
+  assert(stats.sent == 2U);
+  assert(stats.usefulRatioPpm() == 500000U);
 
   RepairBudget legacy{};
   legacy.remaining_slack_us = 8000;
