@@ -4,12 +4,14 @@
 #include <cstddef>
 #include <cstdint>
 
+#include "pr1_afh.hpp"
+
 namespace pr1::arq {
 
 constexpr std::size_t kFeedbackBytes = 10;
 constexpr std::uint32_t kDefaultMaxFeedbackAgeUs = 4000U;
-constexpr std::uint8_t kRepairChannelCount = 40U;
-constexpr std::uint64_t kRepairChannelMask = (1ULL << kRepairChannelCount) - 1ULL;
+constexpr std::uint8_t kRepairChannelCount = afh::kChannelCount;
+constexpr std::uint64_t kRepairChannelMask = afh::kChannelMask;
 constexpr std::uint8_t kNoRepairChannel = 0xFFU;
 
 struct Feedback {
@@ -116,6 +118,9 @@ struct Decision {
   std::uint32_t estimated_eta_us = 0;
 };
 
+// feedback_age_us is a freshness gate, not part of this future ETA: remaining
+// playout slack is measured at decision time, so adding past feedback time here
+// would double-count elapsed time.
 inline std::uint32_t futureRepairEtaUs(const RepairRequest& request) {
   const std::uint64_t total = static_cast<std::uint64_t>(request.queue_delay_us) +
                               request.hop_settle_us + request.airtime_us +
@@ -130,12 +135,12 @@ inline Decision evaluateRepair(const Feedback& feedback, const RepairRequest& re
   decision.remaining_slack_us = remainingPlayoutSlackUs(request.now_us, request.playout_deadline_us);
   decision.estimated_eta_us = futureRepairEtaUs(request);
 
-  if (!request.enabled) {
-    decision.reason = RejectReason::Disabled;
-    return decision;
-  }
   if (!decision.nack_requested) {
     decision.reason = RejectReason::NotNacked;
+    return decision;
+  }
+  if (!request.enabled) {
+    decision.reason = RejectReason::Disabled;
     return decision;
   }
   if (request.max_feedback_age_us == 0U || request.feedback_age_us >= request.max_feedback_age_us) {
@@ -254,11 +259,12 @@ template <std::size_t Capacity>
 Decision evaluateAndReserve(const Feedback& feedback, const RepairRequest& request,
                             RetransmissionTracker<Capacity>* tracker, Stats* stats = nullptr) {
   if (tracker == nullptr) {
-    Decision unavailable{};
-    unavailable.nack_requested = feedbackRequestsSequence(feedback, request.sequence);
-    unavailable.remaining_slack_us = remainingPlayoutSlackUs(request.now_us, request.playout_deadline_us);
-    unavailable.estimated_eta_us = futureRepairEtaUs(request);
-    unavailable.reason = RejectReason::TrackerUnavailable;
+    Decision unavailable = evaluateRepair(feedback, request, false);
+    if (unavailable.retransmit) {
+      unavailable.retransmit = false;
+      unavailable.repair_channel = kNoRepairChannel;
+      unavailable.reason = RejectReason::TrackerUnavailable;
+    }
     if (stats != nullptr) stats->recordDecision(unavailable);
     return unavailable;
   }
@@ -288,7 +294,10 @@ struct RepairBudget {
 };
 
 inline std::uint32_t estimatedRepairEtaUs(const RepairBudget& b) {
-  return b.feedback_age_us + b.queue_delay_us + b.hop_settle_us + b.airtime_us + b.decode_guard_us;
+  const std::uint64_t total = static_cast<std::uint64_t>(b.feedback_age_us) +
+                              b.queue_delay_us + b.hop_settle_us +
+                              b.airtime_us + b.decode_guard_us;
+  return total > 0xFFFFFFFFULL ? 0xFFFFFFFFU : static_cast<std::uint32_t>(total);
 }
 
 inline bool shouldRetransmit(const RepairBudget& b) {
