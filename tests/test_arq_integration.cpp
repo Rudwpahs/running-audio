@@ -49,12 +49,23 @@ int main() {
   assert(buffer.duplicates() == 1U);
   stats.recordDuplicate();
 
+  pr1::arq::Feedback late_feedback{};
+  late_feedback.rx_highest_seq = 202;
+  late_feedback.recent_loss_bitmap = 1U;
+  late_feedback.map_version = scheduler.current().map_version;
+  pr1::arq::RepairRequest late_request = request;
+  late_request.sequence = 201;
+  late_request.now_us = 110000U;
+  late_request.playout_deadline_us = 118000U;
+  const auto late_decision = pr1::arq::evaluateAndReserve(late_feedback, late_request, &tracker, &stats);
+  assert(late_decision.retransmit);
+
   assert(!buffer.insert(201, payload.data(), payload.size(), 118000U));
   assert(buffer.staleRejected() == 1U);
   stats.recordArrival(false);
 
   assert(buffer.size() == 1U);
-  assert(stats.sent == 1U);
+  assert(stats.sent == 2U);
   assert(stats.duplicates == 1U);
   assert(stats.late == 1U);
 
