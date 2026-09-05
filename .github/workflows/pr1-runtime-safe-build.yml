@@ -1,0 +1,28 @@
+name: PR1 SX1280 safe runtime build
+
+on:
+  push:
+    paths:
+      - 'firmware/t3s3_sx1280_runtime/**'
+      - 'firmware/common/pr1_packet.hpp'
+      - 'tests/test_runtime_config.cpp'
+      - '.github/workflows/pr1-runtime-safe-build.yml'
+  pull_request:
+    paths:
+      - 'firmware/t3s3_sx1280_runtime/**'
+      - 'firmware/common/pr1_packet.hpp'
+      - 'tests/test_runtime_config.cpp'
+      - '.github/workflows/pr1-runtime-safe-build.yml'
+
+jobs:
+  safe-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install PlatformIO
+        run: python -m pip install --disable-pip-version-check platformio==6.1.18
+      - name: Build RF-disabled runtime
+        run: pio run --project-dir firmware/t3s3_sx1280_runtime -e safe
