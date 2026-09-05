@@ -15,6 +15,7 @@ from dataclasses import dataclass, asdict
 CHANNELS = 40
 BAD_CHANNELS = set(range(8, 16))
 
+
 @dataclass(frozen=True)
 class Strategy:
     name: str
@@ -22,7 +23,9 @@ class Strategy:
     adaptive_map: bool = False
     xor: bool = False
     arq: bool = False
+    blind_arq: bool = False
     phy: bool = False
+
 
 STRATEGIES = [
     Strategy("A_fixed_no_recovery"),
@@ -35,6 +38,7 @@ STRATEGIES = [
     Strategy("H_full_pr1_dart", hop=True, adaptive_map=True, xor=True, arq=True, phy=True),
 ]
 
+
 @dataclass
 class Result:
     strategy: str
@@ -46,6 +50,7 @@ class Result:
     parity_frames: int
     arq_sent: int
     arq_useful: int
+    arq_late: int
 
     @property
     def raw_loss_rate(self) -> float:
@@ -54,6 +59,10 @@ class Result:
     @property
     def final_loss_rate(self) -> float:
         return self.final_losses / self.frames
+
+    @property
+    def arq_useful_ratio(self) -> float:
+        return self.arq_useful / self.arq_sent if self.arq_sent else 0.0
 
 
 def channel_for(frame: int, strategy: Strategy) -> int:
@@ -92,17 +101,21 @@ def simulate(strategy: Strategy, frames: int, seed: int) -> Result:
             if rng.random() >= 0.004 and len(missing) == 1:
                 final_lost[missing[0]] = False
 
-    arq_sent = arq_useful = 0
+    arq_sent = arq_useful = arq_late = 0
     if strategy.arq:
         for i, lost in enumerate(final_lost):
             if not lost:
                 continue
             enough_slack = (i % 4) != 3
-            if enough_slack:
-                arq_sent += 1
-                if rng.random() < 0.84:
-                    final_lost[i] = False
-                    arq_useful += 1
+            if not enough_slack and not strategy.blind_arq:
+                continue
+            arq_sent += 1
+            if not enough_slack:
+                arq_late += 1
+                continue
+            if rng.random() < 0.84:
+                final_lost[i] = False
+                arq_useful += 1
 
     for lost in raw_lost:
         raw_burst = raw_burst + 1 if lost else 0
@@ -112,11 +125,18 @@ def simulate(strategy: Strategy, frames: int, seed: int) -> Result:
         max_final_burst = max(max_final_burst, final_burst)
 
     return Result(strategy.name, frames, sum(raw_lost), sum(final_lost), max_raw_burst,
-                  max_final_burst, parity_frames, arq_sent, arq_useful)
+                  max_final_burst, parity_frames, arq_sent, arq_useful, arq_late)
 
 
 def run_matrix(frames: int, seed: int) -> list[Result]:
     return [simulate(s, frames, seed) for s in STRATEGIES]
+
+
+def run_arq_ab(frames: int, seed: int) -> list[Result]:
+    common = dict(hop=True, adaptive_map=True, arq=True, phy=False)
+    blind = Strategy("ARQ_blind", blind_arq=True, **common)
+    deadline = Strategy("ARQ_deadline", blind_arq=False, **common)
+    return [simulate(blind, frames, seed), simulate(deadline, frames, seed)]
 
 
 def main() -> int:
@@ -124,19 +144,35 @@ def main() -> int:
     parser.add_argument("--frames", type=int, default=20000)
     parser.add_argument("--seed", type=int, default=12345)
     parser.add_argument("--json", action="store_true")
+    parser.add_argument("--arq-ab", action="store_true",
+                        help="compare synthetic blind ARQ with deadline-aware ARQ")
     args = parser.parse_args()
-    results = run_matrix(args.frames, args.seed)
+    results = run_arq_ab(args.frames, args.seed) if args.arq_ab else run_matrix(args.frames, args.seed)
     if args.json:
         print(json.dumps([{**asdict(r), "raw_loss_rate": r.raw_loss_rate,
-                           "final_loss_rate": r.final_loss_rate} for r in results], indent=2))
+                           "final_loss_rate": r.final_loss_rate,
+                           "arq_useful_ratio": r.arq_useful_ratio} for r in results], indent=2))
     else:
-        print("strategy,raw_loss_pct,final_loss_pct,max_raw_burst,max_final_burst,parity,arq_sent,arq_useful")
+        print("strategy,raw_loss_pct,final_loss_pct,max_raw_burst,max_final_burst,parity,arq_sent,arq_useful,arq_late,arq_useful_pct")
         for r in results:
             print(f"{r.strategy},{r.raw_loss_rate*100:.3f},{r.final_loss_rate*100:.3f},"
-                  f"{r.max_raw_burst},{r.max_final_burst},{r.parity_frames},{r.arq_sent},{r.arq_useful}")
-    if results[-1].final_losses > results[0].final_losses:
+                  f"{r.max_raw_burst},{r.max_final_burst},{r.parity_frames},"
+                  f"{r.arq_sent},{r.arq_useful},{r.arq_late},{r.arq_useful_ratio*100:.1f}")
+
+    if args.arq_ab:
+        blind, deadline = results
+        if blind.raw_losses != deadline.raw_losses:
+            raise SystemExit("ARQ A/B inputs diverged")
+        if deadline.arq_sent > blind.arq_sent:
+            raise SystemExit("deadline ARQ sent more repairs than blind ARQ")
+        if deadline.arq_late != 0:
+            raise SystemExit("deadline ARQ scheduled a known-late repair")
+        if deadline.arq_useful_ratio < blind.arq_useful_ratio:
+            raise SystemExit("deadline ARQ useful ratio regressed against blind ARQ")
+    elif results[-1].final_losses > results[0].final_losses:
         raise SystemExit("full PR1-DART regressed against synthetic baseline")
     return 0
+
 
 if __name__ == "__main__":
     raise SystemExit(main())
