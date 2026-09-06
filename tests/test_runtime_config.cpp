@@ -39,6 +39,15 @@ int main() {
   static_assert(!snapshot.rx_processing_us.available);
   static_assert(!snapshot.rx_rearm_us.available);
 
+  bool saw_max_queue_depth = false;
+  bool saw_arq_retransmit = false;
+  pr1::telemetry::forEachSnapshotField(snapshot, [&](pr1::telemetry::FieldValue item) {
+    if (item.field == pr1::telemetry::FieldId::MaxQueueDepth) saw_max_queue_depth = true;
+    if (item.field == pr1::telemetry::FieldId::ArqRetransmitSent) saw_arq_retransmit = true;
+  });
+  assert(!saw_max_queue_depth);
+  assert(!saw_arq_retransmit);
+
   assert(std::string_view{kBootMetadata.board_family} == "LILYGO T3-S3-MVSRBoard");
   assert(std::string_view{kBootMetadata.radio_target} == "SX1280");
   std::cout << "test_runtime_config: PASS\n";
