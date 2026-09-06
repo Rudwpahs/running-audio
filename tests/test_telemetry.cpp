@@ -64,26 +64,26 @@ int main() {
   assert(!saw_max_queue);
   assert(!saw_arq_retransmit);
 
-  Snapshot active{};
-  active.state = DeviceState::Ready;
-  active.capability_mask = capabilityMask(Capability::TimingTrace) |
-                           capabilityMask(Capability::RfStats) |
-                           capabilityMask(Capability::Arq);
-  active.counters.max_queue_depth = 9;
-  active.counters.retransmit_sent = 3;
+  Snapshot observed{};
+  observed.state = DeviceState::Ready;
+  observed.capability_mask = capabilityMask(Capability::TimingTrace) |
+                             capabilityMask(Capability::RfStats) |
+                             capabilityMask(Capability::Arq);
+  observed.max_queue_depth = {true, 9};
+  observed.arq_retransmit_sent = {true, 3};
 
-  bool active_saw_max_queue = false;
-  bool active_saw_arq_retransmit = false;
-  forEachSnapshotField(active, [&](FieldValue value) {
+  bool observed_saw_max_queue = false;
+  bool observed_saw_arq_retransmit = false;
+  forEachSnapshotField(observed, [&](FieldValue value) {
     if (value.field == FieldId::MaxQueueDepth && value.value == 9) {
-      active_saw_max_queue = true;
+      observed_saw_max_queue = true;
     }
     if (value.field == FieldId::ArqRetransmitSent && value.value == 3) {
-      active_saw_arq_retransmit = true;
+      observed_saw_arq_retransmit = true;
     }
   });
-  assert(active_saw_max_queue);
-  assert(active_saw_arq_retransmit);
+  assert(observed_saw_max_queue);
+  assert(observed_saw_arq_retransmit);
 
   std::cout << "test_telemetry: PASS\n";
   return 0;
