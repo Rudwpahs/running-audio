@@ -57,6 +57,12 @@ class TelemetryParserTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             parse_line("PR1T v=1 t_us=1 field=crc_bad malformed value=0")
 
+    def test_rejects_pr1_prefix_without_required_fields(self):
+        with self.assertRaises(ValueError):
+            parse_line("PR1T")
+        with self.assertRaises(ValueError):
+            parse_line("PR1E")
+
     def test_csv_cli_has_stable_header_and_rows(self):
         input_text = (
             "noise before boot\n"
@@ -78,6 +84,18 @@ class TelemetryParserTests(unittest.TestCase):
         )
         self.assertEqual(rows[1], ["telemetry", "1", "123", "", "crc_bad", "", "4"])
         self.assertEqual(rows[2], ["event", "1", "456", "9", "", "spi_read_start", "0"])
+
+    def test_missing_input_file_reports_clean_error(self):
+        missing_path = ROOT / "tests" / "definitely-not-present-pr1-telemetry.log"
+        result = subprocess.run(
+            [sys.executable, str(ROOT / "tools" / "pr1_telemetry_parse.py"), str(missing_path)],
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("pr1_telemetry_parse:", result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
 
 
 if __name__ == "__main__":
