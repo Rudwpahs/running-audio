@@ -71,11 +71,13 @@ struct Snapshot {
   std::uint32_t trace_overwrites = 0;
   OptionalMetric rssi_dbm{};
   OptionalMetric queue_depth{};
+  OptionalMetric max_queue_depth{};
   OptionalMetric irq_to_spi_us{};
   OptionalMetric rx_processing_us{};
   OptionalMetric rx_rearm_us{};
   OptionalMetric jitter_depth{};
   OptionalMetric underruns{};
+  OptionalMetric arq_retransmit_sent{};
   OptionalMetric arq_repair_useful{};
   OptionalMetric arq_repair_late{};
   OptionalMetric afh_map_version{};
@@ -211,8 +213,9 @@ void forEachSnapshotField(const Snapshot& snapshot, Emit&& emit) {
   if (snapshot.queue_depth.available) {
     emit(FieldValue{FieldId::QueueDepth, snapshot.queue_depth.value});
   }
-  emit(FieldValue{FieldId::MaxQueueDepth,
-                  static_cast<std::int64_t>(snapshot.counters.max_queue_depth)});
+  if (snapshot.max_queue_depth.available) {
+    emit(FieldValue{FieldId::MaxQueueDepth, snapshot.max_queue_depth.value});
+  }
   emit(FieldValue{FieldId::SchedulerMisses,
                   static_cast<std::int64_t>(snapshot.counters.scheduler_misses)});
   if (snapshot.irq_to_spi_us.available) {
@@ -231,8 +234,9 @@ void forEachSnapshotField(const Snapshot& snapshot, Emit&& emit) {
   if (snapshot.underruns.available) {
     emit(FieldValue{FieldId::Underruns, snapshot.underruns.value});
   }
-  emit(FieldValue{FieldId::ArqRetransmitSent,
-                  static_cast<std::int64_t>(snapshot.counters.retransmit_sent)});
+  if (snapshot.arq_retransmit_sent.available) {
+    emit(FieldValue{FieldId::ArqRetransmitSent, snapshot.arq_retransmit_sent.value});
+  }
   if (snapshot.arq_repair_useful.available) {
     emit(FieldValue{FieldId::ArqRepairUseful, snapshot.arq_repair_useful.value});
   }
