@@ -34,11 +34,14 @@ def _required_text(values: dict[str, str], key: str) -> str:
 def parse_line(line: str) -> dict[str, int | str] | None:
     """Parse one PR1T/PR1E record; return None for unrelated serial output."""
     line = line.strip()
-    if not line.startswith(("PR1T ", "PR1E ")):
+    if not line:
         return None
 
     tokens = line.split()
     prefix = tokens[0]
+    if prefix not in ("PR1T", "PR1E"):
+        return None
+
     values: dict[str, str] = {}
     for token in tokens[1:]:
         if "=" not in token:
@@ -106,8 +109,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--format", choices=("jsonl", "csv"), default="jsonl")
     args = parser.parse_args(argv)
 
-    stream, should_close = _open_input(args.input)
+    stream: TextIO | None = None
+    should_close = False
     try:
+        stream, should_close = _open_input(args.input)
         records = _iter_records(stream)
         if args.format == "csv":
             _write_csv(records, sys.stdout)
@@ -117,7 +122,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"pr1_telemetry_parse: {exc}", file=sys.stderr)
         return 2
     finally:
-        if should_close:
+        if should_close and stream is not None:
             stream.close()
     return 0
 
