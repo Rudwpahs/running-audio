@@ -1,9 +1,10 @@
 #include <Arduino.h>
 
 #include "pr1_runtime_config.hpp"
+#include "pr1_safe_telemetry.hpp"
 
 #if PR1_RF_ENABLED
-#error "Round 2 is safe-only. RF-enabled runtime is intentionally not implemented yet."
+#error "The current runtime profile is safe-only. RF-enabled hardware runtime is intentionally gated."
 #endif
 
 namespace {
@@ -35,12 +36,27 @@ void printBootMetadata() {
   Serial.println("PR1_RUNTIME_SAFE_IDLE");
 }
 
+void printSafeTelemetry() {
+  const auto snapshot = pr1::runtime::makeSafeTelemetrySnapshot();
+  const std::uint32_t timestamp_us = micros();
+
+  pr1::telemetry::forEachSnapshotField(
+      snapshot, [&](pr1::telemetry::FieldValue item) {
+        Serial.printf("PR1T v=%u t_us=%lu field=%s value=%lld\n",
+                      static_cast<unsigned>(pr1::telemetry::kTelemetrySchemaVersion),
+                      static_cast<unsigned long>(timestamp_us),
+                      pr1::telemetry::fieldName(item.field),
+                      static_cast<long long>(item.value));
+      });
+}
+
 }  // namespace
 
 void setup() {
   Serial.begin(115200);
   delay(250);
   printBootMetadata();
+  printSafeTelemetry();
 }
 
 void loop() {

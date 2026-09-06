@@ -23,6 +23,11 @@ enum class Event : std::uint8_t {
   PlcUsed,
   AudioPlayed,
   SchedulerMiss,
+  RxPacketOk,
+  RxCrcFail,
+  RxRearmStart,
+  RxRearmDone,
+  QueueDepth,
 };
 
 struct TraceEntry {

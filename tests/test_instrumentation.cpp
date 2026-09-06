@@ -11,6 +11,13 @@ int main() {
   pr1::instrumentation::TraceEntry e{};
   assert(ring.atOldest(0, &e) && e.timestamp_us == 20);
 
+  ring.push({pr1::instrumentation::Event::RxRearmDone, 50, 2, 125});
+  assert(ring.atOldest(2, &e));
+  assert(e.event == pr1::instrumentation::Event::RxRearmDone);
+  assert(e.timestamp_us == 50);
+  assert(e.sequence == 2);
+  assert(e.value == 125);
+
   pr1::instrumentation::DurationWindow<8> w;
   for (std::uint32_t v : {1U,2U,3U,4U,5U,6U,7U,100U}) w.observe(v);
   assert(w.percentile(50) == 5);
