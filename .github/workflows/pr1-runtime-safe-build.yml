@@ -5,12 +5,14 @@ on:
     paths:
       - 'firmware/t3s3_sx1280_runtime/**'
       - 'firmware/common/**'
+      - 'tools/**'
       - 'tests/**'
       - '.github/workflows/pr1-runtime-safe-build.yml'
   pull_request:
     paths:
       - 'firmware/t3s3_sx1280_runtime/**'
       - 'firmware/common/**'
+      - 'tools/**'
       - 'tests/**'
       - '.github/workflows/pr1-runtime-safe-build.yml'
 
@@ -24,6 +26,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Python telemetry parser tests
+        run: python -m unittest tests/test_telemetry_parser.py -v
       - name: Install PlatformIO
         run: python -m pip install --disable-pip-version-check platformio==6.1.18
       - name: Build RF-disabled runtime
