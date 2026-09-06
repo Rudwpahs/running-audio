@@ -185,6 +185,16 @@ constexpr const char* eventName(instrumentation::Event event) {
       return "audio_played";
     case instrumentation::Event::SchedulerMiss:
       return "scheduler_miss";
+    case instrumentation::Event::RxPacketOk:
+      return "rx_packet_ok";
+    case instrumentation::Event::RxCrcFail:
+      return "rx_crc_fail";
+    case instrumentation::Event::RxRearmStart:
+      return "rx_rearm_start";
+    case instrumentation::Event::RxRearmDone:
+      return "rx_rearm_done";
+    case instrumentation::Event::QueueDepth:
+      return "queue_depth";
   }
   return "unknown";
 }
