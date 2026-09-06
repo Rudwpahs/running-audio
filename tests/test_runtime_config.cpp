@@ -5,6 +5,7 @@
 #include <string_view>
 
 #include "../firmware/t3s3_sx1280_runtime/include/pr1_runtime_config.hpp"
+#include "../firmware/t3s3_sx1280_runtime/include/pr1_safe_telemetry.hpp"
 
 int main() {
   using namespace pr1::runtime;
@@ -25,6 +26,18 @@ int main() {
   static_assert(kBootMetadata.pins.busy == 36);
   static_assert(kBootMetadata.pins.tx_enable == 10);
   static_assert(kBootMetadata.pins.rx_enable == 21);
+
+  static_assert(pr1::telemetry::kTelemetrySchemaVersion == 1);
+  static_assert(pr1::telemetry::capabilityMask(pr1::telemetry::Capability::TimingTrace) == 8u);
+
+  constexpr auto snapshot = makeSafeTelemetrySnapshot();
+  static_assert(snapshot.state == pr1::telemetry::DeviceState::SafeIdle);
+  static_assert(snapshot.capability_mask == 8u);
+  static_assert(!snapshot.rssi_dbm.available);
+  static_assert(!snapshot.queue_depth.available);
+  static_assert(!snapshot.irq_to_spi_us.available);
+  static_assert(!snapshot.rx_processing_us.available);
+  static_assert(!snapshot.rx_rearm_us.available);
 
   assert(std::string_view{kBootMetadata.board_family} == "LILYGO T3-S3-MVSRBoard");
   assert(std::string_view{kBootMetadata.radio_target} == "SX1280");
