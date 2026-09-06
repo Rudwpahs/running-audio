@@ -57,21 +57,19 @@ PR1_RUNTIME_SAFE_IDLE
 
 After metadata, the runtime emits one schema-versioned `PR1T` snapshot. All fields in the same snapshot share the same `t_us` value.
 
-Example shape:
+The RF-disabled safe snapshot only emits values that are meaningful without a live radio path:
 
 ```text
 PR1T v=1 t_us=<boot_timestamp> field=device_state value=1
 PR1T v=1 t_us=<boot_timestamp> field=crc_good value=0
 PR1T v=1 t_us=<boot_timestamp> field=crc_bad value=0
 PR1T v=1 t_us=<boot_timestamp> field=missing value=0
-PR1T v=1 t_us=<boot_timestamp> field=max_queue_depth value=0
 PR1T v=1 t_us=<boot_timestamp> field=scheduler_misses value=0
 PR1T v=1 t_us=<boot_timestamp> field=trace_overwrites value=0
-PR1T v=1 t_us=<boot_timestamp> field=arq_retransmit_sent value=0
 PR1T v=1 t_us=<boot_timestamp> field=capability_mask value=8
 ```
 
-`device_state=1` means `safe_idle`; `capability_mask=8` means the runtime exposes the timing/diagnostic schema. RF-only measurements such as RSSI, IRQ→SPI latency, RX processing time, current queue depth and RX re-arm time are **omitted** until they have actually been observed. They are not fabricated as zero.
+`device_state=1` means `safe_idle`; `capability_mask=8` means the runtime exposes the timing/diagnostic schema. Measurements that require an active queue, RF path, recovery path, or packet observation—such as RSSI, current/max queue depth, IRQ→SPI latency, RX processing time, RX re-arm time, and ARQ retransmit counts—are **omitted** until they have actually been observed. They are not fabricated as zero.
 
 The schema is defined in `firmware/common/pr1_telemetry.hpp`. The host parser accepts serial logs and emits JSONL or CSV:
 
