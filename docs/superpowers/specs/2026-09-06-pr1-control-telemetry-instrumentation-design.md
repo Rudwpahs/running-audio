@@ -37,16 +37,17 @@ PR1 owns its own diagnostic schema. SHOKZ material is a reference only.
 ```text
 firmware/common/
   pr1_instrumentation.hpp      existing fixed-size measurement primitives
-  pr1_telemetry.hpp            new PR1-owned field/event vocabulary + formatter helpers
+  pr1_telemetry.hpp            new PR1-owned state/capability/field vocabulary
 
 firmware/t3s3_sx1280_runtime/
-  src/main.cpp                 safe boot + periodic deterministic telemetry snapshot
+  src/main.cpp                 safe boot + deterministic telemetry snapshot
 
-host/tools/
+tools/
   pr1_telemetry_parse.py       line parser -> JSON/CSV-friendly records
 
-SHOKZ reference material
-  never linked into PR1 firmware
+tests/
+  test_telemetry.cpp           C++ schema/snapshot contract
+  test_telemetry_parser.py     host parser contract
 ```
 
 The same semantic fields can later be emitted over Serial, stored in a trace artifact, or carried in a separate low-rate control/telemetry RF packet. Transport is deliberately separated from meaning.
@@ -55,39 +56,47 @@ The same semantic fields can later be emitted over Serial, stored in a trace art
 
 ### Device state
 
-`DeviceState` is a compact PR1-owned state machine:
+`DeviceState` is a compact PR1-owned state machine with explicit numeric values:
 
-- `Booting`
-- `SafeIdle`
-- `Ready`
-- `Streaming`
-- `Degraded`
-- `Fault`
+```cpp
+enum class DeviceState : std::uint8_t {
+  Booting = 0,
+  SafeIdle = 1,
+  Ready = 2,
+  Streaming = 3,
+  Degraded = 4,
+  Fault = 5,
+};
+```
 
-Round 3 safe runtime is expected to report `SafeIdle`. RF-enabled states are defined now only so later runtime code does not need a breaking schema change.
+Round 3 safe runtime reports `SafeIdle`. RF-enabled states are defined now only so later runtime code does not need a breaking schema change.
 
 ### Capability bits
 
-Capabilities describe compiled/active features without implying they are enabled:
+Capabilities describe features exposed by the current runtime profile. They do not imply that similarly named common host algorithms are active on hardware.
 
-- `AudioOut`
-- `BatteryTelemetry`
-- `RfStats`
-- `TimingTrace`
-- `Arq`
-- `Afh`
-- `Fec`
-- `AdaptivePhy`
+```cpp
+enum class Capability : std::uint32_t {
+  AudioOut = 1u << 0,
+  BatteryTelemetry = 1u << 1,
+  RfStats = 1u << 2,
+  TimingTrace = 1u << 3,
+  Arq = 1u << 4,
+  Afh = 1u << 5,
+  Fec = 1u << 6,
+  AdaptivePhy = 1u << 7,
+};
+```
 
-The Round 3 safe runtime advertises `TimingTrace` only. It must not advertise RF-dependent features as active runtime capabilities merely because common host code for those features exists.
+The Round 3 safe runtime advertises `TimingTrace` only.
 
 ### Snapshot fields
 
-The host-visible snapshot uses stable PR1 field IDs/names. Initial fields:
+The host-visible snapshot uses stable PR1 field IDs/names:
 
 | ID | Name | Meaning |
 |---:|---|---|
-| `0x01` | `device_state` | PR1 runtime state |
+| `0x01` | `device_state` | numeric `DeviceState` |
 | `0x02` | `rssi_dbm` | last valid packet RSSI; unavailable in safe mode |
 | `0x03` | `crc_good` | good packets |
 | `0x04` | `crc_bad` | CRC failures |
@@ -106,8 +115,79 @@ The host-visible snapshot uses stable PR1 field IDs/names. Initial fields:
 | `0x11` | `arq_repair_late` | late repairs |
 | `0x12` | `afh_map_version` | future active map version |
 | `0x13` | `phy_mode` | future active PHY mode |
+| `0x14` | `capability_mask` | active `Capability` bit mask |
 
 Unavailable measurements are omitted instead of encoded with fabricated zero values when zero could mean a real measurement.
+
+### Exact common interfaces
+
+`firmware/common/pr1_telemetry.hpp` defines the following transport-neutral types:
+
+```cpp
+inline constexpr std::uint8_t kTelemetrySchemaVersion = 1;
+
+enum class FieldId : std::uint8_t {
+  DeviceState = 0x01,
+  RssiDbm = 0x02,
+  CrcGood = 0x03,
+  CrcBad = 0x04,
+  Missing = 0x05,
+  QueueDepth = 0x06,
+  MaxQueueDepth = 0x07,
+  SchedulerMisses = 0x08,
+  IrqToSpiUs = 0x09,
+  RxProcessingUs = 0x0A,
+  RxRearmUs = 0x0B,
+  TraceOverwrites = 0x0C,
+  JitterDepth = 0x0D,
+  Underruns = 0x0E,
+  ArqRetransmitSent = 0x0F,
+  ArqRepairUseful = 0x10,
+  ArqRepairLate = 0x11,
+  AfhMapVersion = 0x12,
+  PhyMode = 0x13,
+  CapabilityMask = 0x14,
+};
+
+struct OptionalMetric {
+  bool available = false;
+  std::int64_t value = 0;
+};
+
+struct Snapshot {
+  DeviceState state = DeviceState::Booting;
+  std::uint32_t capability_mask = 0;
+  instrumentation::Counters counters{};
+  std::uint32_t trace_overwrites = 0;
+  OptionalMetric rssi_dbm{};
+  OptionalMetric queue_depth{};
+  OptionalMetric irq_to_spi_us{};
+  OptionalMetric rx_processing_us{};
+  OptionalMetric rx_rearm_us{};
+  OptionalMetric jitter_depth{};
+  OptionalMetric underruns{};
+  OptionalMetric arq_repair_useful{};
+  OptionalMetric arq_repair_late{};
+  OptionalMetric afh_map_version{};
+  OptionalMetric phy_mode{};
+};
+
+struct FieldValue {
+  FieldId field;
+  std::int64_t value;
+};
+
+const char* deviceStateName(DeviceState state);
+const char* fieldName(FieldId field);
+const char* eventName(instrumentation::Event event);
+
+template <typename Emit>
+void forEachSnapshotField(const Snapshot& snapshot, Emit&& emit);
+```
+
+`forEachSnapshotField()` emits `FieldValue` entries in ascending `FieldId` order. Always-meaningful fields are emitted even when zero: device state, CRC good/bad, missing, max queue depth, scheduler misses, trace overwrites, ARQ retransmit count, and capability mask. Optional fields are emitted only when `available=true`.
+
+The header uses only fixed-size/POD state and callbacks. It must not introduce `std::vector`, `std::string`, `std::map`, heap allocation, exceptions, or RTTI requirements into the firmware common path.
 
 ## Event trace model
 
@@ -145,7 +225,8 @@ Rules:
 - Prefix `PR1E` = event trace.
 - `v=1` = telemetry schema version, independent of PR1-DART packet version.
 - Keys are ASCII and stable.
-- Unknown keys/fields are ignored by the host parser for forward compatibility.
+- Unknown extra keys are ignored by the host parser for forward compatibility.
+- Unknown `field` or `event` names are preserved as strings by the host parser so newer firmware logs can still be ingested by an older parser.
 - Malformed records are rejected, not partially accepted.
 - Output ordering is deterministic for snapshot emission.
 
@@ -155,32 +236,47 @@ This text format is intentionally simple for serial debugging. A future binary T
 
 The `safe` profile remains RF-disabled and still contains no radio initialization.
 
-At boot it prints the existing metadata, then a deterministic baseline telemetry snapshot including:
+At boot it prints the existing metadata, then one deterministic baseline telemetry snapshot including:
 
-- `device_state=SafeIdle`
-- zero counters that are meaningful in safe mode (`crc_good`, `crc_bad`, `missing`, `scheduler_misses`, `trace_overwrites`)
-- capability mask indicating timing/diagnostic support only
+- `device_state=1` (`SafeIdle`)
+- `crc_good=0`
+- `crc_bad=0`
+- `missing=0`
+- `max_queue_depth=0`
+- `scheduler_misses=0`
+- `trace_overwrites=0`
+- `arq_retransmit_sent=0`
+- `capability_mask=8` (`TimingTrace`)
 
-It does **not** print RSSI, RX timing, queue depth, or RF-specific live measurements when those measurements have never been observed.
+It does **not** print RSSI, current queue depth, RX timing, jitter, underrun, ARQ usefulness/late, AFH, or PHY values when those measurements have never been observed.
 
-A later RF-enabled runtime will feed actual values into the same schema.
+The runtime owns only line formatting. Semantic field selection remains in `pr1_telemetry.hpp`.
 
 ## Host parser
 
 `tools/pr1_telemetry_parse.py` accepts stdin or a file and produces newline-delimited JSON by default.
 
-Parser responsibilities:
+Public parser function used by tests:
 
-- recognize only `PR1T` and `PR1E` records;
-- require integer `v` and `t_us`;
-- require `field` + `value` for telemetry;
-- require `seq` + `event` + `value` for events;
-- ignore unknown extra key/value tokens;
-- reject malformed numeric values and missing required keys;
-- preserve timestamps and sequence numbers exactly;
-- optionally output CSV for telemetry-only analysis.
+```python
+def parse_line(line: str) -> dict | None:
+    ...
+```
 
-It is a host tool, not firmware code.
+Behavior:
+
+- unrelated serial lines return `None`;
+- valid telemetry returns `{"kind":"telemetry","version":1,"t_us":...,"field":"...","value":...}`;
+- valid events return `{"kind":"event","version":1,"t_us":...,"seq":...,"event":"...","value":...}`;
+- unknown extra key/value tokens are ignored;
+- unknown field/event names are preserved;
+- malformed PR1-prefixed lines raise `ValueError`;
+- integer parsing uses base 10 only;
+- timestamps and sequence numbers are preserved exactly;
+- CLI `--format jsonl` is default;
+- CLI `--format csv` emits telemetry and event rows with a stable superset of columns: `kind,version,t_us,seq,field,event,value`.
+
+The parser is a host tool, not firmware code.
 
 ## RX timing classification path
 
@@ -231,10 +327,12 @@ Those may be used later only in a separate PR2 experimental backend with MIT att
 ### Host C++ tests
 
 - field IDs and schema version are stable;
-- state names are deterministic;
+- state/field/event names are deterministic;
 - event additions preserve fixed-size trace behavior;
-- no heap-owning containers are introduced in common instrumentation;
-- snapshot emitter omits unavailable values;
+- snapshot field order is stable;
+- optional unavailable metrics are omitted;
+- always-meaningful zero counters are emitted;
+- no heap-owning containers are introduced in common telemetry/instrumentation;
 - trace overwrite accounting remains correct.
 
 ### Python parser tests
@@ -242,20 +340,23 @@ Those may be used later only in a separate PR2 experimental backend with MIT att
 - valid telemetry record parses;
 - valid event record parses;
 - unknown extra keys are tolerated;
+- unknown field/event names are preserved;
 - missing required keys fail;
 - invalid integer fields fail;
-- mixed input ignores unrelated serial lines and preserves valid PR1 records.
+- mixed input ignores unrelated serial lines and preserves valid PR1 records;
+- CSV header/order is stable.
 
 ### Firmware CI
 
 - existing `safe` PlatformIO build remains green;
 - `PR1_RF_ENABLED=0` remains enforced;
 - no RadioLib/SX1280 initialization is introduced;
+- parser unit tests run in CI with Python standard library only;
 - existing host/sanitizer and packet-simulator jobs remain green.
 
 ## Acceptance criteria
 
-1. `firmware/common/pr1_telemetry.hpp` exists with schema version, state, capability, field IDs, and zero-allocation formatting helpers.
+1. `firmware/common/pr1_telemetry.hpp` exists with schema version, state, capability, field IDs, names, and zero-allocation snapshot iteration.
 2. Existing instrumentation has the RX timing events required for later bottleneck classification.
 3. Safe runtime emits deterministic `PR1T` records while remaining RF-disabled.
 4. Host parser and parser tests are green.
@@ -276,4 +377,4 @@ Semantic field IDs and states are transport-neutral. The same schema can later f
 ASCII telemetry is larger than binary TLV and unsuitable for a high-rate over-the-air path, but it is transparent and low-risk for bring-up. Binary RF telemetry is deferred until fixed-channel timing is measured.
 
 ### Failure
-Unknown fields are tolerated by the parser; malformed records are rejected; unavailable measurements are omitted; SHOKZ protocol changes cannot break PR1; instrumentation cannot mask RF or receiver timing failures because recovery features remain disabled during classification.
+Unknown fields remain ingestible, malformed records are rejected, unavailable measurements are omitted, SHOKZ protocol changes cannot break PR1, and instrumentation cannot mask RF or receiver timing failures because recovery features remain disabled during classification.
