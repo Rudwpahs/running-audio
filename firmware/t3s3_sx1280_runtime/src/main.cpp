@@ -4,7 +4,7 @@
 #include "pr1_safe_telemetry.hpp"
 
 #if PR1_RF_ENABLED
-#error "Round 2 is safe-only. RF-enabled runtime is intentionally not implemented yet."
+#error "The current runtime profile is safe-only. RF-enabled hardware runtime is intentionally gated."
 #endif
 
 namespace {
