@@ -16,6 +16,16 @@ int main() {
 
   assert(std::string_view{deviceStateName(DeviceState::SafeIdle)} == "safe_idle");
   assert(std::string_view{fieldName(FieldId::CrcBad)} == "crc_bad");
+  assert(std::string_view{eventName(pr1::instrumentation::Event::RxPacketOk)} ==
+         "rx_packet_ok");
+  assert(std::string_view{eventName(pr1::instrumentation::Event::RxCrcFail)} ==
+         "rx_crc_fail");
+  assert(std::string_view{eventName(pr1::instrumentation::Event::RxRearmStart)} ==
+         "rx_rearm_start");
+  assert(std::string_view{eventName(pr1::instrumentation::Event::RxRearmDone)} ==
+         "rx_rearm_done");
+  assert(std::string_view{eventName(pr1::instrumentation::Event::QueueDepth)} ==
+         "queue_depth");
 
   Snapshot snapshot{};
   snapshot.state = DeviceState::SafeIdle;
