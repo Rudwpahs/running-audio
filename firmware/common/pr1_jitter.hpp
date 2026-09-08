@@ -3,13 +3,15 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <limits>
 
 #include "pr1_packet.hpp"
+#include "pr1_sequence.hpp"
 
 namespace pr1::jitter {
 
-constexpr std::uint32_t kFrameUs = 10000U;
-constexpr std::uint32_t kDefaultTargetUs = 40000U;
+constexpr std::uint64_t kFrameUs = 10000ULL;
+constexpr std::uint64_t kDefaultTargetUs = 40000ULL;
 constexpr std::size_t kDefaultCapacity = 16;
 
 enum class RecoveryChoice : std::uint8_t { Original, XorFec, Arq, OpusFec, Plc };
@@ -29,11 +31,16 @@ inline RecoveryChoice chooseRecovery(const RecoveryAvailability& a) {
   return RecoveryChoice::Plc;
 }
 
+inline bool sameFrame(const sequence::LogicalFrameId& a,
+                      const sequence::LogicalFrameId& b) {
+  return a.session_generation == b.session_generation && a.index == b.index;
+}
+
 struct Frame {
   bool valid = false;
-  std::uint16_t sequence = 0;
-  std::uint32_t arrival_us = 0;
-  std::uint32_t deadline_us = 0;
+  sequence::LogicalFrameId id{};
+  std::uint64_t arrival_us = 0;
+  std::uint64_t deadline_us = 0;
   std::uint16_t payload_len = 0;
   std::array<std::uint8_t, kMaxAudioPayloadBytes> payload{};
 };
@@ -43,34 +50,68 @@ class Buffer {
  public:
   static_assert(Capacity >= 4, "jitter buffer capacity is too small");
 
-  void setAnchor(std::uint16_t anchor_seq, std::uint32_t anchor_playout_us,
-                 std::uint32_t target_us = kDefaultTargetUs) {
-    anchor_seq_ = anchor_seq;
+  void setAnchor(sequence::LogicalFrameId anchor_frame,
+                 std::uint64_t anchor_playout_us,
+                 std::uint64_t target_us = kDefaultTargetUs) {
+    anchor_frame_ = anchor_frame;
     anchor_playout_us_ = anchor_playout_us;
     target_us_ = target_us;
     anchored_ = true;
+    for (auto& frame : frames_) frame.valid = false;
+    size_ = 0;
   }
 
-  std::uint32_t deadlineFor(std::uint16_t sequence) const {
-    if (!anchored_) return 0;
-    const std::int16_t delta = static_cast<std::int16_t>(sequence - anchor_seq_);
-    if (delta < 0) return anchor_playout_us_;
-    return anchor_playout_us_ + static_cast<std::uint32_t>(delta) * kFrameUs;
-  }
-
-  bool insert(std::uint16_t sequence, const std::uint8_t* payload,
-              std::size_t payload_len, std::uint32_t arrival_us) {
-    if (!anchored_ || payload == nullptr || payload_len > kMaxAudioPayloadBytes) return false;
-    const std::uint32_t deadline = deadlineFor(sequence);
-    if (static_cast<std::int32_t>(arrival_us - deadline) >= 0) { ++stale_rejected_; return false; }
-    for (auto& f : frames_) {
-      if (f.valid && f.sequence == sequence) { ++duplicates_; return false; }
+  std::uint64_t deadlineFor(sequence::LogicalFrameId frame) const {
+    if (!anchored_ || frame.session_generation != anchor_frame_.session_generation ||
+        frame.index < anchor_frame_.index) {
+      return 0;
     }
+
+    const std::uint64_t delta = frame.index - anchor_frame_.index;
+    constexpr std::uint64_t kMax = std::numeric_limits<std::uint64_t>::max();
+    if (delta > (kMax - anchor_playout_us_) / kFrameUs) return kMax;
+    return anchor_playout_us_ + delta * kFrameUs;
+  }
+
+  bool insert(sequence::LogicalFrameId frame, const std::uint8_t* payload,
+              std::size_t payload_len, std::uint64_t arrival_us) {
+    if (!anchored_ || payload == nullptr || payload_len > kMaxAudioPayloadBytes ||
+        frame.session_generation != anchor_frame_.session_generation ||
+        frame.index < anchor_frame_.index) {
+      if (anchored_ && (frame.session_generation != anchor_frame_.session_generation ||
+                        frame.index < anchor_frame_.index)) {
+        ++stale_rejected_;
+      }
+      return false;
+    }
+
+    const std::uint64_t deadline = deadlineFor(frame);
+    if (deadline == 0U || arrival_us >= deadline) {
+      ++stale_rejected_;
+      return false;
+    }
+
+    for (auto& stored : frames_) {
+      if (stored.valid && sameFrame(stored.id, frame)) {
+        ++duplicates_;
+        return false;
+      }
+    }
+
     Frame* slot = nullptr;
-    for (auto& f : frames_) if (!f.valid) { slot = &f; break; }
-    if (slot == nullptr) { ++overflows_; return false; }
+    for (auto& stored : frames_) {
+      if (!stored.valid) {
+        slot = &stored;
+        break;
+      }
+    }
+    if (slot == nullptr) {
+      ++overflows_;
+      return false;
+    }
+
     slot->valid = true;
-    slot->sequence = sequence;
+    slot->id = frame;
     slot->arrival_us = arrival_us;
     slot->deadline_us = deadline;
     slot->payload_len = static_cast<std::uint16_t>(payload_len);
@@ -79,14 +120,20 @@ class Buffer {
     return true;
   }
 
-  bool take(std::uint16_t sequence, std::uint32_t now_us, Frame* out) {
+  bool take(sequence::LogicalFrameId frame, std::uint64_t now_us, Frame* out) {
     if (out == nullptr) return false;
-    for (auto& f : frames_) {
-      if (f.valid && f.sequence == sequence) {
-        if (static_cast<std::int32_t>(now_us - f.deadline_us) > 0) {
-          f.valid = false; --size_; ++stale_dropped_; return false;
+    for (auto& stored : frames_) {
+      if (stored.valid && sameFrame(stored.id, frame)) {
+        if (now_us > stored.deadline_us) {
+          stored.valid = false;
+          --size_;
+          ++stale_dropped_;
+          return false;
         }
-        *out = f; f.valid = false; --size_; return true;
+        *out = stored;
+        stored.valid = false;
+        --size_;
+        return true;
       }
     }
     return false;
@@ -97,14 +144,14 @@ class Buffer {
   std::uint32_t staleDropped() const { return stale_dropped_; }
   std::uint32_t duplicates() const { return duplicates_; }
   std::uint32_t overflows() const { return overflows_; }
-  std::uint32_t targetUs() const { return target_us_; }
+  std::uint64_t targetUs() const { return target_us_; }
 
  private:
   std::array<Frame, Capacity> frames_{};
   bool anchored_ = false;
-  std::uint16_t anchor_seq_ = 0;
-  std::uint32_t anchor_playout_us_ = 0;
-  std::uint32_t target_us_ = kDefaultTargetUs;
+  sequence::LogicalFrameId anchor_frame_{};
+  std::uint64_t anchor_playout_us_ = 0;
+  std::uint64_t target_us_ = kDefaultTargetUs;
   std::size_t size_ = 0;
   std::uint32_t stale_rejected_ = 0;
   std::uint32_t stale_dropped_ = 0;
