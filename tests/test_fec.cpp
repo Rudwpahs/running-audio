@@ -72,6 +72,35 @@ int main() {
     assert(stats.rejected_ambiguous == 3);
   }
 
+  // A low-16 group ID is only a wire consistency check. Logical group/session
+  // identity must prevent stale parity from an earlier wrap being reused.
+  {
+    std::array<P, 4> p{{makePayload(15), makePayload(16), makePayload(17), makePayload(18)}};
+    std::array<const std::uint8_t*, 4> src{{p[0].data(), p[1].data(), p[2].data(), p[3].data()}};
+    pr1::fec::ParityFrame<4> parity{};
+    assert(pr1::fec::encode<4>(7, src, &parity));
+    src[2] = nullptr;
+    std::uint8_t missing = 255;
+    P recovered{};
+    pr1::fec::Stats stats{};
+
+    const pr1::fec::LogicalGroupId old_group{3, 7};
+    const pr1::fec::LogicalGroupId wrapped_group{3, 7ULL + 65536ULL};
+    const pr1::fec::LogicalGroupId wrong_session{4, 7};
+
+    assert(pr1::fec::recoverOneForLogicalGroup<4>(
+               old_group, old_group, parity, src, &missing, &recovered, &stats) ==
+           pr1::fec::RecoveryStatus::Recovered);
+    assert(recovered == p[2]);
+
+    assert(pr1::fec::recoverOneForLogicalGroup<4>(
+               wrapped_group, old_group, parity, src, &missing, &recovered, &stats) ==
+           pr1::fec::RecoveryStatus::InvalidMetadata);
+    assert(pr1::fec::recoverOneForLogicalGroup<4>(
+               wrong_session, old_group, parity, src, &missing, &recovered, &stats) ==
+           pr1::fec::RecoveryStatus::InvalidMetadata);
+  }
+
   // Wire payload is 4 bytes metadata + 100 bytes parity and round-trips.
   {
     std::array<P, 4> p{{makePayload(11), makePayload(12), makePayload(13), makePayload(14)}};
