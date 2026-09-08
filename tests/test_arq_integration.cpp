@@ -5,8 +5,11 @@
 #include "../firmware/common/pr1_afh.hpp"
 #include "../firmware/common/pr1_arq.hpp"
 #include "../firmware/common/pr1_jitter.hpp"
+#include "../firmware/common/pr1_sequence.hpp"
 
 int main() {
+  using pr1::sequence::LogicalFrameId;
+
   pr1::afh::ScheduleConfig cfg{};
   cfg.map_version = 42;
   cfg.map.bits = pr1::afh::kChannelMask & ~(1ULL << 5U) & ~(1ULL << 6U);
@@ -20,9 +23,10 @@ int main() {
   pr1::arq::RepairRequest request{};
   request.enabled = true;
   request.sequence = 200;
+  request.frame_id = LogicalFrameId{1, 200};
   request.current_map_version = scheduler.current().map_version;
-  request.now_us = 100000U;
-  request.playout_deadline_us = 108000U;
+  request.now_us = 100000ULL;
+  request.playout_deadline_us = 108000ULL;
   request.feedback_age_us = 800U;
   request.max_feedback_age_us = 4000U;
   request.queue_delay_us = 400U;
@@ -36,16 +40,22 @@ int main() {
 
   pr1::arq::RetransmissionTracker<> tracker;
   pr1::arq::Stats stats{};
-  const auto decision = pr1::arq::evaluateAndReserve(feedback, request, &tracker, &stats);
+  const auto decision =
+      pr1::arq::evaluateAndReserve(feedback, request, &tracker, &stats);
   assert(decision.retransmit);
+  assert(stats.sent == 0U);
   assert(scheduler.current().map.isActive(decision.repair_channel));
   assert(decision.repair_channel != 5U && decision.repair_channel != 6U);
+  assert(tracker.commit(request.frame_id));
+  stats.recordSent();
 
   pr1::jitter::Buffer<4> buffer;
-  buffer.setAnchor(200, 108000U);
+  buffer.setAnchor(LogicalFrameId{1, 200}, 108000ULL);
   const std::array<std::uint8_t, 4> payload{{1, 2, 3, 4}};
-  assert(buffer.insert(200, payload.data(), payload.size(), 104000U));
-  assert(!buffer.insert(200, payload.data(), payload.size(), 105000U));
+  assert(buffer.insert(LogicalFrameId{1, 200}, payload.data(), payload.size(),
+                       104000ULL));
+  assert(!buffer.insert(LogicalFrameId{1, 200}, payload.data(), payload.size(),
+                        105000ULL));
   assert(buffer.duplicates() == 1U);
   stats.recordDuplicate();
 
@@ -55,12 +65,17 @@ int main() {
   late_feedback.map_version = scheduler.current().map_version;
   pr1::arq::RepairRequest late_request = request;
   late_request.sequence = 201;
-  late_request.now_us = 110000U;
-  late_request.playout_deadline_us = 118000U;
-  const auto late_decision = pr1::arq::evaluateAndReserve(late_feedback, late_request, &tracker, &stats);
+  late_request.frame_id = LogicalFrameId{1, 201};
+  late_request.now_us = 110000ULL;
+  late_request.playout_deadline_us = 118000ULL;
+  const auto late_decision =
+      pr1::arq::evaluateAndReserve(late_feedback, late_request, &tracker, &stats);
   assert(late_decision.retransmit);
+  assert(tracker.commit(late_request.frame_id));
+  stats.recordSent();
 
-  assert(!buffer.insert(201, payload.data(), payload.size(), 118000U));
+  assert(!buffer.insert(LogicalFrameId{1, 201}, payload.data(), payload.size(),
+                        118000ULL));
   assert(buffer.staleRejected() == 1U);
   stats.recordArrival(false);
 
