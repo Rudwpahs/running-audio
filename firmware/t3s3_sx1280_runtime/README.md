@@ -1,6 +1,6 @@
 # PR1 T3-S3 / SX1280 runtime foundation
 
-PR #38 established the smallest hardware-facing runtime for the current PR1 architecture. The follow-up instrumentation round keeps the same RF-disabled safety boundary and adds deterministic host-readable telemetry.
+PR #38 established the smallest hardware-facing runtime for the current PR1 architecture. The follow-up instrumentation and safety-hardening rounds keep the same RF-disabled safety boundary and add deterministic host-readable telemetry.
 
 ## Safety contract
 
@@ -57,19 +57,19 @@ PR1_RUNTIME_SAFE_IDLE
 
 After metadata, the runtime emits one schema-versioned `PR1T` snapshot. All fields in the same snapshot share the same `t_us` value.
 
-The RF-disabled safe snapshot only emits values that are meaningful without a live radio path:
+The RF-disabled safe snapshot emits only values that are meaningful without a live radio/scheduler path:
 
 ```text
 PR1T v=1 t_us=<boot_timestamp> field=device_state value=1
-PR1T v=1 t_us=<boot_timestamp> field=crc_good value=0
-PR1T v=1 t_us=<boot_timestamp> field=crc_bad value=0
-PR1T v=1 t_us=<boot_timestamp> field=missing value=0
-PR1T v=1 t_us=<boot_timestamp> field=scheduler_misses value=0
 PR1T v=1 t_us=<boot_timestamp> field=trace_overwrites value=0
 PR1T v=1 t_us=<boot_timestamp> field=capability_mask value=8
 ```
 
-`device_state=1` means `safe_idle`; `capability_mask=8` means the runtime exposes the timing/diagnostic schema. Measurements that require an active queue, RF path, recovery path, or packet observation—such as RSSI, current/max queue depth, IRQ→SPI latency, RX processing time, RX re-arm time, and ARQ retransmit counts—are **omitted** until they have actually been observed. They are not fabricated as zero.
+`device_state=1` means `safe_idle`; `capability_mask=8` means the timing/diagnostic schema is exposed.
+
+**Unobserved is not zero.** Because safe mode never starts the SX1280 receive path, it does not emit `crc_good`, `crc_bad`, `missing`, `scheduler_misses`, RSSI, queue depth, RX timing, jitter, underrun, ARQ, AFH, or PHY values. A later live runtime may legitimately emit an observed value of zero, but only after the owning subsystem explicitly marks that metric available.
+
+Internal zero-initialized counters are bookkeeping storage; they are not evidence that an RF measurement occurred.
 
 The schema is defined in `firmware/common/pr1_telemetry.hpp`. The host parser accepts serial logs and emits JSONL or CSV:
 
@@ -107,7 +107,7 @@ Not implemented in the hardware runtime yet:
 - AFH
 - FEC
 - live ARQ
-- adaptive PHY
+- adaptive PHY/controller
 - audio
 
 These remain deferred so receiver-processing failures can be isolated instead of hidden by multiple adaptive/recovery layers.
