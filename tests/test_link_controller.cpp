@@ -127,8 +127,29 @@ int main() {
     rearm.rx_rearm_p99_us = 700;
     assertLimited(rearm);
     Metrics misses{};
-    misses.scheduler_misses = 2;
+    misses.scheduler_misses_recent = 2;
     assertLimited(misses);
+  }
+
+  // Scheduler-miss classification consumes a recent-window delta, not the
+  // lifetime instrumentation counter. A historical miss must not poison all
+  // later controller updates after the recent window returns to zero.
+  {
+    Config cfg{};
+    cfg.processing_scheduler_miss_trigger = 1;
+    LinkController recent(cfg, allAdaptiveFeatures());
+    Metrics spike{};
+    spike.processing_metrics_valid = true;
+    spike.scheduler_misses_recent = 1;
+    recent.update(spike, 0);
+    assert(recent.state() == State::ProcessingLimited);
+
+    LinkController clean_window(cfg, allAdaptiveFeatures());
+    Metrics clean{};
+    clean.processing_metrics_valid = true;
+    clean.scheduler_misses_recent = 0;
+    clean_window.update(clean, 0);
+    assert(clean_window.state() == State::Good);
   }
 
   // Recovery hysteresis must honor the configured GOOD threshold, not merely
