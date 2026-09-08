@@ -64,7 +64,11 @@ struct Metrics {
   std::uint32_t irq_to_spi_p99_us = 0;
   std::uint32_t rx_processing_p99_us = 0;
   std::uint32_t rx_rearm_p99_us = 0;
-  std::uint32_t scheduler_misses = 0;
+
+  // Count only misses observed in the controller's recent measurement window.
+  // Do not feed the lifetime instrumentation::Counters::scheduler_misses value
+  // directly here; otherwise one historical miss can make overload permanent.
+  std::uint32_t scheduler_misses_recent = 0;
 };
 
 struct Actions {
@@ -88,7 +92,7 @@ struct Transition {
   bool processing_metrics_valid = false;
   std::uint16_t radio_queue_depth = 0;
   std::uint32_t irq_to_spi_p99_us = 0;
-  std::uint32_t scheduler_misses = 0;
+  std::uint32_t scheduler_misses_recent = 0;
 };
 
 class LinkController {
@@ -160,7 +164,7 @@ class LinkController {
                             config_.processing_rx_us_trigger) ||
            thresholdReached(m.rx_rearm_p99_us,
                             config_.processing_rearm_us_trigger) ||
-           thresholdReached(m.scheduler_misses,
+           thresholdReached(m.scheduler_misses_recent,
                             config_.processing_scheduler_miss_trigger);
   }
 
@@ -279,7 +283,7 @@ class LinkController {
         m.processing_metrics_valid,
         m.radio_queue_depth,
         m.irq_to_spi_p99_us,
-        m.scheduler_misses,
+        m.scheduler_misses_recent,
     };
     transition_write_ = (transition_write_ + 1U) % transitions_.size();
     if (transition_count_ < transitions_.size()) ++transition_count_;
