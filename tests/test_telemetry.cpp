@@ -5,6 +5,35 @@
 #include <vector>
 
 #include "../firmware/common/pr1_telemetry.hpp"
+#include "../firmware/t3s3_sx1280_runtime/include/pr1_safe_telemetry.hpp"
+
+namespace {
+
+bool hasField(const std::vector<pr1::telemetry::FieldValue>& fields,
+              pr1::telemetry::FieldId id) {
+  for (const auto& field : fields) {
+    if (field.field == id) return true;
+  }
+  return false;
+}
+
+bool hasFieldValue(const std::vector<pr1::telemetry::FieldValue>& fields,
+                   pr1::telemetry::FieldId id, std::int64_t expected) {
+  for (const auto& field : fields) {
+    if (field.field == id && field.value == expected) return true;
+  }
+  return false;
+}
+
+std::vector<pr1::telemetry::FieldValue> collect(
+    const pr1::telemetry::Snapshot& snapshot) {
+  std::vector<pr1::telemetry::FieldValue> fields;
+  pr1::telemetry::forEachSnapshotField(
+      snapshot, [&](pr1::telemetry::FieldValue value) { fields.push_back(value); });
+  return fields;
+}
+
+}  // namespace
 
 int main() {
   using namespace pr1::telemetry;
@@ -27,63 +56,63 @@ int main() {
   assert(std::string_view{eventName(pr1::instrumentation::Event::QueueDepth)} ==
          "queue_depth");
 
-  Snapshot snapshot{};
-  snapshot.state = DeviceState::SafeIdle;
-  snapshot.capability_mask = capabilityMask(Capability::TimingTrace);
-  snapshot.counters.crc_bad = 4;
-  snapshot.counters.scheduler_misses = 2;
-  snapshot.counters.max_queue_depth = 7;
-  snapshot.counters.retransmit_sent = 2;
-  snapshot.trace_overwrites = 3;
-  snapshot.rssi_dbm = {false, -41};
-  snapshot.irq_to_spi_us = {true, 177};
+  // Safe mode has no RF path. Zero-initialized counters must not masquerade as
+  // observed zero-loss measurements.
+  const Snapshot safe = pr1::runtime::makeSafeTelemetrySnapshot();
+  const auto safe_fields = collect(safe);
+  assert(hasFieldValue(safe_fields, FieldId::DeviceState, 1));
+  assert(hasFieldValue(safe_fields, FieldId::CapabilityMask,
+                       capabilityMask(Capability::TimingTrace)));
+  assert(!hasField(safe_fields, FieldId::CrcGood));
+  assert(!hasField(safe_fields, FieldId::CrcBad));
+  assert(!hasField(safe_fields, FieldId::Missing));
+  assert(!hasField(safe_fields, FieldId::SchedulerMisses));
 
-  std::vector<FieldValue> fields;
-  forEachSnapshotField(snapshot, [&](FieldValue value) { fields.push_back(value); });
+  // Internal counters may hold values, but they are not host-visible until the
+  // owning runtime explicitly marks the corresponding measurement observed.
+  Snapshot unobserved{};
+  unobserved.state = DeviceState::SafeIdle;
+  unobserved.capability_mask = capabilityMask(Capability::TimingTrace);
+  unobserved.counters.crc_good = 20;
+  unobserved.counters.crc_bad = 4;
+  unobserved.counters.missing = 3;
+  unobserved.counters.scheduler_misses = 2;
+  unobserved.counters.max_queue_depth = 7;
+  unobserved.counters.retransmit_sent = 2;
+  unobserved.trace_overwrites = 3;
+  unobserved.rssi_dbm = {false, -41};
+  unobserved.irq_to_spi_us = {true, 177};
 
-  assert(!fields.empty());
-  assert(fields.front().field == FieldId::DeviceState);
-  assert(fields.front().value == 1);
-  assert(fields.back().field == FieldId::CapabilityMask);
+  const auto unobserved_fields = collect(unobserved);
+  assert(!hasField(unobserved_fields, FieldId::RssiDbm));
+  assert(hasFieldValue(unobserved_fields, FieldId::IrqToSpiUs, 177));
+  assert(!hasField(unobserved_fields, FieldId::CrcGood));
+  assert(!hasField(unobserved_fields, FieldId::CrcBad));
+  assert(!hasField(unobserved_fields, FieldId::Missing));
+  assert(!hasField(unobserved_fields, FieldId::SchedulerMisses));
+  assert(!hasField(unobserved_fields, FieldId::MaxQueueDepth));
+  assert(!hasField(unobserved_fields, FieldId::ArqRetransmitSent));
 
-  bool saw_rssi = false;
-  bool saw_irq = false;
-  bool saw_crc_bad = false;
-  bool saw_max_queue = false;
-  bool saw_arq_retransmit = false;
-  for (const auto& field : fields) {
-    if (field.field == FieldId::RssiDbm) saw_rssi = true;
-    if (field.field == FieldId::IrqToSpiUs && field.value == 177) saw_irq = true;
-    if (field.field == FieldId::CrcBad && field.value == 4) saw_crc_bad = true;
-    if (field.field == FieldId::MaxQueueDepth) saw_max_queue = true;
-    if (field.field == FieldId::ArqRetransmitSent) saw_arq_retransmit = true;
-  }
-  assert(!saw_rssi);
-  assert(saw_irq);
-  assert(saw_crc_bad);
-  assert(!saw_max_queue);
-  assert(!saw_arq_retransmit);
-
+  // Observed zero is a real value and must remain representable.
   Snapshot observed{};
   observed.state = DeviceState::Ready;
   observed.capability_mask = capabilityMask(Capability::TimingTrace) |
                              capabilityMask(Capability::RfStats) |
                              capabilityMask(Capability::Arq);
+  observed.crc_good = {true, 0};
+  observed.crc_bad = {true, 4};
+  observed.missing = {true, 0};
+  observed.scheduler_misses = {true, 0};
   observed.max_queue_depth = {true, 9};
   observed.arq_retransmit_sent = {true, 3};
 
-  bool observed_saw_max_queue = false;
-  bool observed_saw_arq_retransmit = false;
-  forEachSnapshotField(observed, [&](FieldValue value) {
-    if (value.field == FieldId::MaxQueueDepth && value.value == 9) {
-      observed_saw_max_queue = true;
-    }
-    if (value.field == FieldId::ArqRetransmitSent && value.value == 3) {
-      observed_saw_arq_retransmit = true;
-    }
-  });
-  assert(observed_saw_max_queue);
-  assert(observed_saw_arq_retransmit);
+  const auto observed_fields = collect(observed);
+  assert(hasFieldValue(observed_fields, FieldId::CrcGood, 0));
+  assert(hasFieldValue(observed_fields, FieldId::CrcBad, 4));
+  assert(hasFieldValue(observed_fields, FieldId::Missing, 0));
+  assert(hasFieldValue(observed_fields, FieldId::SchedulerMisses, 0));
+  assert(hasFieldValue(observed_fields, FieldId::MaxQueueDepth, 9));
+  assert(hasFieldValue(observed_fields, FieldId::ArqRetransmitSent, 3));
 
   std::cout << "test_telemetry: PASS\n";
   return 0;
