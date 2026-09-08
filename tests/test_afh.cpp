@@ -29,6 +29,15 @@ int main() {
   }
   for (auto c : counts) assert(c == 1000);
 
+  // Scheduling is deterministic well past the 16-bit audio sequence wrap when
+  // both peers share the exact same map/session state.
+  pr1::afh::Scheduler stable_a(cfg), stable_b(cfg);
+  for (const pr1::sequence::LogicalFrameIndex frame :
+       {65535ULL, 65536ULL, 262144ULL, 720000ULL}) {
+    assert(stable_a.channelForSequence(frame) ==
+           stable_b.channelForSequence(frame));
+  }
+
   pr1::afh::ChannelMap m{};
   m.bits &= ~(1ULL << 5);
   m.bits &= ~(1ULL << 6);
@@ -38,12 +47,6 @@ int main() {
   a.applyPendingIfDue(100);
   assert(a.current().map_version == 2);
   assert(!a.stageMap(2, m, 200));
-
-  // Scheduling is deterministic well past the 16-bit audio sequence wrap.
-  for (const pr1::sequence::LogicalFrameIndex frame :
-       {65535ULL, 65536ULL, 262144ULL, 720000ULL}) {
-    assert(a.channelForSequence(frame) == b.channelForSequence(frame));
-  }
 
   // Enforce the shared uint64 timeline itself, not merely the >1 h use case.
   // A uint32 activation field would truncate this future logical frame.
