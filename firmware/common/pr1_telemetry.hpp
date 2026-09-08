@@ -67,11 +67,20 @@ struct OptionalMetric {
 struct Snapshot {
   DeviceState state = DeviceState::Booting;
   std::uint32_t capability_mask = 0;
+
+  // Common counters remain convenient storage for runtime instrumentation, but
+  // their zero-initialized values do not imply that a subsystem was active.
+  // Host emission is controlled by the observation-aware metrics below.
   instrumentation::Counters counters{};
   std::uint32_t trace_overwrites = 0;
+
   OptionalMetric rssi_dbm{};
+  OptionalMetric crc_good{};
+  OptionalMetric crc_bad{};
+  OptionalMetric missing{};
   OptionalMetric queue_depth{};
   OptionalMetric max_queue_depth{};
+  OptionalMetric scheduler_misses{};
   OptionalMetric irq_to_spi_us{};
   OptionalMetric rx_processing_us{};
   OptionalMetric rx_rearm_us{};
@@ -207,17 +216,24 @@ void forEachSnapshotField(const Snapshot& snapshot, Emit&& emit) {
   if (snapshot.rssi_dbm.available) {
     emit(FieldValue{FieldId::RssiDbm, snapshot.rssi_dbm.value});
   }
-  emit(FieldValue{FieldId::CrcGood, static_cast<std::int64_t>(snapshot.counters.crc_good)});
-  emit(FieldValue{FieldId::CrcBad, static_cast<std::int64_t>(snapshot.counters.crc_bad)});
-  emit(FieldValue{FieldId::Missing, static_cast<std::int64_t>(snapshot.counters.missing)});
+  if (snapshot.crc_good.available) {
+    emit(FieldValue{FieldId::CrcGood, snapshot.crc_good.value});
+  }
+  if (snapshot.crc_bad.available) {
+    emit(FieldValue{FieldId::CrcBad, snapshot.crc_bad.value});
+  }
+  if (snapshot.missing.available) {
+    emit(FieldValue{FieldId::Missing, snapshot.missing.value});
+  }
   if (snapshot.queue_depth.available) {
     emit(FieldValue{FieldId::QueueDepth, snapshot.queue_depth.value});
   }
   if (snapshot.max_queue_depth.available) {
     emit(FieldValue{FieldId::MaxQueueDepth, snapshot.max_queue_depth.value});
   }
-  emit(FieldValue{FieldId::SchedulerMisses,
-                  static_cast<std::int64_t>(snapshot.counters.scheduler_misses)});
+  if (snapshot.scheduler_misses.available) {
+    emit(FieldValue{FieldId::SchedulerMisses, snapshot.scheduler_misses.value});
+  }
   if (snapshot.irq_to_spi_us.available) {
     emit(FieldValue{FieldId::IrqToSpiUs, snapshot.irq_to_spi_us.value});
   }
@@ -227,7 +243,8 @@ void forEachSnapshotField(const Snapshot& snapshot, Emit&& emit) {
   if (snapshot.rx_rearm_us.available) {
     emit(FieldValue{FieldId::RxRearmUs, snapshot.rx_rearm_us.value});
   }
-  emit(FieldValue{FieldId::TraceOverwrites, static_cast<std::int64_t>(snapshot.trace_overwrites)});
+  emit(FieldValue{FieldId::TraceOverwrites,
+                  static_cast<std::int64_t>(snapshot.trace_overwrites)});
   if (snapshot.jitter_depth.available) {
     emit(FieldValue{FieldId::JitterDepth, snapshot.jitter_depth.value});
   }
@@ -249,7 +266,8 @@ void forEachSnapshotField(const Snapshot& snapshot, Emit&& emit) {
   if (snapshot.phy_mode.available) {
     emit(FieldValue{FieldId::PhyMode, snapshot.phy_mode.value});
   }
-  emit(FieldValue{FieldId::CapabilityMask, static_cast<std::int64_t>(snapshot.capability_mask)});
+  emit(FieldValue{FieldId::CapabilityMask,
+                  static_cast<std::int64_t>(snapshot.capability_mask)});
 }
 
 }  // namespace pr1::telemetry
