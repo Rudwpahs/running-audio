@@ -5,6 +5,7 @@
 #include <cstdint>
 
 #include "pr1_afh.hpp"
+#include "pr1_sequence.hpp"
 
 namespace pr1::arq {
 
@@ -38,13 +39,15 @@ inline void encodeFeedback(const Feedback& f, std::array<std::uint8_t, kFeedback
 
 inline Feedback decodeFeedback(const std::array<std::uint8_t, kFeedbackBytes>& in) {
   Feedback f{};
-  f.rx_highest_seq = static_cast<std::uint16_t>((static_cast<std::uint16_t>(in[0]) << 8U) | in[1]);
+  f.rx_highest_seq = static_cast<std::uint16_t>(
+      (static_cast<std::uint16_t>(in[0]) << 8U) | in[1]);
   f.recent_loss_bitmap = (static_cast<std::uint32_t>(in[2]) << 24U) |
                          (static_cast<std::uint32_t>(in[3]) << 16U) |
                          (static_cast<std::uint32_t>(in[4]) << 8U) |
                          static_cast<std::uint32_t>(in[5]);
   f.rssi_dbm = static_cast<std::int8_t>(in[6]);
-  f.map_version = static_cast<std::uint16_t>((static_cast<std::uint16_t>(in[7]) << 8U) | in[8]);
+  f.map_version = static_cast<std::uint16_t>(
+      (static_cast<std::uint16_t>(in[7]) << 8U) | in[8]);
   f.buffer_frames = in[9];
   return f;
 }
@@ -52,24 +55,28 @@ inline Feedback decodeFeedback(const std::array<std::uint8_t, kFeedbackBytes>& i
 // Bit 0 reports rx_highest_seq-1, bit 31 reports rx_highest_seq-32.
 // rx_highest_seq itself is known received and therefore is never a NACK bit.
 inline bool feedbackRequestsSequence(const Feedback& feedback, std::uint16_t sequence) {
-  const std::uint16_t distance = static_cast<std::uint16_t>(feedback.rx_highest_seq - sequence);
+  const std::uint16_t distance =
+      static_cast<std::uint16_t>(feedback.rx_highest_seq - sequence);
   if (distance == 0U || distance > 32U) return false;
   return ((feedback.recent_loss_bitmap >> (distance - 1U)) & 1U) != 0U;
 }
 
-inline std::uint32_t remainingPlayoutSlackUs(std::uint32_t now_us, std::uint32_t deadline_us) {
-  const std::int32_t delta = static_cast<std::int32_t>(deadline_us - now_us);
-  return delta > 0 ? static_cast<std::uint32_t>(delta) : 0U;
+inline std::uint64_t remainingPlayoutSlackUs(std::uint64_t now_us,
+                                             std::uint64_t deadline_us) {
+  return deadline_us > now_us ? deadline_us - now_us : 0ULL;
 }
 
-inline bool selectRepairChannel(std::uint64_t active_channel_bits, std::uint16_t sequence,
+inline bool selectRepairChannel(std::uint64_t active_channel_bits,
+                                std::uint16_t sequence,
                                 std::uint8_t* out_channel) {
   if (out_channel == nullptr) return false;
   const std::uint64_t active = active_channel_bits & kRepairChannelMask;
   if (active == 0ULL) return false;
-  const std::uint8_t start = static_cast<std::uint8_t>(sequence % kRepairChannelCount);
+  const std::uint8_t start =
+      static_cast<std::uint8_t>(sequence % kRepairChannelCount);
   for (std::uint8_t offset = 0; offset < kRepairChannelCount; ++offset) {
-    const std::uint8_t channel = static_cast<std::uint8_t>((start + offset) % kRepairChannelCount);
+    const std::uint8_t channel = static_cast<std::uint8_t>(
+        (start + offset) % kRepairChannelCount);
     if (((active >> channel) & 1ULL) != 0ULL) {
       *out_channel = channel;
       return true;
@@ -81,9 +88,10 @@ inline bool selectRepairChannel(std::uint64_t active_channel_bits, std::uint16_t
 struct RepairRequest {
   bool enabled = true;
   std::uint16_t sequence = 0;
+  sequence::LogicalFrameId frame_id{};
   std::uint16_t current_map_version = 0;
-  std::uint32_t now_us = 0;
-  std::uint32_t playout_deadline_us = 0;
+  std::uint64_t now_us = 0;
+  std::uint64_t playout_deadline_us = 0;
   std::uint32_t feedback_age_us = 0;
   std::uint32_t max_feedback_age_us = kDefaultMaxFeedbackAgeUs;
   std::uint32_t queue_delay_us = 0;
@@ -114,25 +122,26 @@ struct Decision {
   bool nack_requested = false;
   RejectReason reason = RejectReason::None;
   std::uint8_t repair_channel = kNoRepairChannel;
-  std::uint32_t remaining_slack_us = 0;
-  std::uint32_t estimated_eta_us = 0;
+  std::uint64_t remaining_slack_us = 0;
+  std::uint64_t estimated_eta_us = 0;
 };
 
 // feedback_age_us is a freshness gate, not part of this future ETA: remaining
 // playout slack is measured at decision time, so adding past feedback time here
 // would double-count elapsed time.
-inline std::uint32_t futureRepairEtaUs(const RepairRequest& request) {
-  const std::uint64_t total = static_cast<std::uint64_t>(request.queue_delay_us) +
-                              request.hop_settle_us + request.airtime_us +
-                              request.decode_margin_us;
-  return total > 0xFFFFFFFFULL ? 0xFFFFFFFFU : static_cast<std::uint32_t>(total);
+inline std::uint64_t futureRepairEtaUs(const RepairRequest& request) {
+  return static_cast<std::uint64_t>(request.queue_delay_us) +
+         request.hop_settle_us + request.airtime_us +
+         request.decode_margin_us;
 }
 
-inline Decision evaluateRepair(const Feedback& feedback, const RepairRequest& request,
+inline Decision evaluateRepair(const Feedback& feedback,
+                               const RepairRequest& request,
                                bool already_retransmitted) {
   Decision decision{};
   decision.nack_requested = feedbackRequestsSequence(feedback, request.sequence);
-  decision.remaining_slack_us = remainingPlayoutSlackUs(request.now_us, request.playout_deadline_us);
+  decision.remaining_slack_us =
+      remainingPlayoutSlackUs(request.now_us, request.playout_deadline_us);
   decision.estimated_eta_us = futureRepairEtaUs(request);
 
   if (!decision.nack_requested) {
@@ -143,7 +152,8 @@ inline Decision evaluateRepair(const Feedback& feedback, const RepairRequest& re
     decision.reason = RejectReason::Disabled;
     return decision;
   }
-  if (request.max_feedback_age_us == 0U || request.feedback_age_us >= request.max_feedback_age_us) {
+  if (request.max_feedback_age_us == 0U ||
+      request.feedback_age_us >= request.max_feedback_age_us) {
     decision.reason = RejectReason::StaleFeedback;
     return decision;
   }
@@ -156,22 +166,24 @@ inline Decision evaluateRepair(const Feedback& feedback, const RepairRequest& re
     return decision;
   }
 
-  const std::uint64_t required_us = static_cast<std::uint64_t>(decision.estimated_eta_us) +
-                                    request.deadline_guard_us;
+  const std::uint64_t required_us =
+      decision.estimated_eta_us + request.deadline_guard_us;
   if (decision.remaining_slack_us == 0U ||
-      required_us >= static_cast<std::uint64_t>(decision.remaining_slack_us)) {
+      required_us >= decision.remaining_slack_us) {
     decision.reason = RejectReason::Deadline;
     return decision;
   }
 
   if (request.frame_airtime_budget_us == 0U ||
       request.frame_airtime_used_us > request.frame_airtime_budget_us ||
-      request.airtime_us > request.frame_airtime_budget_us - request.frame_airtime_used_us) {
+      request.airtime_us >
+          request.frame_airtime_budget_us - request.frame_airtime_used_us) {
     decision.reason = RejectReason::AirtimeBudget;
     return decision;
   }
 
-  if (!selectRepairChannel(request.active_channel_bits, request.sequence, &decision.repair_channel)) {
+  if (!selectRepairChannel(request.active_channel_bits, request.sequence,
+                           &decision.repair_channel)) {
     decision.reason = RejectReason::NoActiveChannel;
     return decision;
   }
@@ -181,29 +193,81 @@ inline Decision evaluateRepair(const Feedback& feedback, const RepairRequest& re
   return decision;
 }
 
+inline bool sameFrame(const sequence::LogicalFrameId& a,
+                      const sequence::LogicalFrameId& b) {
+  return a.session_generation == b.session_generation && a.index == b.index;
+}
+
+enum class TrackerState : std::uint8_t { Free, Reserved, Committed };
+
 template <std::size_t Capacity = 64>
 class RetransmissionTracker {
  public:
   static_assert(Capacity >= 32, "tracker must cover the entire NACK window");
 
-  bool contains(std::uint16_t sequence) const {
-    for (std::size_t i = 0; i < Capacity; ++i) {
-      if (valid_[i] && sequences_[i] == sequence) return true;
-    }
-    return false;
+  bool contains(sequence::LogicalFrameId frame) const {
+    return find(frame) < Capacity;
   }
 
-  bool mark(std::uint16_t sequence) {
-    if (contains(sequence)) return false;
-    sequences_[write_] = sequence;
-    valid_[write_] = true;
-    write_ = (write_ + 1U) % Capacity;
+  bool reserve(sequence::LogicalFrameId frame) {
+    if (contains(frame)) return false;
+
+    std::size_t slot = Capacity;
+    for (std::size_t offset = 0; offset < Capacity; ++offset) {
+      const std::size_t i = (write_ + offset) % Capacity;
+      if (states_[i] == TrackerState::Free) {
+        slot = i;
+        break;
+      }
+    }
+    if (slot == Capacity) {
+      for (std::size_t offset = 0; offset < Capacity; ++offset) {
+        const std::size_t i = (write_ + offset) % Capacity;
+        if (states_[i] == TrackerState::Committed) {
+          slot = i;
+          break;
+        }
+      }
+    }
+    if (slot == Capacity) return false;
+
+    frames_[slot] = frame;
+    states_[slot] = TrackerState::Reserved;
+    write_ = (slot + 1U) % Capacity;
     return true;
   }
 
+  bool release(sequence::LogicalFrameId frame) {
+    const std::size_t slot = find(frame);
+    if (slot == Capacity || states_[slot] != TrackerState::Reserved) return false;
+    states_[slot] = TrackerState::Free;
+    return true;
+  }
+
+  bool commit(sequence::LogicalFrameId frame) {
+    const std::size_t slot = find(frame);
+    if (slot == Capacity || states_[slot] != TrackerState::Reserved) return false;
+    states_[slot] = TrackerState::Committed;
+    return true;
+  }
+
+  void reset() {
+    for (auto& state : states_) state = TrackerState::Free;
+    write_ = 0;
+  }
+
  private:
-  std::array<std::uint16_t, Capacity> sequences_{};
-  std::array<bool, Capacity> valid_{};
+  std::size_t find(sequence::LogicalFrameId frame) const {
+    for (std::size_t i = 0; i < Capacity; ++i) {
+      if (states_[i] != TrackerState::Free && sameFrame(frames_[i], frame)) {
+        return i;
+      }
+    }
+    return Capacity;
+  }
+
+  std::array<sequence::LogicalFrameId, Capacity> frames_{};
+  std::array<TrackerState, Capacity> states_{};
   std::size_t write_ = 0;
 };
 
@@ -225,23 +289,26 @@ struct Stats {
 
   void recordDecision(const Decision& decision) {
     if (decision.nack_requested) ++requested;
-    if (decision.retransmit) {
-      ++sent;
-      return;
-    }
+    if (decision.retransmit) return;
     switch (decision.reason) {
       case RejectReason::Disabled: ++rejected_disabled; break;
       case RejectReason::NotNacked: ++rejected_not_nacked; break;
       case RejectReason::StaleFeedback: ++rejected_stale_feedback; break;
       case RejectReason::MapVersionMismatch: ++rejected_map_version; break;
-      case RejectReason::AlreadyRetransmitted: ++rejected_already_retransmitted; break;
+      case RejectReason::AlreadyRetransmitted:
+        ++rejected_already_retransmitted;
+        break;
       case RejectReason::Deadline: ++rejected_deadline; break;
       case RejectReason::AirtimeBudget: ++rejected_budget; break;
       case RejectReason::NoActiveChannel: ++rejected_no_active_channel; break;
-      case RejectReason::TrackerUnavailable: ++rejected_tracker_unavailable; break;
+      case RejectReason::TrackerUnavailable:
+        ++rejected_tracker_unavailable;
+        break;
       case RejectReason::None: break;
     }
   }
+
+  void recordSent() { ++sent; }
 
   void recordArrival(bool before_deadline) {
     if (before_deadline) ++useful;
@@ -251,13 +318,18 @@ struct Stats {
   void recordDuplicate() { ++duplicates; }
 
   std::uint32_t usefulRatioPpm() const {
-    return sent == 0U ? 0U : static_cast<std::uint32_t>((static_cast<std::uint64_t>(useful) * 1000000ULL) / sent);
+    return sent == 0U
+               ? 0U
+               : static_cast<std::uint32_t>(
+                     (static_cast<std::uint64_t>(useful) * 1000000ULL) / sent);
   }
 };
 
 template <std::size_t Capacity>
-Decision evaluateAndReserve(const Feedback& feedback, const RepairRequest& request,
-                            RetransmissionTracker<Capacity>* tracker, Stats* stats = nullptr) {
+Decision evaluateAndReserve(const Feedback& feedback,
+                            const RepairRequest& request,
+                            RetransmissionTracker<Capacity>* tracker,
+                            Stats* stats = nullptr) {
   if (tracker == nullptr) {
     Decision unavailable = evaluateRepair(feedback, request, false);
     if (unavailable.retransmit) {
@@ -269,11 +341,14 @@ Decision evaluateAndReserve(const Feedback& feedback, const RepairRequest& reque
     return unavailable;
   }
 
-  Decision decision = evaluateRepair(feedback, request, tracker->contains(request.sequence));
-  if (decision.retransmit && !tracker->mark(request.sequence)) {
+  Decision decision =
+      evaluateRepair(feedback, request, tracker->contains(request.frame_id));
+  if (decision.retransmit && !tracker->reserve(request.frame_id)) {
     decision.retransmit = false;
     decision.repair_channel = kNoRepairChannel;
-    decision.reason = RejectReason::AlreadyRetransmitted;
+    decision.reason = tracker->contains(request.frame_id)
+                          ? RejectReason::AlreadyRetransmitted
+                          : RejectReason::TrackerUnavailable;
   }
   if (stats != nullptr) stats->recordDecision(decision);
   return decision;
@@ -297,13 +372,16 @@ inline std::uint32_t estimatedRepairEtaUs(const RepairBudget& b) {
   const std::uint64_t total = static_cast<std::uint64_t>(b.feedback_age_us) +
                               b.queue_delay_us + b.hop_settle_us +
                               b.airtime_us + b.decode_guard_us;
-  return total > 0xFFFFFFFFULL ? 0xFFFFFFFFU : static_cast<std::uint32_t>(total);
+  return total > 0xFFFFFFFFULL ? 0xFFFFFFFFU
+                               : static_cast<std::uint32_t>(total);
 }
 
 inline bool shouldRetransmit(const RepairBudget& b) {
   if (b.already_retransmitted || b.frame_airtime_budget_us == 0U) return false;
   if (b.frame_airtime_used_us > b.frame_airtime_budget_us ||
-      b.airtime_us > b.frame_airtime_budget_us - b.frame_airtime_used_us) return false;
+      b.airtime_us > b.frame_airtime_budget_us - b.frame_airtime_used_us) {
+    return false;
+  }
   return estimatedRepairEtaUs(b) < b.remaining_slack_us;
 }
 

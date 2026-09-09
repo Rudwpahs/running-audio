@@ -4,6 +4,8 @@
 #include <cstddef>
 #include <cstdint>
 
+#include "pr1_sequence.hpp"
+
 #ifndef PR1_ENABLE_AFH
 #define PR1_ENABLE_AFH 0
 #endif
@@ -48,14 +50,14 @@ struct ScheduleConfig {
 struct PendingMap {
   bool valid = false;
   std::uint16_t map_version = 0;
-  std::uint32_t activation_sequence = 0;
+  sequence::LogicalFrameIndex activation_sequence = 0;
   ChannelMap map{};
 };
 
 struct SyncBeacon {
   std::uint16_t session_id = 0;
-  std::uint32_t frame_seq = 0;
-  std::uint32_t epoch = 0;
+  sequence::LogicalFrameIndex frame_seq = 0;
+  std::uint64_t epoch = 0;
   std::uint16_t map_version = 0;
 };
 
@@ -66,7 +68,7 @@ class Scheduler {
   const PendingMap& pending() const { return pending_; }
 
   bool stageMap(std::uint16_t new_version, ChannelMap new_map,
-                std::uint32_t activation_sequence,
+                sequence::LogicalFrameIndex activation_sequence,
                 std::uint8_t minimum_active = kExperimentalMinimumActiveChannels) {
     if (!new_map.isValid(minimum_active)) return false;
     const std::uint16_t baseline = pending_.valid ? pending_.map_version : current_.map_version;
@@ -75,18 +77,18 @@ class Scheduler {
     return true;
   }
 
-  void applyPendingIfDue(std::uint32_t sequence) {
-    if (!pending_.valid || sequenceBefore(sequence, pending_.activation_sequence)) return;
+  void applyPendingIfDue(sequence::LogicalFrameIndex sequence) {
+    if (!pending_.valid || sequence < pending_.activation_sequence) return;
     current_.map = pending_.map;
     current_.map_version = pending_.map_version;
     pending_.valid = false;
   }
 
-  std::uint8_t channelForSequence(std::uint32_t sequence) const {
+  std::uint8_t channelForSequence(sequence::LogicalFrameIndex sequence) const {
     std::array<std::uint8_t, kChannelCount> active{};
     const std::uint8_t count = collectActive(current_.map, active);
     if (count == 0) return 0;
-    const std::uint32_t epoch = sequence / count;
+    const std::uint64_t epoch = sequence / count;
     const std::uint8_t position = static_cast<std::uint8_t>(sequence % count);
     buildPermutation(active, count, current_, epoch);
     if (epoch > 0U && count > 1U) {
@@ -114,9 +116,6 @@ class Scheduler {
  private:
   ScheduleConfig current_{};
   PendingMap pending_{};
-  static bool sequenceBefore(std::uint32_t a, std::uint32_t b) {
-    return static_cast<std::int32_t>(a - b) < 0;
-  }
   static bool versionAfter(std::uint16_t a, std::uint16_t b) {
     return static_cast<std::int16_t>(a - b) > 0;
   }
@@ -132,7 +131,7 @@ class Scheduler {
     x = (x ^ (x >> 27)) * 0x94D049BB133111EBULL;
     return x ^ (x >> 31);
   }
-  static std::uint64_t seedFor(const ScheduleConfig& config, std::uint32_t epoch) {
+  static std::uint64_t seedFor(const ScheduleConfig& config, std::uint64_t epoch) {
     std::uint64_t seed = mix64(config.session_seed);
     seed ^= mix64(static_cast<std::uint64_t>(config.map_version) << 32);
     seed ^= mix64(config.map.bits & kChannelMask);
@@ -149,7 +148,7 @@ class Scheduler {
   }
   static void buildPermutation(std::array<std::uint8_t, kChannelCount>& channels,
                                std::uint8_t count, const ScheduleConfig& config,
-                               std::uint32_t epoch) {
+                               std::uint64_t epoch) {
     if (count < 2) return;
     std::uint64_t state = seedFor(config, epoch);
     for (std::uint8_t i = static_cast<std::uint8_t>(count - 1U); i > 0; --i) {

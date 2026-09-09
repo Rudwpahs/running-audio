@@ -6,6 +6,7 @@
 
 #include "pr1_afh.hpp"
 #include "pr1_packet.hpp"
+#include "pr1_sequence.hpp"
 
 namespace pr1::fec {
 
@@ -50,6 +51,18 @@ struct Stats {
   std::uint32_t unrecoverable = 0;
   std::uint32_t rejected_ambiguous = 0;
 };
+
+// Local/session-aware freshness identity. The low 16 bits may be carried on
+// wire as ParityFrame::group_id, but that short value is never sufficient by
+// itself to prove that parity belongs to the current logical group.
+struct LogicalGroupId {
+  std::uint32_t session_generation = 0;
+  sequence::LogicalFrameIndex index = 0;
+};
+
+inline bool sameLogicalGroup(const LogicalGroupId& a, const LogicalGroupId& b) {
+  return a.session_generation == b.session_generation && a.index == b.index;
+}
 
 template <std::uint8_t SourceCount>
 struct ParityFrame {
@@ -134,8 +147,8 @@ inline RecoveryStatus recoverOneDetailed(
   return RecoveryStatus::Recovered;
 }
 
-// Same recovery operation, but with an explicit expected group ID so a parity
-// frame from a stale/different FEC group cannot be applied accidentally.
+// Legacy low-16 guard retained for current host compatibility. New long-lived
+// receive paths must use recoverOneForLogicalGroup() below.
 template <std::uint8_t SourceCount>
 inline RecoveryStatus recoverOneForGroup(
     std::uint16_t expected_group_id,
@@ -145,6 +158,26 @@ inline RecoveryStatus recoverOneForGroup(
     std::array<std::uint8_t, kCodecPayloadBytes>* recovered_payload,
     Stats* stats = nullptr) {
   if (parity.group_id != expected_group_id) {
+    if (stats != nullptr) ++stats->rejected_ambiguous;
+    return RecoveryStatus::InvalidMetadata;
+  }
+  return recoverOneDetailed<SourceCount>(parity, sources, recovered_index,
+                                         recovered_payload, stats);
+}
+
+template <std::uint8_t SourceCount>
+inline RecoveryStatus recoverOneForLogicalGroup(
+    const LogicalGroupId& expected_group,
+    const LogicalGroupId& parity_group,
+    const ParityFrame<SourceCount>& parity,
+    const std::array<const std::uint8_t*, SourceCount>& sources,
+    std::uint8_t* recovered_index,
+    std::array<std::uint8_t, kCodecPayloadBytes>* recovered_payload,
+    Stats* stats = nullptr) {
+  const auto expected_wire_group =
+      static_cast<std::uint16_t>(expected_group.index & 0xFFFFULL);
+  if (!sameLogicalGroup(expected_group, parity_group) ||
+      parity.group_id != expected_wire_group) {
     if (stats != nullptr) ++stats->rejected_ambiguous;
     return RecoveryStatus::InvalidMetadata;
   }

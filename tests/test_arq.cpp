@@ -3,9 +3,11 @@
 #include <cstdint>
 #include <iostream>
 #include "../firmware/common/pr1_arq.hpp"
+#include "../firmware/common/pr1_sequence.hpp"
 
 int main() {
   using namespace pr1::arq;
+  using pr1::sequence::LogicalFrameId;
 
   Feedback f{};
   f.rx_highest_seq = 65535;
@@ -35,17 +37,17 @@ int main() {
   wrap.recent_loss_bitmap = (1U << 1U);
   assert(feedbackRequestsSequence(wrap, 65535));
 
-  assert(remainingPlayoutSlackUs(1000U, 9000U) == 8000U);
-  assert(remainingPlayoutSlackUs(9000U, 9000U) == 0U);
-  assert(remainingPlayoutSlackUs(100U, 50U) == 0U);
-  assert(remainingPlayoutSlackUs(0xFFFFFF00U, 0x00000100U) == 512U);
+  assert(remainingPlayoutSlackUs(1000ULL, 9000ULL) == 8000ULL);
+  assert(remainingPlayoutSlackUs(9000ULL, 9000ULL) == 0ULL);
+  assert(remainingPlayoutSlackUs(100ULL, 50ULL) == 0ULL);
 
   RepairRequest request{};
   request.enabled = true;
   request.sequence = 99;
+  request.frame_id = LogicalFrameId{1, 99};
   request.current_map_version = 7;
-  request.now_us = 10000;
-  request.playout_deadline_us = 18000;
+  request.now_us = 10000ULL;
+  request.playout_deadline_us = 18000ULL;
   request.feedback_age_us = 1000;
   request.max_feedback_age_us = 4000;
   request.queue_delay_us = 500;
@@ -69,9 +71,19 @@ int main() {
   assert(allowed.reason == RejectReason::None);
   assert(allowed.repair_channel == 3U || allowed.repair_channel == 9U);
   assert(((request.active_channel_bits >> allowed.repair_channel) & 1ULL) != 0ULL);
-  assert(allowed.remaining_slack_us == 8000U);
-  assert(allowed.estimated_eta_us == 2300U);
-  assert(stats.requested == 1U && stats.sent == 1U);
+  assert(allowed.remaining_slack_us == 8000ULL);
+  assert(allowed.estimated_eta_us == 2300ULL);
+  // Scheduling/reservation is not the same thing as a successful radio TX.
+  assert(stats.requested == 1U && stats.sent == 0U);
+
+  // Queue/TX failure releases the reservation, allowing a still-valid retry.
+  assert(tracker.release(request.frame_id));
+  const auto retry = evaluateAndReserve(good_fb, request, &tracker, &stats);
+  assert(retry.retransmit);
+  assert(stats.sent == 0U);
+  assert(tracker.commit(request.frame_id));
+  stats.recordSent();
+  assert(stats.sent == 1U);
   stats.recordArrival(true);
 
   const auto second = evaluateAndReserve(good_fb, request, &tracker, &stats);
@@ -79,8 +91,20 @@ int main() {
   assert(second.reason == RejectReason::AlreadyRetransmitted);
   assert(stats.rejected_already_retransmitted == 1U);
 
+  // Same low 16-bit wire sequence in a later wrap is a different logical frame.
+  const LogicalFrameId first_cycle{1, 1234};
+  const LogicalFrameId next_cycle{1, 1234ULL + 65536ULL};
+  RetransmissionTracker<> wrap_tracker;
+  assert(wrap_tracker.reserve(first_cycle));
+  assert(wrap_tracker.commit(first_cycle));
+  assert(!wrap_tracker.reserve(first_cycle));
+  assert(wrap_tracker.reserve(next_cycle));
+  assert(wrap_tracker.release(next_cycle));
+  assert(wrap_tracker.reserve(next_cycle));
+
   RepairRequest stale = request;
   stale.sequence = 98;
+  stale.frame_id = LogicalFrameId{1, 98};
   stale.feedback_age_us = stale.max_feedback_age_us;
   Feedback stale_fb = good_fb;
   stale_fb.recent_loss_bitmap = 1U << 1U;
@@ -90,6 +114,7 @@ int main() {
 
   RepairRequest wrong_map = request;
   wrong_map.sequence = 98;
+  wrong_map.frame_id = LogicalFrameId{1, 98};
   const auto map_decision = evaluateRepair(stale_fb, wrong_map, false);
   assert(map_decision.retransmit);
   Feedback wrong_map_fb = stale_fb;
@@ -100,13 +125,15 @@ int main() {
 
   RepairRequest too_late = request;
   too_late.sequence = 98;
-  too_late.playout_deadline_us = 12800;
+  too_late.frame_id = LogicalFrameId{1, 98};
+  too_late.playout_deadline_us = 12800ULL;
   const auto deadline_decision = evaluateRepair(stale_fb, too_late, false);
   assert(!deadline_decision.retransmit);
   assert(deadline_decision.reason == RejectReason::Deadline);
 
   RepairRequest no_budget = request;
   no_budget.sequence = 98;
+  no_budget.frame_id = LogicalFrameId{1, 98};
   no_budget.frame_airtime_used_us = 4500;
   const auto budget_decision = evaluateRepair(stale_fb, no_budget, false);
   assert(!budget_decision.retransmit);
@@ -114,6 +141,7 @@ int main() {
 
   RepairRequest no_channel = request;
   no_channel.sequence = 98;
+  no_channel.frame_id = LogicalFrameId{1, 98};
   no_channel.active_channel_bits = 0;
   const auto channel_decision = evaluateRepair(stale_fb, no_channel, false);
   assert(!channel_decision.retransmit);
@@ -121,6 +149,7 @@ int main() {
 
   RepairRequest disabled = request;
   disabled.sequence = 98;
+  disabled.frame_id = LogicalFrameId{1, 98};
   disabled.enabled = false;
   const auto disabled_decision = evaluateRepair(stale_fb, disabled, false);
   assert(!disabled_decision.retransmit);
@@ -139,17 +168,20 @@ int main() {
 
   RepairRequest disabled_nacked = request;
   disabled_nacked.enabled = false;
-  const auto disabled_without_tracker = evaluateAndReserve(good_fb, disabled_nacked,
-                                                            static_cast<RetransmissionTracker<>*>(nullptr),
-                                                            nullptr);
+  const auto disabled_without_tracker = evaluateAndReserve(
+      good_fb, disabled_nacked, static_cast<RetransmissionTracker<>*>(nullptr), nullptr);
   assert(disabled_without_tracker.reason == RejectReason::Disabled);
 
   RepairRequest late_request = request;
   late_request.sequence = 98;
+  late_request.frame_id = LogicalFrameId{1, 98};
   Feedback late_feedback = good_fb;
   late_feedback.recent_loss_bitmap = 1U << 1U;
-  const auto late_allowed = evaluateAndReserve(late_feedback, late_request, &tracker, &stats);
+  RetransmissionTracker<> late_tracker;
+  const auto late_allowed = evaluateAndReserve(late_feedback, late_request, &late_tracker, &stats);
   assert(late_allowed.retransmit);
+  assert(late_tracker.commit(late_request.frame_id));
+  stats.recordSent();
   stats.recordArrival(false);
   assert(stats.useful == 1U && stats.late == 1U);
   assert(stats.sent == 2U);

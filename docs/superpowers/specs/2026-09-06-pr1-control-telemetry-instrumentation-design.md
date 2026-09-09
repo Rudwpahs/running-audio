@@ -1,7 +1,7 @@
 # PR1 Control / Telemetry + Runtime Instrumentation Design
 
 ## Status
-Approved architecture record for the post-#38 instrumentation round, updated to match the implemented observation semantics.
+Approved architecture record for the post-#38 instrumentation round. **Observation semantics were amended by the #40/#41 algorithm-safety hardening:** internal zero-initialized counters are not host-visible measurements until the owning runtime explicitly marks them observed.
 
 ## Context
 PR #38 established a minimal ESP32-S3/T3-S3/SX1280 hardware-facing runtime with RF disabled by default. The repository already contains host-testable fixed-size instrumentation primitives in `firmware/common/pr1_instrumentation.hpp`.
@@ -85,12 +85,12 @@ The safe runtime advertises `TimingTrace` only. A capability says a subsystem/sc
 |---:|---|---|
 | `0x01` | `device_state` | numeric `DeviceState` |
 | `0x02` | `rssi_dbm` | last observed RSSI |
-| `0x03` | `crc_good` | good packet counter |
-| `0x04` | `crc_bad` | CRC-failure counter |
-| `0x05` | `missing` | inferred missing-sequence counter |
+| `0x03` | `crc_good` | observed good-packet counter |
+| `0x04` | `crc_bad` | observed CRC-failure counter |
+| `0x05` | `missing` | observed/inferred missing-sequence counter |
 | `0x06` | `queue_depth` | observed current queue depth |
 | `0x07` | `max_queue_depth` | observed maximum queue depth |
-| `0x08` | `scheduler_misses` | scheduler-deadline misses |
+| `0x08` | `scheduler_misses` | observed scheduler-deadline misses |
 | `0x09` | `irq_to_spi_us` | observed IRQ-to-SPI latency |
 | `0x0A` | `rx_processing_us` | observed RX processing duration |
 | `0x0B` | `rx_rearm_us` | observed RX re-arm duration |
@@ -105,7 +105,7 @@ The safe runtime advertises `TimingTrace` only. A capability says a subsystem/sc
 | `0x14` | `capability_mask` | active capability bits |
 
 ## Observation semantics
-A central rule is **supported is not the same as observed**.
+A central rule is **supported is not the same as observed, and unobserved is not zero**.
 
 `OptionalMetric` is used whenever `0` could be mistaken for a real observation:
 
@@ -116,18 +116,22 @@ struct OptionalMetric {
 };
 ```
 
-`Snapshot` contains always-defined state/counters plus optional observations:
+`Snapshot` keeps internal bookkeeping counters but exposes RF/runtime measurements through explicit availability:
 
 ```cpp
 struct Snapshot {
   DeviceState state = DeviceState::Booting;
   std::uint32_t capability_mask = 0;
-  instrumentation::Counters counters{};
+  instrumentation::Counters counters{}; // internal storage, not proof of observation
   std::uint32_t trace_overwrites = 0;
 
   OptionalMetric rssi_dbm{};
+  OptionalMetric crc_good{};
+  OptionalMetric crc_bad{};
+  OptionalMetric missing{};
   OptionalMetric queue_depth{};
   OptionalMetric max_queue_depth{};
+  OptionalMetric scheduler_misses{};
   OptionalMetric irq_to_spi_us{};
   OptionalMetric rx_processing_us{};
   OptionalMetric rx_rearm_us{};
@@ -143,16 +147,12 @@ struct Snapshot {
 
 `forEachSnapshotField()` emits fields in ascending `FieldId` order.
 
-Always emitted for the current baseline contract:
+Always meaningful in the RF-disabled safe snapshot:
 - `device_state`
-- `crc_good`
-- `crc_bad`
-- `missing`
-- `scheduler_misses`
 - `trace_overwrites`
 - `capability_mask`
 
-Observation-dependent fields are emitted **only** when their corresponding `OptionalMetric.available == true`. This includes `max_queue_depth` and `arq_retransmit_sent`; values in legacy/common counters do not by themselves prove that those subsystems were active or observed in the hardware runtime.
+RF/scheduler/recovery/audio measurements are emitted **only** when their corresponding `OptionalMetric.available == true`. A live RF runtime may emit `crc_bad=0`, for example, but only after the RF path was active and the runtime explicitly marked that counter observed.
 
 The common header remains fixed-size/POD and introduces no `std::vector`, `std::string`, `std::map`, heap allocation, exceptions, or RTTI requirement into the firmware path.
 
@@ -193,15 +193,11 @@ The safe runtime emits one boot snapshot with fields meaningful without a live q
 
 ```text
 PR1T v=1 t_us=<same timestamp> field=device_state value=1
-PR1T v=1 t_us=<same timestamp> field=crc_good value=0
-PR1T v=1 t_us=<same timestamp> field=crc_bad value=0
-PR1T v=1 t_us=<same timestamp> field=missing value=0
-PR1T v=1 t_us=<same timestamp> field=scheduler_misses value=0
 PR1T v=1 t_us=<same timestamp> field=trace_overwrites value=0
 PR1T v=1 t_us=<same timestamp> field=capability_mask value=8
 ```
 
-It does not fabricate RSSI, queue, RX timing, jitter, underrun, ARQ, AFH, or PHY observations.
+It intentionally omits CRC good/bad, missing packets, scheduler misses, RSSI, queue, RX timing, jitter, underrun, ARQ, AFH and PHY values because those subsystems have not been observed in safe mode.
 
 ## Host parser
 `tools/pr1_telemetry_parse.py` provides:
@@ -247,8 +243,9 @@ The previously observed gap behavior remains a hypothesis to reproduce, not a pr
 ## Testing and acceptance
 Required before merge:
 - telemetry field/state/event IDs/names stable;
-- optional unavailable measurements omitted;
-- observed optional values emitted when explicitly marked available;
+- unavailable measurements omitted;
+- observed zero and observed nonzero values both emitted when explicitly marked available;
+- safe runtime emits no fake zero RF/scheduler measurements;
 - trace ring overwrite behavior preserved;
 - malformed parser inputs covered;
 - full C++ normal + ASan/UBSan suite green;
