@@ -1,113 +1,172 @@
-# PR1 T3-S3 / SX1280 runtime foundation
+# PR1 T3-S3 / SX1280 runtime
 
-PR #38 established the smallest hardware-facing runtime for the current PR1 architecture. The follow-up instrumentation and safety-hardening rounds keep the same RF-disabled safety boundary and add deterministic host-readable telemetry.
+This runtime connects the host-tested PR1-DART packet/instrumentation layer to the LILYGO T3-S3/SX1280 hardware boundary.
 
-## Safety contract
+The default build is still RF-disabled. Two explicit non-default compile profiles exist for the first hardware gate: fixed-channel FLRC TX and fixed-channel FLRC RX. AFH, adaptive channel maps, XOR FEC, deadline ARQ, adaptive PHY, the cross-layer controller, Opus/jitter/PLC and audio I/O are intentionally not activated here.
 
-The only build profile remains `safe`.
+## Safety and activation contract
 
+Default profile:
+
+- environment: `safe`
 - `PR1_RF_ENABLED=0`
-- no RadioLib dependency
-- no SPI radio initialization
-- no SX1280 `begin`, receive, or transmit call
-- boot prints deterministic metadata plus one safe telemetry snapshot, then idles
-- CI does not claim physical board verification
+- role: `safe`
+- no SX1280 SPI/radio initialization
+- no RF transmit/receive call
+- deterministic boot metadata and safe telemetry only
 
-Any build with `PR1_RF_ENABLED=1` intentionally fails at compile time until a later gated round adds an explicit RF-enabled runtime after physical board/revision confirmation.
+Explicit live compile profiles:
+
+- `rf_tx_compile`: `PR1_RF_ENABLED=1`, role `tx`
+- `rf_rx_compile`: `PR1_RF_ENABLED=1`, role `rx`
+- RadioLib pinned to `7.7.1`
+- fixed FLRC profile only
+- compile success does **not** mean the physical board/radio path has been validated
+
+The compile-time guards reject RF-enabled builds that do not explicitly choose TX or RX, and reject RF-disabled builds that try to select a live role.
+
+## Fixed FLRC baseline
+
+The first live profile is deliberately non-adaptive:
+
+```text
+frequency_mhz=2404.000
+bitrate_kbps=1300
+coding_rate=3        # FLRC CR 3/4
+output_dbm=0
+tx_gap_us=5000       # idle time AFTER blocking TX completes
+packet_bytes=116
+adaptive_layers=off
+```
+
+`tx_gap_us` is intentionally **not** a packet start-to-start period. It preserves the semantics of the earlier PR1 V4 experiments: the transmitter completes one blocking radio transmission and then waits `TX_GAP_US` before the next attempt. A `0 us` gap is valid and means the next packet may start as soon as the blocking TX call returns and the runtime loop services again.
+
+The default 5 ms gap is a conservative bring-up value. For the receiver-boundary experiment, change `PR1_TX_GAP_US` under `[env:rf_tx_compile]` in `platformio.ini`, rebuild the TX image, and test the requested sweep values one at a time. This keeps the tested gap compiled into the boot profile instead of changing it silently at runtime.
+
+The 116-byte PR1-DART packet is the existing 16-byte PR1 header plus the 100-byte target codec payload and remains below the SX1280 FLRC 127-byte payload ceiling.
 
 ## Build
 
-```bash
-pio run -e safe
-```
-
-or from the repository root:
+From the repository root:
 
 ```bash
+# RF-disabled default safety build
 pio run --project-dir firmware/t3s3_sx1280_runtime -e safe
+
+# Compile the explicit live roles
+pio run --project-dir firmware/t3s3_sx1280_runtime -e rf_tx_compile
+pio run --project-dir firmware/t3s3_sx1280_runtime -e rf_rx_compile
 ```
 
-## Boot metadata
+Do not treat the two `rf_*_compile` builds as field validation. They prove only that the hardware adapter and runtime compile against the pinned library/toolchain.
 
-Expected metadata keys include:
+## Runtime design
+
+`FixedLinkRuntime` is hardware-independent and talks to a narrow `RadioPort` interface. Host tests use a fake radio to inject TX failures, duplicate packets, sequence gaps, malformed packets, CRC failures and deterministic timing. The board adapter implements the same interface with SX1280 + RadioLib.
+
+The RX interrupt path is intentionally minimal. The ISR-side callback records only the receive-complete timestamp/flag. SPI reads, packet decoding, sequence accounting, telemetry updates and RX re-arm all happen later in `tick()`. This is important because the first physical goal is to distinguish RF loss from receiver-processing saturation rather than hide it with recovery layers.
+
+TX sequence numbers are committed only after `radio.transmit()` succeeds. A failed physical TX therefore retries the same sequence instead of silently manufacturing a source-packet gap. Failed attempts still observe the configured post-TX gap so a radio fault cannot create an uncontrolled hot retry loop.
+
+The FLRC port exposes RSSI only. It deliberately does not fabricate an SNR value for FLRC; an unavailable measurement must remain unavailable rather than appear as `0`.
+
+## Live telemetry
+
+The live accumulator can expose:
+
+- RSSI
+- valid PR1 / CRC-good count
+- physical CRC-failure count
+- missing sequence count
+- current / maximum pending queue depth
+- scheduler misses
+- DIO IRQ -> SPI-start time
+- SPI read duration
+- RX processing time
+- RX re-arm time
+- trace-ring overwrites
+
+`0` and `unobserved` remain different states. A field is emitted only after the owning measurement has actually been observed.
+
+Live serial telemetry is **pull-based** so logging does not become the receiver bottleneck. After boot, send `t` (or `T`) over Serial to emit the current `PR1T` snapshot:
 
 ```text
-PR1_RUNTIME_BOOT
-runtime_profile=round2-safe
-board_family=LILYGO T3-S3-MVSRBoard
-board_reference_revision=V1.1 upstream reference
-radio_target=SX1280
-hardware_verified=0
-protocol_version=1
-protocol_header_bytes=16
-rf_enabled=0
-sx1280_cs=7
-sx1280_rst=8
-sx1280_sclk=5
-sx1280_mosi=6
-sx1280_miso=3
-sx1280_dio1=9
-sx1280_busy=36
-sx1280_tx_enable=10
-sx1280_rx_enable=21
-PR1_RUNTIME_SAFE_IDLE
+PR1T v=1 t_us=<timestamp> field=crc_good value=<n>
+PR1T v=1 t_us=<timestamp> field=missing value=<n>
+PR1T v=1 t_us=<timestamp> field=irq_to_spi_us value=<p99_us>
+PR1T v=1 t_us=<timestamp> field=spi_duration_us value=<p99_us>
+PR1T v=1 t_us=<timestamp> field=rx_processing_us value=<p99_us>
+PR1T v=1 t_us=<timestamp> field=rx_rearm_us value=<p99_us>
 ```
 
-## Safe telemetry snapshot
+The timing fields currently report the p99 of fixed-size in-memory windows. The hot path performs no dynamic allocation. Trace events are retained in the in-memory trace ring for this first hardware gate; continuous `PR1E` serial streaming is intentionally not enabled because it could perturb the timing being measured.
 
-After metadata, the runtime emits one schema-versioned `PR1T` snapshot. All fields in the same snapshot share the same `t_us` value.
-
-The RF-disabled safe snapshot emits only values that are meaningful without a live radio/scheduler path:
-
-```text
-PR1T v=1 t_us=<boot_timestamp> field=device_state value=1
-PR1T v=1 t_us=<boot_timestamp> field=trace_overwrites value=0
-PR1T v=1 t_us=<boot_timestamp> field=capability_mask value=8
-```
-
-`device_state=1` means `safe_idle`; `capability_mask=8` means the timing/diagnostic schema is exposed.
-
-**Unobserved is not zero.** Because safe mode never starts the SX1280 receive path, it does not emit `crc_good`, `crc_bad`, `missing`, `scheduler_misses`, RSSI, queue depth, RX timing, jitter, underrun, ARQ, AFH, or PHY values. A later live runtime may legitimately emit an observed value of zero, but only after the owning subsystem explicitly marks that metric available.
-
-Internal zero-initialized counters are bookkeeping storage; they are not evidence that an RF measurement occurred.
-
-The schema is defined in `firmware/common/pr1_telemetry.hpp`. The host parser accepts serial logs and emits JSONL or CSV:
+The host parser remains:
 
 ```bash
 python tools/pr1_telemetry_parse.py serial.log
 python tools/pr1_telemetry_parse.py serial.log --format csv
 ```
 
-Future `PR1E` event records use the same versioned host-visible convention:
+## Safe boot metadata
+
+The safe environment still prints metadata such as:
 
 ```text
-PR1E v=1 t_us=<timestamp> seq=<sequence> event=<event_name> value=<integer>
+PR1_RUNTIME_BOOT
+runtime_profile=round2-safe
+runtime_role=safe
+board_family=LILYGO T3-S3-MVSRBoard
+radio_target=SX1280
+hardware_verified=0
+protocol_version=1
+protocol_header_bytes=16
+rf_enabled=0
+PR1_RUNTIME_SAFE_IDLE
 ```
 
-Defining an event name does not mean a physical RF event has already been measured; actual DIO/ISR/SPI/re-arm wiring remains behind the RF/hardware gates.
+A live compile prints its explicit role/profile and still reports `hardware_verified=0` until physical evidence exists.
 
 ## Hardware reference
 
-The pin values are reference values from the official LILYGO `T3-S3-MVSRBoard` repository, upstream commit `840a2e788b3192c4e9bddf0640c1ecaf703c2598`, specifically:
+The pin values are reference values from the official LILYGO `T3-S3-MVSRBoard` repository, upstream commit `840a2e788b3192c4e9bddf0640c1ecaf703c2598`:
 
-- `libraries/private_library/pin_config.h`
-- `examples/SX128x_PingPong_2/SX128x_PingPong_2.ino`
-- upstream PlatformIO configuration (`espressif32 @6.5.0`, Arduino framework)
+- CS 7
+- RST 8
+- SCLK 5
+- MOSI 6
+- MISO 3
+- DIO1 9
+- BUSY 36
+- TX RF-switch 10
+- RX RF-switch 21
 
-No vendor radio example source is copied into this runtime. The upstream example is used only as a hardware/API reference.
+No vendor radio example source is copied into PR1. The vendor repository is used only as a hardware/API reference.
 
-The upstream pin configuration currently selects MVSRBoard V1.1 as its reference revision. That does **not** prove the user's physical boards are V1.1. Before RF is enabled, the exact physical revision/radio variant must be checked against #12/#13.
+The reference configuration identifies MVSRBoard V1.1; that remains a reference claim, not proof of the exact physical board revision in hand.
 
-## Current scope exclusions
+## First physical gate
 
-Not implemented in the hardware runtime yet:
+Use two boards, one TX image and one RX image. Keep all adaptive/recovery layers off.
 
-- fixed-channel RF TX/RX
-- physical DIO/ISR/SPI/re-arm timing capture
-- AFH
-- FEC
-- live ARQ
-- adaptive PHY/controller
-- audio
+1. Boot `safe` first and confirm metadata.
+2. Boot the RX fixed-FLRC image and confirm `PR1_RUNTIME_LIVE_READY`.
+3. Boot the TX fixed-FLRC image and confirm the same fixed profile on both sides.
+4. Run a short 100-packet sanity test and request RX telemetry with `t`.
+5. Run at least 1,000 packets and record valid/CRC-good, CRC-bad, missing, RSSI and the four RX timing metrics.
+6. Reproduce the receiver-boundary sweep at post-TX gaps `500 / 300 / 250 / 225 / 200 / 175 / 150 / 125 us`; the historical `0 us` point remains supported for an explicit stress run.
+7. Correlate PER/CRC and RSSI with IRQ->SPI, SPI duration, RX processing, RX re-arm, queue depth and scheduler misses.
+8. Only after the fixed-link loss source is classified should deterministic static-map AFH be activated.
 
-These remain deferred so receiver-processing failures can be isolated instead of hidden by multiple adaptive/recovery layers.
+## Still intentionally disabled in the hardware runtime
+
+- deterministic hopping / AFH
+- adaptive channel-quality map
+- XOR FEC
+- deadline-aware ARQ
+- jitter buffer / Opus / PLC
+- adaptive PHY ladder
+- cross-layer controller
+- audio capture / playback
+
+Those algorithms already have host-side primitives/tests in `firmware/common/`; this runtime round is the measurement and hardware-integration gate before they are enabled one layer at a time.
