@@ -46,7 +46,6 @@ class FakeRadio final : public pr1::runtime::RadioPort {
   }
 
   std::int16_t rssiDbm() override { return rssi_dbm; }
-  std::int16_t snrDb() override { return snr_db; }
   std::uint32_t nowMicros() const override { return clock_us; }
 
   void setRxIrqHandler(pr1::runtime::RxIrqHandler handler, void* context) override {
@@ -80,7 +79,6 @@ class FakeRadio final : public pr1::runtime::RadioPort {
   std::uint32_t rearm_cost_us = 60;
   std::uint32_t rearm_calls = 0;
   std::int16_t rssi_dbm = -45;
-  std::int16_t snr_db = 12;
   pr1::runtime::FixedFlrcProfile last_profile{};
   std::vector<std::vector<std::uint8_t>> tx_packets;
   std::vector<RxPacket> rx_packets;
@@ -117,7 +115,7 @@ void testTxPostTransmitGapAndCommitSemantics() {
   runtime.tick(0U);
   assert(radio.tx_packets.size() == 1U);
   assert(radio.tx_packets[0].size() == pr1::kDartPacketBytes);
-  assert(radio.clock_us == 50U);  // blocking TX finished at 50 us in the fake
+  assert(radio.clock_us == 50U);
 
   pr1::DecodedPacket decoded{};
   assert(pr1::decode_packet(radio.tx_packets[0].data(), radio.tx_packets[0].size(), &decoded));
@@ -188,7 +186,6 @@ void testRxSequenceAccountingAndRearm() {
   assert(snapshot.rx_rearm_us.available && snapshot.rx_rearm_us.value == 60);
   assert(radio.rearm_calls == 2U);
 
-  // Duplicate is a valid RF packet but must not create an artificial gap.
   radio.queueRx(makePacket(100U));
   radio.triggerRx(2000U);
   runtime.tick(2000U);
@@ -196,7 +193,6 @@ void testRxSequenceAccountingAndRearm() {
   assert(snapshot.crc_good.value == 2);
   assert(snapshot.missing.value == 0);
 
-  // Forward jump 100 -> 102 means exactly one source packet is missing.
   radio.queueRx(makePacket(102U));
   radio.triggerRx(3000U);
   runtime.tick(3000U);
@@ -204,13 +200,11 @@ void testRxSequenceAccountingAndRearm() {
   assert(snapshot.crc_good.value == 3);
   assert(snapshot.missing.value == 1);
 
-  // Malformed application packet must be rejected safely and RX must re-arm.
   radio.queueRx(std::vector<std::uint8_t>{0x50, 0x52, 0x01});
   radio.triggerRx(4000U);
   runtime.tick(4000U);
   assert(radio.rearm_calls == 5U);
 
-  // A physical CRC failure is visible separately from a sequence gap.
   radio.queueRx({}, pr1::runtime::RadioReadResult::CrcError);
   radio.triggerRx(5000U);
   runtime.tick(5000U);
