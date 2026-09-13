@@ -105,47 +105,68 @@ std::vector<std::uint8_t> makePacket(std::uint16_t sequence,
   return std::vector<std::uint8_t>(encoded.begin(), encoded.begin() + length);
 }
 
-void testTxCadenceAndCommitSemantics() {
+void testTxPostTransmitGapAndCommitSemantics() {
   FakeRadio radio;
   auto profile = pr1::runtime::kFixedFlrcProfile;
-  profile.tx_period_us = 10000U;
+  profile.tx_gap_us = 10000U;
   pr1::runtime::FixedLinkRuntime runtime(radio, pr1::runtime::RuntimeRole::Tx, profile, 1U);
   assert(runtime.begin());
   assert(radio.begin_called);
 
-  radio.clock_us = 0;
+  radio.clock_us = 0U;
   runtime.tick(0U);
   assert(radio.tx_packets.size() == 1U);
   assert(radio.tx_packets[0].size() == pr1::kDartPacketBytes);
+  assert(radio.clock_us == 50U);  // blocking TX finished at 50 us in the fake
 
   pr1::DecodedPacket decoded{};
   assert(pr1::decode_packet(radio.tx_packets[0].data(), radio.tx_packets[0].size(), &decoded));
   assert(decoded.header.sequence == 0U);
   assert(decoded.header.payload_len == pr1::kDartTargetOpusPayloadBytes);
 
-  radio.clock_us = 5000U;
-  runtime.tick(5000U);
+  // Gap is measured from TX completion (50 us), not from TX start (0 us).
+  radio.clock_us = 10049U;
+  runtime.tick(10049U);
   assert(radio.tx_packets.size() == 1U);
 
-  radio.clock_us = 10000U;
-  runtime.tick(10000U);
+  radio.clock_us = 10050U;
+  runtime.tick(10050U);
   assert(radio.tx_packets.size() == 2U);
+  assert(radio.clock_us == 10100U);
   assert(pr1::decode_packet(radio.tx_packets[1].data(), radio.tx_packets[1].size(), &decoded));
   assert(decoded.header.sequence == 1U);
 
-  // A failed physical TX must not consume the sequence. The next successful
-  // attempt therefore retries sequence 2 rather than silently skipping it.
+  // A failed physical TX must not consume the sequence. We still wait the
+  // configured post-attempt gap so a radio fault cannot create a hot retry loop.
   radio.tx_ok = false;
-  radio.clock_us = 20000U;
-  runtime.tick(20000U);
+  radio.clock_us = 20100U;
+  runtime.tick(20100U);
+  assert(radio.clock_us == 20150U);
   assert(pr1::decode_packet(radio.tx_packets[2].data(), radio.tx_packets[2].size(), &decoded));
   assert(decoded.header.sequence == 2U);
 
   radio.tx_ok = true;
-  radio.clock_us = 30000U;
-  runtime.tick(30000U);
+  radio.clock_us = 30150U;
+  runtime.tick(30150U);
   assert(pr1::decode_packet(radio.tx_packets[3].data(), radio.tx_packets[3].size(), &decoded));
   assert(decoded.header.sequence == 2U);
+}
+
+void testZeroPostTransmitGapIsValid() {
+  FakeRadio radio;
+  auto profile = pr1::runtime::kFixedFlrcProfile;
+  profile.tx_gap_us = 0U;
+  pr1::runtime::FixedLinkRuntime runtime(radio, pr1::runtime::RuntimeRole::Tx, profile, 1U);
+  assert(runtime.begin());
+
+  runtime.tick(0U);
+  assert(radio.tx_packets.size() == 1U);
+  assert(radio.clock_us == 50U);
+
+  // Historical V4 includes a 0-us gap point. The next packet may start as soon
+  // as the blocking transmit call has completed and the loop services tick().
+  runtime.tick(50U);
+  assert(radio.tx_packets.size() == 2U);
 }
 
 void testRxSequenceAccountingAndRearm() {
@@ -200,7 +221,8 @@ void testRxSequenceAccountingAndRearm() {
 }  // namespace
 
 int main() {
-  testTxCadenceAndCommitSemantics();
+  testTxPostTransmitGapAndCommitSemantics();
+  testZeroPostTransmitGapIsValid();
   testRxSequenceAccountingAndRearm();
   std::cout << "test_fixed_link_runtime: PASS\n";
   return 0;
