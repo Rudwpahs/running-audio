@@ -1,6 +1,7 @@
 #include "pr1_sx1280_radiolib.hpp"
 
 #if PR1_RF_ENABLED
+#include "../../common/pr1_packet.hpp"
 #include "pr1_board_config.hpp"
 
 namespace pr1::runtime {
@@ -71,11 +72,11 @@ bool Sx1280RadioLibPort::transmit(const std::uint8_t* data, std::size_t length) 
   return radio_.transmit(data, length) == RADIOLIB_ERR_NONE;
 }
 
-std::int16_t Sx1280RadioLibPort::rssiDbm() const {
+std::int16_t Sx1280RadioLibPort::rssiDbm() {
   return static_cast<std::int16_t>(radio_.getRSSI());
 }
 
-std::int16_t Sx1280RadioLibPort::snrDb() const {
+std::int16_t Sx1280RadioLibPort::snrDb() {
   // SX1280 FLRC packet status does not provide a LoRa-style SNR measurement.
   // The current PR1 telemetry contract therefore does not expose SNR.
   return 0;
