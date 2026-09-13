@@ -26,7 +26,6 @@ class RadioPort {
                                      std::size_t* length) = 0;
   virtual bool transmit(const std::uint8_t* data, std::size_t length) = 0;
   virtual std::int16_t rssiDbm() = 0;
-  virtual std::int16_t snrDb() = 0;
   virtual std::uint32_t nowMicros() const = 0;
   virtual void setRxIrqHandler(RxIrqHandler handler, void* context) = 0;
 };
