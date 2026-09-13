@@ -22,14 +22,13 @@ class FixedLinkRuntime {
 
   bool begin() {
     if (role_ == RuntimeRole::Safe) return false;
-    if (role_ == RuntimeRole::Tx && profile_.tx_period_us == 0U) return false;
     if (!radio_.beginFixedFlrc(profile_)) return false;
 
     if (role_ == RuntimeRole::Rx) {
       radio_.setRxIrqHandler(&FixedLinkRuntime::rxIrqThunk, this);
       if (!radio_.startReceive()) return false;
     } else {
-      next_tx_due_us_ = radio_.nowMicros();
+      next_tx_allowed_us_ = radio_.nowMicros();
     }
 
     initialized_ = true;
@@ -63,10 +62,10 @@ class FixedLinkRuntime {
   }
 
   void serviceTx(std::uint32_t now_us) {
-    if (!deadlineReached(now_us, next_tx_due_us_)) return;
+    if (!deadlineReached(now_us, next_tx_allowed_us_)) return;
 
-    const std::uint32_t lateness_us = now_us - next_tx_due_us_;
-    if (lateness_us >= profile_.tx_period_us) {
+    const std::uint32_t lateness_us = now_us - next_tx_allowed_us_;
+    if (profile_.tx_gap_us > 0U && lateness_us >= profile_.tx_gap_us) {
       metrics_.onSchedulerMiss(radio_.nowMicros(), tx_sequence_);
     }
 
@@ -92,16 +91,16 @@ class FixedLinkRuntime {
     metrics_.onTxQueued(radio_.nowMicros(), tx_sequence_);
     metrics_.onTxStart(radio_.nowMicros(), tx_sequence_);
     const bool sent = radio_.transmit(tx_buffer_.data(), packet_len);
+    const std::uint32_t tx_attempt_done_us = radio_.nowMicros();
     if (sent) {
-      metrics_.onTxDone(radio_.nowMicros(), tx_sequence_);
+      metrics_.onTxDone(tx_attempt_done_us, tx_sequence_);
       tx_sequence_ = static_cast<std::uint16_t>(tx_sequence_ + 1U);
     }
 
-    // Preserve cadence without trying to burst-send missed frames. begin()
-    // rejects a zero-period TX profile, so this division is always valid here.
-    const std::uint32_t periods_to_advance =
-        (lateness_us / profile_.tx_period_us) + 1U;
-    next_tx_due_us_ += periods_to_advance * profile_.tx_period_us;
+    // Historical V4 semantics: TX_GAP_US is idle time after the blocking TX
+    // call completes. Do not turn it into a start-to-start packet period.
+    // A failed attempt also observes the gap to avoid a hot retry loop.
+    next_tx_allowed_us_ = tx_attempt_done_us + profile_.tx_gap_us;
   }
 
   void serviceRx() {
@@ -169,7 +168,7 @@ class FixedLinkRuntime {
   FixedFlrcProfile profile_;
   std::uint16_t stream_id_ = 1U;
   std::uint16_t tx_sequence_ = 0U;
-  std::uint32_t next_tx_due_us_ = 0U;
+  std::uint32_t next_tx_allowed_us_ = 0U;
   pr1::sequence::SequenceUnwrapper sequence_unwrapper_{};
   LiveMetrics metrics_{};
   std::array<std::uint8_t, pr1::kRadioPayloadMaxBytes> tx_buffer_{};
