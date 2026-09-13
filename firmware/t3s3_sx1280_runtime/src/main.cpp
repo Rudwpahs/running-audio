@@ -65,7 +65,7 @@ void printLiveProfile() {
   Serial.printf("bitrate_kbps=%u\n", static_cast<unsigned>(profile.bitrate_kbps));
   Serial.printf("coding_rate=%u\n", static_cast<unsigned>(profile.coding_rate));
   Serial.printf("output_dbm=%d\n", static_cast<int>(profile.output_dbm));
-  Serial.printf("tx_period_us=%lu\n", static_cast<unsigned long>(profile.tx_period_us));
+  Serial.printf("tx_gap_us=%lu\n", static_cast<unsigned long>(profile.tx_gap_us));
   Serial.printf("packet_bytes=%u\n", static_cast<unsigned>(pr1::kDartPacketBytes));
   Serial.println("adaptive_layers=off");
 }
