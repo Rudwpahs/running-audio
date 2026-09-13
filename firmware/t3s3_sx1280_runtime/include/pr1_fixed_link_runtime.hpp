@@ -21,7 +21,9 @@ class FixedLinkRuntime {
       : radio_(radio), role_(role), profile_(profile), stream_id_(stream_id) {}
 
   bool begin() {
-    if (role_ == RuntimeRole::Safe || !radio_.beginFixedFlrc(profile_)) return false;
+    if (role_ == RuntimeRole::Safe) return false;
+    if (role_ == RuntimeRole::Tx && profile_.tx_period_us == 0U) return false;
+    if (!radio_.beginFixedFlrc(profile_)) return false;
 
     if (role_ == RuntimeRole::Rx) {
       radio_.setRxIrqHandler(&FixedLinkRuntime::rxIrqThunk, this);
@@ -95,9 +97,10 @@ class FixedLinkRuntime {
       tx_sequence_ = static_cast<std::uint16_t>(tx_sequence_ + 1U);
     }
 
-    // Preserve cadence without trying to burst-send missed frames.
+    // Preserve cadence without trying to burst-send missed frames. begin()
+    // rejects a zero-period TX profile, so this division is always valid here.
     const std::uint32_t periods_to_advance =
-        profile_.tx_period_us == 0U ? 1U : (lateness_us / profile_.tx_period_us) + 1U;
+        (lateness_us / profile_.tx_period_us) + 1U;
     next_tx_due_us_ += periods_to_advance * profile_.tx_period_us;
   }
 
