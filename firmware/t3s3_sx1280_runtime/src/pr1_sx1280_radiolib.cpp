@@ -76,12 +76,6 @@ std::int16_t Sx1280RadioLibPort::rssiDbm() {
   return static_cast<std::int16_t>(radio_.getRSSI());
 }
 
-std::int16_t Sx1280RadioLibPort::snrDb() {
-  // SX1280 FLRC packet status does not provide a LoRa-style SNR measurement.
-  // The current PR1 telemetry contract therefore does not expose SNR.
-  return 0;
-}
-
 std::uint32_t Sx1280RadioLibPort::nowMicros() const {
   return static_cast<std::uint32_t>(::micros());
 }
