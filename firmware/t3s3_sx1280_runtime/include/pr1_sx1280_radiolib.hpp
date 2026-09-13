@@ -21,7 +21,6 @@ class Sx1280RadioLibPort final : public RadioPort {
                              std::size_t* length) override;
   bool transmit(const std::uint8_t* data, std::size_t length) override;
   std::int16_t rssiDbm() override;
-  std::int16_t snrDb() override;
   std::uint32_t nowMicros() const override;
   void setRxIrqHandler(RxIrqHandler handler, void* context) override;
 
