@@ -28,6 +28,8 @@ int main() {
                 "Initial fixed FLRC baseline must be 1.3 Mbps");
   static_assert(kFixedFlrcProfile.coding_rate == 3u,
                 "Initial fixed FLRC baseline must use CR 3/4");
+  static_assert(kFixedFlrcProfile.tx_gap_us == 5000u,
+                "Default synthetic RF test must preserve the historical 5 ms post-TX gap");
   static_assert(pr1::kDartPacketBytes == 116u);
   static_assert(pr1::kDartPacketBytes <= pr1::kRadioPayloadMaxBytes,
                 "Canonical PR1-DART packet must fit the SX1280 FLRC payload ceiling");
