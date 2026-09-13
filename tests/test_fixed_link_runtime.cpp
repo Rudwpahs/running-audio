@@ -45,8 +45,8 @@ class FakeRadio final : public pr1::runtime::RadioPort {
     return tx_ok;
   }
 
-  std::int16_t rssiDbm() const override { return rssi_dbm; }
-  std::int16_t snrDb() const override { return snr_db; }
+  std::int16_t rssiDbm() override { return rssi_dbm; }
+  std::int16_t snrDb() override { return snr_db; }
   std::uint32_t nowMicros() const override { return clock_us; }
 
   void setRxIrqHandler(pr1::runtime::RxIrqHandler handler, void* context) override {
