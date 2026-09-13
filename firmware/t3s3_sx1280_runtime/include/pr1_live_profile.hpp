@@ -10,6 +10,10 @@
 #define PR1_RUNTIME_ROLE 0
 #endif
 
+#ifndef PR1_TX_GAP_US
+#define PR1_TX_GAP_US 5000
+#endif
+
 #define PR1_RUNTIME_ROLE_SAFE 0
 #define PR1_RUNTIME_ROLE_TX 1
 #define PR1_RUNTIME_ROLE_RX 2
@@ -30,6 +34,10 @@
 #error "RF-enabled builds must explicitly select TX or RX runtime role"
 #endif
 
+#if PR1_TX_GAP_US < 0
+#error "PR1_TX_GAP_US must be >= 0"
+#endif
+
 namespace pr1::runtime {
 
 enum class RuntimeRole : std::uint8_t {
@@ -43,7 +51,9 @@ struct FixedFlrcProfile {
   std::uint16_t bitrate_kbps;
   std::uint8_t coding_rate;
   std::int8_t output_dbm;
-  std::uint32_t tx_period_us;
+  // Intentional historical semantics: idle time after a blocking TX completes,
+  // not packet start-to-start period. This makes the V4 500..0 us sweep reproducible.
+  std::uint32_t tx_gap_us;
 };
 
 inline constexpr FixedFlrcProfile kFixedFlrcProfile{
@@ -51,7 +61,7 @@ inline constexpr FixedFlrcProfile kFixedFlrcProfile{
     1300U,
     3U,
     0,
-    10000U,
+    static_cast<std::uint32_t>(PR1_TX_GAP_US),
 };
 
 constexpr RuntimeRole runtimeRole() {
