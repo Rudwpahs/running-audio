@@ -2,7 +2,7 @@
 
 This runtime connects the host-tested PR1-DART packet/instrumentation layer to the LILYGO T3-S3/SX1280 hardware boundary.
 
-The default build is still RF-disabled. Two explicit non-default compile profiles now exist for the first hardware gate: fixed-channel FLRC TX and fixed-channel FLRC RX. AFH, adaptive channel maps, XOR FEC, deadline ARQ, adaptive PHY, the cross-layer controller, Opus/jitter/PLC and audio I/O are intentionally not activated here.
+The default build is still RF-disabled. Two explicit non-default compile profiles exist for the first hardware gate: fixed-channel FLRC TX and fixed-channel FLRC RX. AFH, adaptive channel maps, XOR FEC, deadline ARQ, adaptive PHY, the cross-layer controller, Opus/jitter/PLC and audio I/O are intentionally not activated here.
 
 ## Safety and activation contract
 
@@ -34,10 +34,14 @@ frequency_mhz=2404.000
 bitrate_kbps=1300
 coding_rate=3        # FLRC CR 3/4
 output_dbm=0
-tx_period_us=10000
+tx_gap_us=5000       # idle time AFTER blocking TX completes
 packet_bytes=116
 adaptive_layers=off
 ```
+
+`tx_gap_us` is intentionally **not** a packet start-to-start period. It preserves the semantics of the earlier PR1 V4 experiments: the transmitter completes one blocking radio transmission and then waits `TX_GAP_US` before the next attempt. A `0 us` gap is valid and means the next packet may start as soon as the blocking TX call returns and the runtime loop services again.
+
+The default 5 ms gap is a conservative bring-up value. For the receiver-boundary experiment, change `PR1_TX_GAP_US` under `[env:rf_tx_compile]` in `platformio.ini`, rebuild the TX image, and test the requested sweep values one at a time. This keeps the tested gap compiled into the boot profile instead of changing it silently at runtime.
 
 The 116-byte PR1-DART packet is the existing 16-byte PR1 header plus the 100-byte target codec payload and remains below the SX1280 FLRC 127-byte payload ceiling.
 
@@ -62,14 +66,17 @@ Do not treat the two `rf_*_compile` builds as field validation. They prove only 
 
 The RX interrupt path is intentionally minimal. The ISR-side callback records only the receive-complete timestamp/flag. SPI reads, packet decoding, sequence accounting, telemetry updates and RX re-arm all happen later in `tick()`. This is important because the first physical goal is to distinguish RF loss from receiver-processing saturation rather than hide it with recovery layers.
 
-TX sequence numbers are committed only after `radio.transmit()` succeeds. A failed physical TX therefore retries the same sequence instead of silently manufacturing a source-packet gap.
+TX sequence numbers are committed only after `radio.transmit()` succeeds. A failed physical TX therefore retries the same sequence instead of silently manufacturing a source-packet gap. Failed attempts still observe the configured post-TX gap so a radio fault cannot create an uncontrolled hot retry loop.
+
+The FLRC port exposes RSSI only. It deliberately does not fabricate an SNR value for FLRC; an unavailable measurement must remain unavailable rather than appear as `0`.
 
 ## Live telemetry
 
 The live accumulator can expose:
 
 - RSSI
-- CRC good / CRC bad
+- valid PR1 / CRC-good count
+- physical CRC-failure count
 - missing sequence count
 - current / maximum pending queue depth
 - scheduler misses
@@ -92,7 +99,7 @@ PR1T v=1 t_us=<timestamp> field=rx_processing_us value=<p99_us>
 PR1T v=1 t_us=<timestamp> field=rx_rearm_us value=<p99_us>
 ```
 
-The timing fields currently report the p99 of fixed-size in-memory windows. The hot path performs no dynamic allocation.
+The timing fields currently report the p99 of fixed-size in-memory windows. The hot path performs no dynamic allocation. Trace events are retained in the in-memory trace ring for this first hardware gate; continuous `PR1E` serial streaming is intentionally not enabled because it could perturb the timing being measured.
 
 The host parser remains:
 
@@ -134,7 +141,7 @@ The pin values are reference values from the official LILYGO `T3-S3-MVSRBoard` r
 - TX RF-switch 10
 - RX RF-switch 21
 
-No vendor radio example source is copied into PR1. The vendor repository is used only as a board/API reference.
+No vendor radio example source is copied into PR1. The vendor repository is used only as a hardware/API reference.
 
 The reference configuration identifies MVSRBoard V1.1; that remains a reference claim, not proof of the exact physical board revision in hand.
 
@@ -146,9 +153,10 @@ Use two boards, one TX image and one RX image. Keep all adaptive/recovery layers
 2. Boot the RX fixed-FLRC image and confirm `PR1_RUNTIME_LIVE_READY`.
 3. Boot the TX fixed-FLRC image and confirm the same fixed profile on both sides.
 4. Run a short 100-packet sanity test and request RX telemetry with `t`.
-5. Run at least 1,000 packets and record CRC-good, CRC-bad, missing, RSSI and the four RX timing metrics.
-6. Reproduce the receiver-boundary sweep separately at TX gaps 500 / 300 / 250 / 225 / 200 / 175 / 150 / 125 us.
-7. Only after the fixed-link loss source is classified should deterministic static-map AFH be activated.
+5. Run at least 1,000 packets and record valid/CRC-good, CRC-bad, missing, RSSI and the four RX timing metrics.
+6. Reproduce the receiver-boundary sweep at post-TX gaps `500 / 300 / 250 / 225 / 200 / 175 / 150 / 125 us`; the historical `0 us` point remains supported for an explicit stress run.
+7. Correlate PER/CRC and RSSI with IRQ->SPI, SPI duration, RX processing, RX re-arm, queue depth and scheduler misses.
+8. Only after the fixed-link loss source is classified should deterministic static-map AFH be activated.
 
 ## Still intentionally disabled in the hardware runtime
 
