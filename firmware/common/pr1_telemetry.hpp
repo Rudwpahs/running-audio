@@ -57,6 +57,7 @@ enum class FieldId : std::uint8_t {
   AfhMapVersion = 0x12,
   PhyMode = 0x13,
   CapabilityMask = 0x14,
+  SpiDurationUs = 0x15,
 };
 
 struct OptionalMetric {
@@ -82,6 +83,7 @@ struct Snapshot {
   OptionalMetric max_queue_depth{};
   OptionalMetric scheduler_misses{};
   OptionalMetric irq_to_spi_us{};
+  OptionalMetric spi_duration_us{};
   OptionalMetric rx_processing_us{};
   OptionalMetric rx_rearm_us{};
   OptionalMetric jitter_depth{};
@@ -158,6 +160,8 @@ constexpr const char* fieldName(FieldId field) {
       return "phy_mode";
     case FieldId::CapabilityMask:
       return "capability_mask";
+    case FieldId::SpiDurationUs:
+      return "spi_duration_us";
   }
   return "unknown";
 }
@@ -236,6 +240,9 @@ void forEachSnapshotField(const Snapshot& snapshot, Emit&& emit) {
   }
   if (snapshot.irq_to_spi_us.available) {
     emit(FieldValue{FieldId::IrqToSpiUs, snapshot.irq_to_spi_us.value});
+  }
+  if (snapshot.spi_duration_us.available) {
+    emit(FieldValue{FieldId::SpiDurationUs, snapshot.spi_duration_us.value});
   }
   if (snapshot.rx_processing_us.available) {
     emit(FieldValue{FieldId::RxProcessingUs, snapshot.rx_processing_us.value});

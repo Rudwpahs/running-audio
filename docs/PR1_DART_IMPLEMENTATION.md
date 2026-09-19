@@ -1,6 +1,6 @@
 # PR1-DART host reference implementation
 
-This document records the host-testable implementation for issues #24–#32 plus the #40/#41 pre-activation safety hardening. It is deliberately split from the hardware integration path so adaptive features can remain **default-off** until the fixed-channel SX1280 baseline and receiver timing behavior are measured.
+This document records the host-testable implementation for issues #24–#32 plus the #40/#41 pre-activation safety hardening and the first gated T3-S3/SX1280 fixed-channel runtime integration. Adaptive features remain **default-off** until the fixed-channel SX1280 baseline and receiver timing behavior are physically measured.
 
 ## Hard protocol gate
 
@@ -32,8 +32,11 @@ The safety-hardening work does **not** expand the wire sequence or packet header
 - CRC, missing, scheduler, recovery and queue-depth bookkeeping counters
 - host-visible measurement fields are observation-aware: **unobserved is not zero**
 - safe RF-disabled runtime therefore does not report fake zero RF loss/CRC/scheduler measurements
+- additive live-runtime timing field `spi_duration_us` uses field ID `0x15`; existing field IDs remain unchanged
 
-Hardware-only remaining gate: wire timestamps and measurement availability to the actual ESP32-S3 ISR/SPI/I2S/Opus path and measure IRQ→SPI and E2E latency.
+The fixed-channel runtime now wires DIO receive timestamps, SPI read timing, RX-processing timing, RX re-arm timing, RSSI, packet outcome, missing-sequence accounting, queue depth and scheduler-miss bookkeeping into the live telemetry path. Continuous event streaming is intentionally disabled during this gate; events remain in the fixed-size in-memory trace ring and `PR1T` snapshots are pulled on demand so serial I/O does not become the receiver bottleneck.
+
+Hardware-only remaining gate: capture those measurements on the physical T3-S3/SX1280 pair and determine the actual receiver-processing and RF behavior. I2S/Opus/E2E audio timing remains a later gate.
 
 ### #25 AFH core
 `pr1_afh.hpp`
@@ -108,16 +111,35 @@ Hardware-only remaining gate: actual ESP32-S3 Opus complexity benchmark and deco
 - `tests/run_host_tests.sh`: warning-clean build plus ASan/UBSan
 - sequence/jitter/ARQ/FEC/AFH/controller/telemetry long-session safety regressions run through the same host suite
 - `tools/pr1_dart_sim.py`: deterministic A–H **structural regression** matrix only
-- GitHub Actions run the host suite, parser tests, packet simulator and RF-disabled PlatformIO build
+- GitHub Actions run the host suite, parser tests and packet simulator
+- runtime CI builds the RF-disabled `safe` image and compile-gates explicit fixed-FLRC TX and RX profiles against pinned RadioLib
 
-The synthetic A–H matrix is not an RF propagation or real-time load model and is not evidence of physical performance.
+The synthetic A–H matrix and RF compile gates are not RF propagation or real-time load models and are not evidence of physical performance.
+
+## Phase-1 fixed-channel runtime status
+
+The hardware-facing software integration now contains:
+
+- compile-time roles `Safe`, `Tx`, `Rx`
+- `safe` as the only default PlatformIO environment
+- explicit RF enable gate; RF-enabled builds must select TX or RX
+- fixed FLRC 1.3 Mbps / CR 3/4 baseline at one channel
+- 116-byte canonical PR1-DART packet
+- historical post-transmit `TX_GAP_US` semantics: idle time starts after the blocking TX attempt finishes; `0 us` is valid for an explicit stress point
+- TX sequence commit only after successful physical transmit
+- host-tested duplicate, forward-gap, malformed-packet, CRC-error and RX re-arm handling
+- official LILYGO T3-S3/SX1280 pin mapping through the board config
+- RadioLib adapter behind the RF gate
+- pull-based live telemetry so serial logging does not contaminate the timing path
+
+This status is **software/compile integration only**. `hardware_verified` remains false until physical evidence is captured.
 
 ## Activation order on hardware
 
 1. Keep AFH/FEC/ARQ/controller OFF.
-2. Enable only a gated fixed-channel SX1280 runtime after the board/revision gate.
-3. Integrate live instrumentation and reproduce the existing TX-gap boundary.
-4. Determine whether losses come from receiver processing, RF weakness, or both using queue/timing/RSSI/PER evidence.
+2. Enable only a gated fixed-channel SX1280 runtime after the board/revision gate. **Software integration complete; physical board verification pending.**
+3. Integrate live instrumentation and reproduce the existing TX-gap boundary. **Software instrumentation complete; physical sweep pending.**
+4. Determine whether losses come from receiver processing, RF weakness, or both using queue/timing/RSSI/PER evidence. **Pending physical measurements.**
 5. Enable deterministic hopping with a static all-channel map.
 6. Add channel-quality map adaptation.
 7. Add XOR FEC.
@@ -127,8 +149,10 @@ The synthetic A–H matrix is not an RF propagation or real-time load model and 
 11. Enable the cross-layer controller last, with processing thresholds calibrated from hardware.
 12. Run the issue #32 field matrix before calling the integrated stack validated.
 
+The fixed-link physical sequence is: safe boot → RX live-ready → TX live-ready → 100-packet sanity → at least 1,000 fixed-link packets → post-TX gap sweep `500 / 300 / 250 / 225 / 200 / 175 / 150 / 125 us` (with optional explicit `0 us` stress) → loss-source classification from RSSI/PER plus IRQ→SPI/SPI/RX/re-arm/queue/scheduler evidence.
+
 ## What this implementation does not claim
 
-Host tests prove deterministic common-code logic, bounds and sanitizer-clean behavior for the exercised cases. They **do not** prove RF range, legal RF settings, ESP32-S3 real-time deadlines, audio quality, power draw, controller threshold quality, or field reliability. Those require the physical SX1280 boards and measured #24/#32/#36 gates.
+Host tests prove deterministic common-code logic, bounds and sanitizer-clean behavior for the exercised cases. Compile gates prove that the safe and fixed-FLRC TX/RX firmware profiles build against the pinned toolchain. They **do not** prove RF range, legal RF settings, ESP32-S3 real-time deadlines, audio quality, power draw, controller threshold quality, or field reliability. Those require the physical SX1280 boards and measured #24/#32/#36 gates.
 
 Local `session_generation` is not authentication. Before a public/study-cafe multi-user deployment, a separate protocol-security design must cover session binding, replay protection, authenticated reverse-link feedback and confidentiality if required by the threat model.
