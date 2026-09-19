@@ -4,6 +4,8 @@ This runtime connects the host-tested PR1-DART packet/instrumentation layer to t
 
 The default build is still RF-disabled. Two explicit non-default compile profiles exist for the first hardware gate: fixed-channel FLRC TX and fixed-channel FLRC RX. AFH, adaptive channel maps, XOR FEC, deadline ARQ, adaptive PHY, the cross-layer controller, Opus/jitter/PLC and audio I/O are intentionally not activated here.
 
+The Superpowers execution/ruling record for this integration is `docs/superpowers/plans/2026-09-14-pr1-live-flrc-runtime-execution.md`.
+
 ## Safety and activation contract
 
 Default profile:
@@ -78,13 +80,15 @@ The live accumulator can expose:
 - valid PR1 / CRC-good count
 - physical CRC-failure count
 - missing sequence count
-- current / maximum pending queue depth
+- current / maximum pending-event depth
 - scheduler misses
 - DIO IRQ -> SPI-start time
 - SPI read duration
 - RX processing time
 - RX re-arm time
 - trace-ring overwrites
+
+`queue_depth` currently means the bounded **pending RX event depth** of this single-event runtime, not a hardware FIFO depth or a multi-packet software backlog. Because RX is not re-armed until the current event is serviced, this value is normally `0` or `1` and must not be used alone as evidence that the receiver is or is not saturated. The fixed-link classification must use missing sequences together with IRQ→SPI, SPI duration, RX-processing and RX-rearm timing (plus RSSI/CRC evidence); later queued/audio runtimes can give `queue_depth` a richer workload meaning.
 
 `0` and `unobserved` remain different states. A field is emitted only after the owning measurement has actually been observed.
 
@@ -155,7 +159,7 @@ Use two boards, one TX image and one RX image. Keep all adaptive/recovery layers
 4. Run a short 100-packet sanity test and request RX telemetry with `t`.
 5. Run at least 1,000 packets and record valid/CRC-good, CRC-bad, missing, RSSI and the four RX timing metrics.
 6. Reproduce the receiver-boundary sweep at post-TX gaps `500 / 300 / 250 / 225 / 200 / 175 / 150 / 125 us`; the historical `0 us` point remains supported for an explicit stress run.
-7. Correlate PER/CRC and RSSI with IRQ->SPI, SPI duration, RX processing, RX re-arm, queue depth and scheduler misses.
+7. Correlate PER/CRC and RSSI with IRQ->SPI, SPI duration, RX processing, RX re-arm, pending-event depth and scheduler misses. Treat the current `queue_depth` as a 0/1 event-pending indicator, not a backlog metric.
 8. Only after the fixed-link loss source is classified should deterministic static-map AFH be activated.
 
 ## Still intentionally disabled in the hardware runtime
