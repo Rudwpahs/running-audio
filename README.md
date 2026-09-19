@@ -1,106 +1,99 @@
 # PR1 — Phone ↔ Receiver Exchange Audio System
 
-PR1 is not an earbud, not a generic outdoor speaker system, and not a normal Bluetooth audio product.
+PR1은 이어폰을 하나 더 만드는 프로젝트가 아닙니다. 핵심은 **휴대폰을 잠시 손에서 떼어놓고도 필요한 소리는 계속 들을 수 있게 만드는 교환 시스템**입니다.
 
-PR1 is a **phone-and-receiver exchange system** for study cafes and parks:
-
-> The user leaves their phone at a PR1 transmitter/storage station, receives a small PR1 receiver, and hears only audio while the phone screen stays away.
-
-The core product is the **exchange flow**:
+사용자는 스터디카페나 공원의 PR1 station에 휴대폰을 맡기고 작은 receiver를 받아 사용합니다. 끝나면 receiver를 반납하고 자기 휴대폰을 돌려받습니다.
 
 ```text
 phone in → receiver out → audio only → receiver back → phone back
 ```
 
-## One-line Korean definition
+## 왜 만들고 있나
 
-> PR1은 스터디카페와 공원에서 사용자가 휴대폰을 맡기고, 대신 수신기를 받아 소리만 듣는 시스템입니다.
+공부하거나 걸을 때 음악, 백색소음, 강의, 타이머 같은 소리는 필요할 수 있습니다. 그런데 기존 이어폰은 소리를 들을 수 있게 해주는 대신 휴대폰도 계속 손 닿는 곳에 남겨 둡니다.
 
-## What problem does PR1 solve?
+PR1은 이 문제를 소프트웨어 차단이 아니라 **물리적으로 화면과 거리를 만드는 방식**으로 풀어보는 실험입니다.
 
-### Study cafe / 독서실
+## 운영 알고리즘
 
-Students often need audio for music, white noise, lectures, timers, or alerts. Existing earbuds still keep the phone on the desk, in the pocket, or within reach. That means the screen, messages, Shorts, Instagram, and other apps remain one touch away.
+PR1에서 가장 중요한 알고리즘은 무선 기술보다 먼저 **교환과 매칭**입니다.
 
-PR1 removes the phone from the seat while keeping audio available.
+```text
+사용자 도착
+   ↓
+휴대폰을 station에 맡김
+   ↓
+휴대폰 ↔ receiver 식별자를 한 쌍으로 등록
+   ↓
+해당 receiver를 사용자에게 전달
+   ↓
+사용 중에는 audio만 receiver로 전달
+   ↓
+receiver 반납
+   ↓
+등록된 pair 검증
+   ↓
+맞는 휴대폰 반환
+```
 
-### Park / walking / running
+여기서 매칭이 틀리면 제품 전체가 성립하지 않기 때문에, 실제 서비스 단계에서는 음질보다 먼저 **누구의 휴대폰과 어떤 receiver가 연결돼 있는지 안전하게 유지하는 것**이 핵심입니다.
 
-People want music, timers, or workout audio in a park without holding a phone, checking the screen, or carrying it during walking/running. PR1 keeps the phone at a fixed station and lets the user move with only the receiver.
+## 오디오 처리 흐름
 
-## What PR1 is
+현재 기술 PoC는 다음 구조를 검증합니다.
 
-- A phone deposit / receiver rental flow
-- A transmitter/storage station that keeps the user's phone physically away
-- A small receiver that receives only audio
-- A study cafe and park use-case first
-- A system that makes screen access intentionally inconvenient
+```text
+phone audio
+   ↓
+transmitter가 audio 입력 수신
+   ↓
+전송 가능한 packet / stream으로 변환
+   ↓
+무선 링크로 receiver에 전달
+   ↓
+receiver에서 audio 복원
+   ↓
+사용자에게 출력
+```
 
-## What PR1 is not
+ESP32-S3, SX1280, audio module은 이 흐름을 확인하기 위한 초기 PoC 도구이며 최종 제품 부품으로 확정한 것이 아닙니다.
 
-- wireless earbuds
-- an AirPods/Buds/Shokz replacement
-- an MP3 player
-- a generic tour-guide radio
-- a park-wide Hi-Fi broadcast network
-- an app-first service
-- a vague “digital wellness platform”
+## PR1이 아닌 것
 
-If PR1 is explained as “a small wireless audio device,” it sounds like existing earbuds. The correct explanation always starts with **phone ↔ receiver exchange**.
+- AirPods / Buds / Shokz 대체 이어폰
+- MP3 player
+- 일반 야외 스피커
+- tour-guide radio를 그대로 옮긴 제품
+- 앱 사용시간을 알려주는 digital wellness app
 
-## Current status — 2026-08-16
+설명할 때 `작은 무선 오디오 기기`부터 시작하면 기존 제품과 차이가 사라집니다. 항상 **phone deposit + receiver handoff**부터 설명합니다.
 
-- Product definition corrected: **phone deposit + receiver handoff + audio-only use**
-- Beachhead 1: **study cafes / 독서실**
-- Beachhead 2: **parks / walking / running areas**
-- Technical PoC: audio transmitter → receiver pipeline
-- Early hardware: ESP32-S3 / SX1280 / audio modules are PoC tools, not final product decisions
-- Market validation: survey and interviews must measure whether people will actually hand in their phone and use the receiver
+## 우선 검증할 것
 
-## Core operating scenarios
+1. 사용자가 실제로 휴대폰을 맡길 의향이 있는가?
+2. 화면 없이 audio만 남겨도 사용 가치가 있는가?
+3. 휴대폰과 receiver를 반복 운영하면서 안전하게 매칭할 수 있는가?
+4. receiver를 충분히 작고 안정적이며 저렴하게 만들 수 있는가?
 
-### Scenario A — Study cafe
+이 네 가지가 확인되기 전에는 최종 산업 디자인이나 대규모 구매를 먼저 하지 않습니다.
 
-1. User enters the study cafe.
-2. User leaves phone at the PR1 station.
-3. User receives a numbered PR1 receiver.
-4. User studies with audio only.
-5. User returns the receiver.
-6. Staff/system returns the matched phone.
-
-### Scenario B — Park
-
-1. User arrives at a park PR1 station.
-2. User leaves phone at the station.
-3. User receives a PR1 receiver.
-4. User walks, runs, or rests while hearing audio only.
-5. User returns the receiver and gets the phone back.
-
-## Start here
+## 문서
 
 ### Product / business
-- [Canonical positioning](docs/PR1_CANONICAL_POSITIONING.md)
-- [Website copy](docs/WEBSITE_COPY_KR.md)
-- [Business plan](docs/BUSINESS_PLAN_V0.md)
-- [Market validation](docs/MARKET_VALIDATION.md)
-- [Pilot one-pager](docs/PILOT_ONE_PAGER_KR.md)
-- [Modoo Startup packet](docs/MODOO_STARTUP_PACKET_KR.md)
+
+- `docs/PR1_CANONICAL_POSITIONING.md`
+- `docs/WEBSITE_COPY_KR.md`
+- `docs/BUSINESS_PLAN_V0.md`
+- `docs/MARKET_VALIDATION.md`
+- `docs/PILOT_ONE_PAGER_KR.md`
 
 ### Technical
-- [Technical MVP and stage gates](docs/TECHNICAL_MVP.md)
-- [Current hardware role matrix](docs/HARDWARE_ROLE_MATRIX.md)
-- [Radio architecture options](docs/ARCHITECTURE_OPTIONS.md)
-- [Korea regulatory gate](docs/REGULATORY_GATE.md)
 
-## Development principle
+- `docs/TECHNICAL_MVP.md`
+- `docs/HARDWARE_ROLE_MATRIX.md`
+- `docs/ARCHITECTURE_OPTIONS.md`
+- `docs/REGULATORY_GATE.md`
 
-**Do not build an earbud. Build the exchange system.**
+현재 제품 원칙은 한 문장으로 정리하면 이렇습니다.
 
-Measure one question at a time:
-
-1. Will users actually hand in their phone?
-2. Is audio-only enough for the study cafe / park use case?
-3. Can staff or a station safely match each phone with the correct receiver?
-4. Is the receiver small, reliable, and cheap enough for repeated operation?
-
-Until these are proven, avoid final industrial design, app development, large purchasing, and broad market claims.
+> 이어폰을 만드는 게 아니라, 휴대폰과 거리를 만드는 교환 시스템을 만든다.
