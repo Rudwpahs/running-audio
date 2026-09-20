@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 namespace pr1::board {
 
 struct Sx1280Pins {
@@ -21,6 +23,10 @@ inline constexpr char kReferenceRevision[] = "V1.1 upstream reference";
 inline constexpr char kRadioTarget[] = "SX1280";
 inline constexpr char kUpstreamReferenceCommit[] =
     "840a2e788b3192c4e9bddf0640c1ecaf703c2598";
+
+// Measurement baseline: keep the RadioLib 7.7.1 default SPI frequency
+// explicit so physical timing evidence is reproducible before any SPI tuning.
+inline constexpr std::uint32_t kSx1280SpiHz = 2'000'000U;
 
 inline constexpr Sx1280Pins kSx1280Pins{
     7,   // CS
