@@ -26,6 +26,8 @@ void printBootMetadata() {
   Serial.printf("protocol_header_bytes=%u\n",
                 static_cast<unsigned>(metadata.protocol_header_bytes));
   Serial.printf("rf_enabled=%u\n", metadata.rf_enabled ? 1U : 0U);
+  Serial.printf("sx1280_spi_hz=%lu\n",
+                static_cast<unsigned long>(pr1::board::kSx1280SpiHz));
   Serial.printf("sx1280_cs=%d\n", pins.cs);
   Serial.printf("sx1280_rst=%d\n", pins.rst);
   Serial.printf("sx1280_sclk=%d\n", pins.sclk);
