@@ -13,7 +13,8 @@ Sx1280RadioLibPort::Sx1280RadioLibPort()
                         board::kSx1280Pins.dio1,
                         board::kSx1280Pins.rst,
                         board::kSx1280Pins.busy,
-                        SPI)) {}
+                        SPI,
+                        SPISettings(board::kSx1280SpiHz, MSBFIRST, SPI_MODE0))) {}
 
 bool Sx1280RadioLibPort::beginFixedFlrc(const FixedFlrcProfile& profile) {
   SPI.begin(board::kSx1280Pins.sclk,

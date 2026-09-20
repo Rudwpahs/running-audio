@@ -17,7 +17,9 @@ int main() {
   assert(!snapshot.irq_to_spi_us.available);
   assert(!snapshot.spi_duration_us.available);
   assert(!snapshot.rx_processing_us.available);
+  assert(!snapshot.spi_end_to_rearm_start_us.available);
   assert(!snapshot.rx_rearm_us.available);
+  assert(!snapshot.irq_to_rx_ready_us.available);
 
   // One complete RX lifecycle. Durations are deliberately easy to inspect:
   // IRQ=1000, SPI start=1120, SPI end=1200, packet complete=1280,
@@ -41,7 +43,11 @@ int main() {
   assert(snapshot.irq_to_spi_us.available && snapshot.irq_to_spi_us.value == 120);
   assert(snapshot.spi_duration_us.available && snapshot.spi_duration_us.value == 80);
   assert(snapshot.rx_processing_us.available && snapshot.rx_processing_us.value == 160);
+  assert(snapshot.spi_end_to_rearm_start_us.available &&
+         snapshot.spi_end_to_rearm_start_us.value == 100);
   assert(snapshot.rx_rearm_us.available && snapshot.rx_rearm_us.value == 60);
+  assert(snapshot.irq_to_rx_ready_us.available &&
+         snapshot.irq_to_rx_ready_us.value == 360);
 
   // Observed zero must remain different from never-observed. A CRC failure then
   // makes both good/bad counters host-visible and increments only crc_bad.

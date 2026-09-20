@@ -4,7 +4,7 @@ This runtime connects the host-tested PR1-DART packet/instrumentation layer to t
 
 The default build is still RF-disabled. Two explicit non-default compile profiles exist for the first hardware gate: fixed-channel FLRC TX and fixed-channel FLRC RX. AFH, adaptive channel maps, XOR FEC, deadline ARQ, adaptive PHY, the cross-layer controller, Opus/jitter/PLC and audio I/O are intentionally not activated here.
 
-The Superpowers execution/ruling record for this integration is `docs/superpowers/plans/2026-09-14-pr1-live-flrc-runtime-execution.md`.
+The Superpowers execution/ruling record for this integration is `docs/superpowers/plans/2026-09-14-pr1-live-flrc-runtime-execution.md`. The pre-board measurement gate is frozen in `docs/PR1_PREBOARD_RX_GATE.md`.
 
 ## Safety and activation contract
 
@@ -38,8 +38,11 @@ coding_rate=3        # FLRC CR 3/4
 output_dbm=0
 tx_gap_us=5000       # idle time AFTER blocking TX completes
 packet_bytes=116
+sx1280_spi_hz=2000000
 adaptive_layers=off
 ```
+
+The 2 MHz SPI value is intentionally explicit for the first physical timing gate. It matches the RadioLib 7.7.1 default used by the previous adapter but is now a visible, testable baseline rather than an implicit dependency default. Do not increase the SPI clock until fixed-link measurements identify SPI transaction time as the dominant bottleneck.
 
 `tx_gap_us` is intentionally **not** a packet start-to-start period. It preserves the semantics of the earlier PR1 V4 experiments: the transmitter completes one blocking radio transmission and then waits `TX_GAP_US` before the next attempt. A `0 us` gap is valid and means the next packet may start as soon as the blocking TX call returns and the runtime loop services again.
 
@@ -85,10 +88,14 @@ The live accumulator can expose:
 - DIO IRQ -> SPI-start time
 - SPI read duration
 - RX processing time
-- RX re-arm time
+- SPI-end -> RX re-arm-start time
+- RX re-arm duration
+- DIO IRQ -> RX-ready total turnaround time
 - trace-ring overwrites
 
-`queue_depth` currently means the bounded **pending RX event depth** of this single-event runtime, not a hardware FIFO depth or a multi-packet software backlog. Because RX is not re-armed until the current event is serviced, this value is normally `0` or `1` and must not be used alone as evidence that the receiver is or is not saturated. The fixed-link classification must use missing sequences together with IRQ→SPI, SPI duration, RX-processing and RX-rearm timing (plus RSSI/CRC evidence); later queued/audio runtimes can give `queue_depth` a richer workload meaning.
+`queue_depth` currently means the bounded **pending RX event depth** of this single-event runtime, not a hardware FIFO depth or a multi-packet software backlog. Because RX is not re-armed until the current event is serviced, this value is normally `0` or `1` and must not be used alone as evidence that the receiver is or is not saturated. The fixed-link classification must use missing sequences together with IRQ→SPI, SPI duration, post-SPI processing, RX-rearm and total IRQ→RX-ready timing (plus RSSI/CRC evidence); later queued/audio runtimes can give `queue_depth` a richer workload meaning.
+
+`rx_processing_us` overlaps the SPI interval: it measures from SPI start to successful packet completion. Do not add it to `irq_to_spi_us + spi_duration_us + spi_end_to_rearm_start_us + rx_rearm_us`. The four non-overlapping terms should instead be compared with the directly measured `irq_to_rx_ready_us`.
 
 `0` and `unobserved` remain different states. A field is emitted only after the owning measurement has actually been observed.
 
@@ -100,7 +107,9 @@ PR1T v=1 t_us=<timestamp> field=missing value=<n>
 PR1T v=1 t_us=<timestamp> field=irq_to_spi_us value=<p99_us>
 PR1T v=1 t_us=<timestamp> field=spi_duration_us value=<p99_us>
 PR1T v=1 t_us=<timestamp> field=rx_processing_us value=<p99_us>
+PR1T v=1 t_us=<timestamp> field=spi_end_to_rearm_start_us value=<p99_us>
 PR1T v=1 t_us=<timestamp> field=rx_rearm_us value=<p99_us>
+PR1T v=1 t_us=<timestamp> field=irq_to_rx_ready_us value=<p99_us>
 ```
 
 The timing fields currently report the p99 of fixed-size in-memory windows. The hot path performs no dynamic allocation. Trace events are retained in the in-memory trace ring for this first hardware gate; continuous `PR1E` serial streaming is intentionally not enabled because it could perturb the timing being measured.
@@ -126,6 +135,7 @@ hardware_verified=0
 protocol_version=1
 protocol_header_bytes=16
 rf_enabled=0
+sx1280_spi_hz=2000000
 PR1_RUNTIME_SAFE_IDLE
 ```
 
@@ -154,16 +164,19 @@ The reference configuration identifies MVSRBoard V1.1; that remains a reference 
 Use two boards, one TX image and one RX image. Keep all adaptive/recovery layers off.
 
 1. Boot `safe` first and confirm metadata.
-2. Boot the RX fixed-FLRC image and confirm `PR1_RUNTIME_LIVE_READY`.
+2. Boot the RX fixed-FLRC image and confirm `PR1_RUNTIME_LIVE_READY`, including `sx1280_spi_hz=2000000`.
 3. Boot the TX fixed-FLRC image and confirm the same fixed profile on both sides.
-4. Run a short 100-packet sanity test and request RX telemetry with `t`.
-5. Run at least 1,000 packets and record valid/CRC-good, CRC-bad, missing, RSSI and the four RX timing metrics.
-6. Reproduce the receiver-boundary sweep at post-TX gaps `500 / 300 / 250 / 225 / 200 / 175 / 150 / 125 us`; the historical `0 us` point remains supported for an explicit stress run.
-7. Correlate PER/CRC and RSSI with IRQ->SPI, SPI duration, RX processing, RX re-arm, pending-event depth and scheduler misses. Treat the current `queue_depth` as a 0/1 event-pending indicator, not a backlog metric.
-8. Only after the fixed-link loss source is classified should deterministic static-map AFH be activated.
+4. Start with the conservative `5000 us` post-TX gap and run a short sanity capture; request RX telemetry with `t`.
+5. Run at least 1,000 packets at post-TX gaps `1000 / 500 / 300 / 250 / 225 / 200 / 175 / 150 / 125 us`; the historical `0 us` point remains an explicit final stress run.
+6. At any transition region where loss changes materially, repeat with at least 10,000 packets.
+7. Record CRC-good, CRC-bad, missing, RSSI, IRQ→SPI, SPI duration, RX processing, SPI-end→re-arm-start, RX re-arm, IRQ→RX-ready, pending-event depth, scheduler misses and trace overwrites.
+8. Only after the fixed-link loss source is classified should any scheduling, SPI-speed, DMA or adaptive/recovery change be considered.
 
 ## Still intentionally disabled in the hardware runtime
 
+- dedicated FreeRTOS RF task / core split
+- SPI speed tuning and SPI DMA
+- re-arm-before-read experiments
 - deterministic hopping / AFH
 - adaptive channel-quality map
 - XOR FEC
