@@ -42,11 +42,17 @@ int main() {
   static_assert(static_cast<std::uint8_t>(FieldId::DeviceState) == 0x01);
   static_assert(static_cast<std::uint8_t>(FieldId::CapabilityMask) == 0x14);
   static_assert(static_cast<std::uint8_t>(FieldId::SpiDurationUs) == 0x15);
+  static_assert(static_cast<std::uint8_t>(FieldId::SpiEndToRearmStartUs) == 0x16);
+  static_assert(static_cast<std::uint8_t>(FieldId::IrqToRxReadyUs) == 0x17);
   static_assert(static_cast<std::uint32_t>(Capability::TimingTrace) == 8u);
 
   assert(std::string_view{deviceStateName(DeviceState::SafeIdle)} == "safe_idle");
   assert(std::string_view{fieldName(FieldId::CrcBad)} == "crc_bad");
   assert(std::string_view{fieldName(FieldId::SpiDurationUs)} == "spi_duration_us");
+  assert(std::string_view{fieldName(FieldId::SpiEndToRearmStartUs)} ==
+         "spi_end_to_rearm_start_us");
+  assert(std::string_view{fieldName(FieldId::IrqToRxReadyUs)} ==
+         "irq_to_rx_ready_us");
   assert(std::string_view{eventName(pr1::instrumentation::Event::RxPacketOk)} ==
          "rx_packet_ok");
   assert(std::string_view{eventName(pr1::instrumentation::Event::RxCrcFail)} ==
@@ -70,6 +76,8 @@ int main() {
   assert(!hasField(safe_fields, FieldId::Missing));
   assert(!hasField(safe_fields, FieldId::SchedulerMisses));
   assert(!hasField(safe_fields, FieldId::SpiDurationUs));
+  assert(!hasField(safe_fields, FieldId::SpiEndToRearmStartUs));
+  assert(!hasField(safe_fields, FieldId::IrqToRxReadyUs));
 
   // Internal counters may hold values, but they are not host-visible until the
   // owning runtime explicitly marks the corresponding measurement observed.
@@ -96,6 +104,8 @@ int main() {
   assert(!hasField(unobserved_fields, FieldId::MaxQueueDepth));
   assert(!hasField(unobserved_fields, FieldId::ArqRetransmitSent));
   assert(!hasField(unobserved_fields, FieldId::SpiDurationUs));
+  assert(!hasField(unobserved_fields, FieldId::SpiEndToRearmStartUs));
+  assert(!hasField(unobserved_fields, FieldId::IrqToRxReadyUs));
 
   // Observed zero is a real value and must remain representable.
   Snapshot observed{};
@@ -109,6 +119,8 @@ int main() {
   observed.scheduler_misses = {true, 0};
   observed.max_queue_depth = {true, 9};
   observed.spi_duration_us = {true, 80};
+  observed.spi_end_to_rearm_start_us = {true, 100};
+  observed.irq_to_rx_ready_us = {true, 360};
   observed.arq_retransmit_sent = {true, 3};
 
   const auto observed_fields = collect(observed);
@@ -118,6 +130,8 @@ int main() {
   assert(hasFieldValue(observed_fields, FieldId::SchedulerMisses, 0));
   assert(hasFieldValue(observed_fields, FieldId::MaxQueueDepth, 9));
   assert(hasFieldValue(observed_fields, FieldId::SpiDurationUs, 80));
+  assert(hasFieldValue(observed_fields, FieldId::SpiEndToRearmStartUs, 100));
+  assert(hasFieldValue(observed_fields, FieldId::IrqToRxReadyUs, 360));
   assert(hasFieldValue(observed_fields, FieldId::ArqRetransmitSent, 3));
 
   std::cout << "test_telemetry: PASS\n";
