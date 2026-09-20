@@ -43,6 +43,8 @@ class LiveMetrics {
     if (have_spi_start_) {
       spi_duration_.observe(elapsed(last_spi_start_us_, timestamp_us));
     }
+    last_spi_end_us_ = timestamp_us;
+    have_spi_end_ = true;
     push(pr1::instrumentation::Event::SpiReadEnd, timestamp_us, sequence, 0);
   }
 
@@ -64,6 +66,9 @@ class LiveMetrics {
   }
 
   void onRxRearmStart(std::uint32_t timestamp_us, std::uint32_t sequence) {
+    if (have_spi_end_) {
+      spi_end_to_rearm_start_.observe(elapsed(last_spi_end_us_, timestamp_us));
+    }
     last_rearm_start_us_ = timestamp_us;
     have_rearm_start_ = true;
     push(pr1::instrumentation::Event::RxRearmStart, timestamp_us, sequence, 0);
@@ -72,6 +77,9 @@ class LiveMetrics {
   void onRxRearmDone(std::uint32_t timestamp_us, std::uint32_t sequence) {
     if (have_rearm_start_) {
       rx_rearm_.observe(elapsed(last_rearm_start_us_, timestamp_us));
+    }
+    if (have_rx_irq_) {
+      irq_to_rx_ready_.observe(elapsed(last_rx_irq_us_, timestamp_us));
     }
     push(pr1::instrumentation::Event::RxRearmDone, timestamp_us, sequence, 0);
   }
@@ -125,7 +133,13 @@ class LiveMetrics {
     if (rx_processing_.size() > 0U) {
       out.rx_processing_us = {true, rx_processing_.percentile(99)};
     }
+    if (spi_end_to_rearm_start_.size() > 0U) {
+      out.spi_end_to_rearm_start_us = {true, spi_end_to_rearm_start_.percentile(99)};
+    }
     if (rx_rearm_.size() > 0U) out.rx_rearm_us = {true, rx_rearm_.percentile(99)};
+    if (irq_to_rx_ready_.size() > 0U) {
+      out.irq_to_rx_ready_us = {true, irq_to_rx_ready_.percentile(99)};
+    }
     return out;
   }
 
@@ -148,16 +162,20 @@ class LiveMetrics {
   pr1::instrumentation::DurationWindow<64> irq_to_spi_{};
   pr1::instrumentation::DurationWindow<64> spi_duration_{};
   pr1::instrumentation::DurationWindow<64> rx_processing_{};
+  pr1::instrumentation::DurationWindow<64> spi_end_to_rearm_start_{};
   pr1::instrumentation::DurationWindow<64> rx_rearm_{};
+  pr1::instrumentation::DurationWindow<64> irq_to_rx_ready_{};
 
   std::uint32_t last_rx_irq_us_ = 0;
   std::uint32_t last_spi_start_us_ = 0;
+  std::uint32_t last_spi_end_us_ = 0;
   std::uint32_t last_rearm_start_us_ = 0;
   std::uint16_t current_queue_depth_ = 0;
   std::int16_t last_rssi_dbm_ = 0;
 
   bool have_rx_irq_ = false;
   bool have_spi_start_ = false;
+  bool have_spi_end_ = false;
   bool have_rearm_start_ = false;
   bool rssi_available_ = false;
   bool rf_outcome_observed_ = false;
