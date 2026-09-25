@@ -122,6 +122,16 @@ class BoardSweepTests(unittest.TestCase):
         ])
         self.assertEqual(analysis["revalidate_10000_gaps_us"], [175, 150])
 
+    def test_transition_detector_does_not_bridge_missing_sweep_points(self):
+        rows = [
+            {"gap_us": 225, "packet_count": 1000, "derived": {"loss_rate": 0.001}, "classification": {"label": "no_loss_observed"}},
+            {"gap_us": 175, "packet_count": 1000, "derived": {"loss_rate": 0.5}, "classification": {"label": "receiver_turnaround_mixed"}},
+        ]
+        analysis = analyze_sweep(rows)
+        self.assertEqual(analysis["transitions"], [])
+        self.assertEqual(analysis["revalidate_10000_gaps_us"], [])
+        self.assertEqual(analysis["missing_gaps_us"], [5000, 1000, 500, 300, 250, 200, 150, 125, 0])
+
     def test_render_tx_sweep_config_changes_only_gap_macro(self):
         base = "[env:rf_tx_compile]\nbuild_flags =\n    -D PR1_RF_ENABLED=1\n    -D PR1_RUNTIME_ROLE=1\n    -D PR1_TX_GAP_US=5000\n"
         rendered = render_tx_sweep_config(base, 175)
