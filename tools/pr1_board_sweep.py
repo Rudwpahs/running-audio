@@ -260,22 +260,27 @@ def _transition_threshold(a: dict, b: dict) -> tuple[float, float]:
 
 
 def analyze_sweep(results: Sequence[dict]) -> dict:
-    ordered = sorted(results, key=lambda row: int(row["gap_us"]), reverse=True)
+    by_gap = {int(row["gap_us"]): row for row in results}
+    ordered = [by_gap[gap] for gap in SWEEP_GAPS_US if gap in by_gap]
+    missing_gaps = [gap for gap in SWEEP_GAPS_US if gap not in by_gap]
     transitions: list[dict] = []
     marked: set[int] = set()
-    for higher, lower in zip(ordered, ordered[1:]):
+    for higher_gap, lower_gap in zip(SWEEP_GAPS_US, SWEEP_GAPS_US[1:]):
+        if higher_gap not in by_gap or lower_gap not in by_gap:
+            continue
+        higher, lower = by_gap[higher_gap], by_gap[lower_gap]
         delta, threshold = _transition_threshold(higher, lower)
         if delta >= threshold:
             transition = {
-                "higher_gap_us": int(higher["gap_us"]),
-                "lower_gap_us": int(lower["gap_us"]),
+                "higher_gap_us": higher_gap,
+                "lower_gap_us": lower_gap,
                 "higher_loss_rate": float(higher["derived"]["loss_rate"]),
                 "lower_loss_rate": float(lower["derived"]["loss_rate"]),
                 "absolute_delta": delta,
                 "material_threshold": threshold,
             }
             transitions.append(transition)
-            marked.update((transition["higher_gap_us"], transition["lower_gap_us"]))
+            marked.update((higher_gap, lower_gap))
 
     revalidate = [gap for gap in SWEEP_GAPS_US if gap in marked]
     bottleneck = {"label": "insufficient_transition_evidence", "confidence": "low", "evidence_gap_us": None}
@@ -292,6 +297,7 @@ def analyze_sweep(results: Sequence[dict]) -> dict:
             bottleneck = {"label": label, "confidence": confidence, "evidence_gap_us": int(evidence_row["gap_us"])}
     return {
         "transition_rule": "abs(loss_delta) >= max(0.5 percentage points, 3*pooled-binomial-SE)",
+        "missing_gaps_us": missing_gaps,
         "transitions": transitions,
         "revalidate_10000_gaps_us": revalidate,
         "bottleneck_summary": bottleneck,
