@@ -18,6 +18,55 @@ from pr1_board_sweep import (  # noqa: E402
 )
 
 
+def captured_logs(gap_us: int) -> tuple[str, str]:
+    rx = """\
+PR1_RUNTIME_BOOT
+runtime_profile=pr1-fixed-flrc-v1
+runtime_role=rx
+rf_enabled=1
+sx1280_spi_hz=2000000
+PR1_FIXED_FLRC_PROFILE
+frequency_mhz=2404.000
+bitrate_kbps=1300
+coding_rate=3
+output_dbm=0
+tx_gap_us=5000
+packet_bytes=116
+adaptive_layers=off
+PR1_RUNTIME_LIVE_READY
+PR1T v=1 t_us=100 field=rssi_dbm value=-49
+PR1T v=1 t_us=100 field=crc_good value=995
+PR1T v=1 t_us=100 field=crc_bad value=1
+PR1T v=1 t_us=100 field=missing value=5
+PR1T v=1 t_us=100 field=queue_depth value=0
+PR1T v=1 t_us=100 field=max_queue_depth value=1
+PR1T v=1 t_us=100 field=irq_to_spi_us value=28
+PR1T v=1 t_us=100 field=spi_duration_us value=61
+PR1T v=1 t_us=100 field=rx_processing_us value=94
+PR1T v=1 t_us=100 field=spi_end_to_rearm_start_us value=18
+PR1T v=1 t_us=100 field=rx_rearm_us value=24
+PR1T v=1 t_us=100 field=irq_to_rx_ready_us value=131
+"""
+    tx = f"""\
+PR1_RUNTIME_BOOT
+runtime_profile=pr1-fixed-flrc-v1
+runtime_role=tx
+rf_enabled=1
+sx1280_spi_hz=2000000
+PR1_FIXED_FLRC_PROFILE
+frequency_mhz=2404.000
+bitrate_kbps=1300
+coding_rate=3
+output_dbm=0
+tx_gap_us={gap_us}
+packet_bytes=116
+adaptive_layers=off
+PR1_RUNTIME_LIVE_READY
+PR1T v=1 t_us=200 field=scheduler_misses value=0
+"""
+    return rx, tx
+
+
 class BoardSweepContractTests(unittest.TestCase):
     def test_machine_readable_result_schemas_exist_and_match_csv_order(self):
         csv_schema = json.loads(
@@ -155,6 +204,21 @@ class BoardSweepContractTests(unittest.TestCase):
             self.assertEqual((project / "platformio.ini").read_text(encoding="utf-8"), baseline)
             self.assertIn("--upload-port", prepared["flash_command"])
             self.assertEqual(prepared["flash_command"][-1], "COM7")
+
+    def test_status_advances_after_valid_captured_logs_without_manual_analyze_step(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td) / "sweep"
+            create_plan(root, "frozen-sha", target_packets=1000)
+            run_dir = root / "runs" / "01-gap-5000us"
+            rx, tx = captured_logs(5000)
+            (run_dir / "rx.log").write_text(rx, encoding="utf-8")
+            (run_dir / "tx.log").write_text(tx, encoding="utf-8")
+
+            status = experiment_status(root)
+            self.assertEqual(status["captured_runs"], 1)
+            self.assertEqual(status["completed_runs"], 1)
+            self.assertEqual(status["pending_runs"], 10)
+            self.assertEqual(status["next_gap_us"], 1000)
 
 
 if __name__ == "__main__":
