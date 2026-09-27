@@ -18,6 +18,7 @@
   "properties": {
     "schema_version": {"const": 1},
     "run_id": {"type": "string", "minLength": 1},
+    "session_id": {"type": "string", "minLength": 1},
     "created_utc": {"type": "string", "format": "date-time"},
     "gap_us": {
       "type": "integer",
@@ -26,6 +27,28 @@
     "target_packets": {"type": "integer", "minimum": 1},
     "phase": {"type": "string", "enum": ["baseline", "revalidate"]},
     "firmware_sha": {"type": "string", "minLength": 1},
+    "ports": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rx", "tx"],
+      "properties": {
+        "rx": {"type": "string", "minLength": 1},
+        "tx": {"type": "string", "minLength": 1}
+      }
+    },
+    "build_identity": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["source_head_sha", "frozen_firmware_sha", "platformio_ini_sha256"],
+      "properties": {
+        "source_head_sha": {"type": "string", "minLength": 1},
+        "frozen_firmware_sha": {"type": "string", "minLength": 1},
+        "git_dirty": {"type": "boolean"},
+        "platformio_version": {"type": "string"},
+        "platformio_ini_sha256": {"type": "string", "minLength": 1},
+        "controller_file_sha256": {"type": "string", "minLength": 1}
+      }
+    },
     "frozen_baseline": {
       "type": "object",
       "additionalProperties": false,
