@@ -5,7 +5,7 @@ Parent measurement baseline: PR #46 / `codex/pr1-preboard-instrumentation-202609
 
 ## Scope and evidence boundary
 
-This tooling prepares the SX1280 fixed-link board sweep without changing the frozen RF baseline. It does **not** enable SPI tuning, DMA, FreeRTOS/core restructuring, a high-priority RF task, re-arm-before-read, AFH, FEC, ARQ, or adaptive PHY/controller.
+This tooling prepares and controls the SX1280 fixed-link board sweep without changing the frozen RF baseline. It does **not** enable SPI tuning, DMA, FreeRTOS/core restructuring, a high-priority RF task, re-arm-before-read, AFH, new FEC, ARQ, or adaptive PHY/controller.
 
 The fixed sweep order is:
 
@@ -21,6 +21,14 @@ Baseline runs target at least 1,000 RX-observed packet span. Only automatically 
 - Aggregate JSON results: `docs/schemas/pr1_board_sweep_results.schema.json`
 - Flat CSV results: `docs/schemas/pr1_board_sweep_results_csv.schema.json`
 
+The host controller also writes:
+
+- `session.json`: session timestamp, ports, target, frozen firmware SHA, source/build identity
+- `build_matrix.json`: safe/RX/per-gap TX build cache/config mapping
+- `build_results.json`: optional prebuild outcomes and built `firmware.bin` SHA-256 values
+- `runs/<run-id>/run_state.json`: `running`, `complete`, `interrupted`, or `error`
+- `runs/<run-id>/partial/<timestamp>/`: archived evidence from interrupted/failed retries
+
 Every accepted run must contain the requested minimum measurements:
 
 - packet count / missing / CRC good / CRC bad / RSSI
@@ -35,48 +43,133 @@ Every accepted run must contain the requested minimum measurements:
 
 `trace_overwrites` is retained as an extra diagnostic when observed.
 
-## 1. Create the Monday plan once
+### Percentile boundary
 
-```bash
-python tools/pr1_board_sweep.py plan runs/pr1-2026-09-28 \
-  --firmware-sha d1b7ec2b1130fd63fb0eb11fd900b0622766f14c
+The frozen firmware keeps a `DurationWindow<64>` internally and exposes only each timing field's **p99** in the pull snapshot. Raw timing samples are not emitted over serial. Therefore host-side p50/p95 cannot be reconstructed correctly from the current frozen telemetry and are intentionally **not fabricated**. Adding raw-sample telemetry or p50/p95 firmware fields would change the frozen measurement firmware and is deferred until after this gate.
+
+## Recommended workflow for 2026-09-28
+
+Use the new controller for minimum manual work:
+
+```text
+tools/pr1_experiment_controller.py
 ```
 
-This creates the 11 run directories and immutable-per-run metadata before hardware work begins.
+The older `pr1_board_sweep.py` commands remain valid and are used internally for parsing/analysis.
 
-## 2. Check progress and prepare only the next run
+### 1. Prepare once, preferably before the boards are connected
 
-```bash
-python tools/pr1_board_sweep.py status runs/pr1-2026-09-28
-```
-
-The status output reports completed/captured/pending runs and the next frozen gap.
-
-Prepare the next TX configuration without modifying the tracked `platformio.ini`:
+Replace `COM6` / `COM7` with the ports that will be RX and TX:
 
 ```bash
-python tools/pr1_board_sweep.py next \
+python tools/pr1_experiment_controller.py prepare \
   runs/pr1-2026-09-28 \
   firmware/t3s3_sx1280_runtime \
-  --tx-port COM7
+  --rx-port COM6 \
+  --tx-port COM7 \
+  --target-packets 1000 \
+  --prebuild
 ```
 
-This writes an untracked generated config below `runs/pr1-2026-09-28/generated/` and prints the exact PlatformIO upload command plus the expected RX/TX log paths. Add `--flash` only when the physical TX board is connected.
+This automatically:
 
-The older explicit single-gap helper remains available:
+1. creates all 11 run metadata files with timestamp/run ID/gap/target,
+2. records frozen firmware SHA and current source/build identity,
+3. hashes `platformio.ini` and the controller,
+4. creates generated TX configs without editing tracked `platformio.ini`,
+5. creates separate PlatformIO build-cache directories for safe, fixed RX, and all 11 TX gaps,
+6. when `--prebuild` is supplied, builds them and records any resulting `firmware.bin` SHA-256 values.
+
+Separate build caches make the later upload commands reuse already-built images where PlatformIO considers the cache valid. They do not change RF configuration.
+
+### 2. Verify the physical plan without touching hardware
 
 ```bash
-python tools/pr1_board_sweep.py flash-tx firmware/t3s3_sx1280_runtime \
-  --gap-us 200 --port COM7 \
-  --config-out runs/pr1-2026-09-28/generated/tx-200.ini \
-  --dry-run
+python tools/pr1_experiment_controller.py dry-run \
+  runs/pr1-2026-09-28 \
+  firmware/t3s3_sx1280_runtime \
+  --rx-port COM6 \
+  --tx-port COM7 \
+  --safe-first
 ```
 
-## 3. Capture contract
+The plan is intentionally minimal-flash:
 
-Save one RX serial log and one TX serial log for every accepted run. Both boot blocks must be present. The parser rejects a run when either board does not match the frozen baseline or when the TX boot log reports the wrong `tx_gap_us`.
+```text
+safe RX once
+safe TX once
+fixed RX once
+TX 5000 -> capture
+RX reset
+TX 1000 -> capture
+RX reset
+...
+RX reset
+TX 0 -> capture
+analyze/report
+```
 
-Continuous serial telemetry is intentionally avoided because it can perturb the timing under study. At the end of a run, request the telemetry snapshot once with `t`/`T` on each board and include it in the logs.
+RX is **not reflashed for every gap**. Resetting it between gaps is required to clear its runtime counters/timing windows.
+
+### 3. Run or resume the complete sweep
+
+```bash
+python tools/pr1_experiment_controller.py run \
+  runs/pr1-2026-09-28 \
+  firmware/t3s3_sx1280_runtime \
+  --rx-port COM6 \
+  --tx-port COM7 \
+  --safe-first
+```
+
+The controller performs:
+
+```text
+safe boot verification on both boards
+-> fixed RX upload
+-> per-gap TX upload
+-> frozen boot/profile validation
+-> dual serial capture
+-> target polling
+-> clean settle interval
+-> final RX/TX telemetry snapshot
+-> result.json
+-> next gap
+-> aggregate parser/summary/plots/classification/transition detection
+```
+
+A gap is never accepted merely because an upload returned success. The serial boot block must match the frozen role/profile/SPI/radio configuration and the TX must report the requested `tx_gap_us`.
+
+### RX reset fallback
+
+Automatic DTR/RTS reset is a host-side best effort only; the controller still requires a **fresh** `PR1_RUNTIME_BOOT` and `PR1_RUNTIME_LIVE_READY` before accepting the next run. If the board/USB path does not reliably reset through DTR/RTS, use:
+
+```bash
+python tools/pr1_experiment_controller.py run \
+  runs/pr1-2026-09-28 \
+  firmware/t3s3_sx1280_runtime \
+  --rx-port COM6 \
+  --tx-port COM7 \
+  --safe-first \
+  --manual-rx-reset
+```
+
+In that fallback, the controller pauses only at the ten RX-reset boundaries; press the RX board reset button and Enter. No RF/driver change is made.
+
+## Serial capture and partial-result preservation
+
+Live telemetry remains pull-based because continuous serial printing can contaminate the receiver timing being measured.
+
+For each run the controller:
+
+1. writes RX/TX boot and serial data directly to `rx.log` / `tx.log`, flushing each line,
+2. waits a conservative host-estimated interval,
+3. polls RX with `t` only until the RX-observed packet target is reached,
+4. waits a telemetry-free settle interval long enough to replace the firmware's 64-sample timing window under the host scheduling assumption,
+5. takes one authoritative final RX snapshot and one TX snapshot,
+6. parses and validates the final logs.
+
+If Ctrl-C, a serial error, a validation failure, or another exception occurs, the current logs are left on disk and `run_state.json` is changed to `interrupted` or `error`. On retry, existing partial evidence is moved to `partial/<timestamp>/` before a new attempt starts.
 
 `scheduler_misses` is currently owned by the TX runtime, so the host parser merges it from `tx.log`.
 
@@ -93,13 +186,15 @@ loss_rate    = missing / packet_count
 
 `crc_bad` stays a separate RF diagnostic. Packet count is an RX-observed sequence span, not an exact TX-attempt counter; leading loss before the first good packet and trailing loss after the last good packet are not visible.
 
-## 4. Analyze completed runs
+## Results
+
+After a complete controller run, or manually with:
 
 ```bash
 python tools/pr1_board_sweep.py analyze runs/pr1-2026-09-28
 ```
 
-Outputs:
+outputs are:
 
 ```text
 report/results.json
@@ -134,8 +229,10 @@ A component must account for at least 45% of `irq_to_rx_ready_us` p99 to be call
 
 At the strongest measured loss transition the aggregate analyzer can also add `receiver_saturation_candidate` when total IRQ-to-RX-ready turnaround rises materially while RSSI and CRC-bad behavior do not provide a competing explanation. This is explicitly a **candidate, not causal proof**.
 
-## Current host-only blocker
+## Current frozen-baseline blockers
 
-The frozen TX runtime has no packet-budget stop command and no exact TX-attempt counter in pull telemetry. A host-only tool therefore cannot stop at exactly 1,000 or 10,000 transmitted attempts without changing firmware.
+1. The frozen TX runtime has no packet-budget stop command and no exact TX-attempt counter in pull telemetry. A host-only tool therefore cannot stop at exactly 1,000 or 10,000 transmitted attempts without changing firmware. The gate uses **at least** the requested RX-observed sequence span.
+2. Raw timing samples are not exposed, so host-side p50/p95 cannot be reconstructed from p99 snapshots.
+3. Reliable software reset through DTR/RTS is USB/driver dependent. The controller verifies fresh boot after every reset attempt and refuses to silently continue if reset/boot evidence is missing; the manual reset fallback preserves the frozen firmware.
 
-For the frozen gate, use **at least** the requested RX-observed sequence span and repeat under-target runs. Do not add packet-budget firmware control until the frozen measurement gate has been completed or explicitly superseded.
+Do not resolve any of these blockers by changing RF firmware before the frozen sweep unless the measurement gate is explicitly superseded.
