@@ -7,6 +7,8 @@ on:
       - 'firmware/common/**'
       - 'tools/**'
       - 'tests/**'
+      - 'docs/schemas/pr1_board_sweep_*.json'
+      - 'docs/PR1_BOARD_SWEEP_HOST.md'
       - '.github/workflows/pr1-runtime-safe-build.yml'
   pull_request:
     paths:
@@ -14,6 +16,8 @@ on:
       - 'firmware/common/**'
       - 'tools/**'
       - 'tests/**'
+      - 'docs/schemas/pr1_board_sweep_*.json'
+      - 'docs/PR1_BOARD_SWEEP_HOST.md'
       - '.github/workflows/pr1-runtime-safe-build.yml'
 
 jobs:
@@ -28,6 +32,11 @@ jobs:
           python-version: '3.12'
       - name: Python host-tool tests
         run: python -m unittest tests/test_telemetry_parser.py tests/test_board_sweep.py tests/test_board_sweep_contracts.py -v
+      - name: Validate board-sweep JSON schemas
+        run: |
+          python -m json.tool docs/schemas/pr1_board_sweep_run.schema.json >/dev/null
+          python -m json.tool docs/schemas/pr1_board_sweep_results.schema.json >/dev/null
+          python -m json.tool docs/schemas/pr1_board_sweep_results_csv.schema.json >/dev/null
       - name: Install PlatformIO
         run: python -m pip install --disable-pip-version-check platformio==6.1.18
       - name: Build RF-disabled runtime
