@@ -31,7 +31,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Python host-tool tests
-        run: python -m unittest tests/test_telemetry_parser.py tests/test_board_sweep.py tests/test_board_sweep_contracts.py -v
+        run: python -m unittest tests/test_telemetry_parser.py tests/test_board_sweep.py tests/test_board_sweep_contracts.py tests/test_pr1_experiment_controller.py -v
       - name: Validate board-sweep JSON schemas
         run: |
           python -m json.tool docs/schemas/pr1_board_sweep_run.schema.json >/dev/null
