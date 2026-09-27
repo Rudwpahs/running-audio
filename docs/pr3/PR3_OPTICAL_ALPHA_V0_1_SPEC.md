@@ -22,6 +22,8 @@ Baseline flow:
 - Prefer a **matched projector + waveguide development/evaluation path** over a loose projector plus unrelated waveguide.
 - A matched LCoS + waveguide kit is acceptable as an early optical-gate fallback if current MicroLED hardware is inaccessible, but its power/mass results do not qualify the final MicroLED product path.
 
+The B decision is an **alpha-risk decision**, not a claim that current LBS is intrinsically worse in power or form factor. Current LBS engineering samples are already highly competitive on engine size and power; B is selected because it reduces the number of coupled optical variables in the first feasibility build.
+
 ## 2. Evidence boundary
 
 Vendor specifications in this document establish sourcing feasibility and comparison points only. Research prototypes establish physically demonstrated ranges only. Neither substitutes for a PR3 measurement.
@@ -139,6 +141,7 @@ Architecture:
 - raster scan can avoid a conventional panel and some relay-optics volume;
 - strong long-term form-factor potential;
 - wide color gamut and high source brightness are possible;
+- current Trixel 3 Cube-class LBS power is already competitive at engine level;
 - remains relevant for future pupil-steered or specialized optical architectures.
 
 ### First-alpha burdens
@@ -150,15 +153,17 @@ Architecture:
 - a custom HOE adds recording/fabrication NRE and alignment iteration;
 - light-engine lumens or scanner brightness do not predict in-eye brightness after coupling and pupil expansion.
 
-### Current reference point
+### Current reference points
 
-TriLite's 2026 Trixel 3 material reports an engineering-sample LBS engine with <1 cm3 volume, <1.5 g mass, >=30 deg FOV, 1024 x 768, 15 lm maximum luminous flux, and about 320 mW typical power at the stated operating condition. TriLite also provides engineering-sample/control hardware access. These are engine/vendor figures, not a complete LBS+HOE system measurement.
+TriLite's latest integration-facing Trixel 3 Cube material reports approximately 1 cm3 volume, 1.5 g mass, up to 15 lm, and around 145 mW typical power, with engineering samples available. A separate current Trixel 3 platform flyer published in 2026 lists <1 cm3, <1.5 g, >=30 deg FOV, 1024 x 768, 15 lm, and 320 mW for the stated 20%-pixel-on / 5-lm use condition. These figures describe closely related product/platform revisions and operating definitions and must not be mixed into one imaginary configuration.
+
+For PR3, vendor engineering-sample data is a sourcing/reference point only. The final LBS+HOE result depends on the selected HOE/coupler, wavelengths, incidence geometry, pupil expansion, calibration, and safety constraints.
 
 ### Alpha fit
 
 **v0.2 comparison candidate, not v0.1 baseline.**
 
-Use A only after B has established the basic optical usability target or if a supplier can provide a genuinely matched LBS+HOE evaluation system that removes most custom optical variables.
+Use A after B has established the basic optical usability target, or earlier only if a supplier can provide a genuinely matched LBS+HOE evaluation system that removes most custom optical variables.
 
 ## 7. Candidate B — microdisplay + waveguide
 
@@ -189,7 +194,7 @@ Preferred light engine: full-color MicroLED.
 
 JBD Roadrunner II (announced June 2026) publishes 800 x 600 SVGA, 30 deg class optics, 33.3 PPD in its stated configuration, 6 lm, up to 6,000-nit in-eye brightness with a 30 deg diffractive waveguide, 98 mW typical projector power, and 0.18 cm3 projector volume. JBD also introduced a monocular full-color AR development kit.
 
-DigiLens Crystal30 G4 publishes a 30 deg diagonal waveguide reference with >3,000 nits to eye, 12 x 10 mm eyebox, 17 mm eye relief, 720 x 720 resolution, and a monocular option. Its listed light-engine implementation is not the same as the preferred PR3 MicroLED path, but the waveguide-level values are useful feasibility anchors.
+DigiLens Crystal30 G4 InsightKit publishes a matched waveguide + Avegant LCoS configuration with 30 deg diagonal FOV, >3,000 nits to eye, 12 x 10 mm eyebox, 17 mm eye relief, 720 x 720, and a monocular option. Its listed light engine is not the preferred PR3 MicroLED path, but the complete kit is a useful current feasibility anchor for waveguide-level geometry and brightness.
 
 ### Alpha fit
 
@@ -202,12 +207,12 @@ First procurement preference is a matched MicroLED projector + waveguide/dev kit
 | Factor | A. LBS + HOE | B. microdisplay + waveguide |
 | --- | --- | --- |
 | Implementation difficulty | very high for first custom system | medium-high with matched kit |
-| Component access | LBS samples available; matched/custom HOE is harder | current projector/dev-kit and waveguide ecosystem is stronger |
+| Component access | LBS engineering samples exist; matched/custom HOE is harder | current projector/dev-kit and waveguide ecosystem is stronger |
 | Alpha planning cost | KRW 3M-12M+ | KRW 2M-8M |
-| Current engine-level power reference | Trixel 3 ~320 mW stated typical condition | Roadrunner II ~98 mW stated typical projector power |
-| Current source/system brightness reference | engine 15 lm; final in-eye result depends strongly on HOE | Roadrunner II vendor states up to 6,000 nits with matched 30 deg waveguide |
-| Current FOV reference | Trixel 3 >=30 deg in 2026 material | Roadrunner II 30 deg class; Crystal30 G4 30 deg |
-| Eyebox path | custom HOE/EPE dependent | 12 x 10 mm is available as a current waveguide reference point |
+| Current engine-level power reference | Trixel 3 Cube ~145 mW; another current Trixel 3 operating point is 320 mW | Roadrunner II ~98 mW typical projector power |
+| Current source/system brightness reference | up to 15 lm engine; final in-eye result depends strongly on HOE/waveguide | Roadrunner II vendor states up to 6,000 nits with matched 30 deg waveguide |
+| Current FOV reference | current Trixel 3 platform flyer >=30 deg | Roadrunner II 30 deg; Crystal30 G4 InsightKit 30 deg |
+| Eyebox path | custom HOE/EPE dependent | 12 x 10 mm is available as a current matched-kit reference point |
 | Form-factor potential | excellent | excellent |
 | Alignment burden | very high: laser + MEMS + HOE wavelength/angle | high, lower with a matched projector/waveguide kit |
 | Speckle concern | material | low for preferred MicroLED path |
@@ -215,7 +220,7 @@ First procurement preference is a matched MicroLED projector + waveguide/dev kit
 | Measurement/debug simplicity | moderate | high |
 | v0.1 suitability | defer | **select** |
 
-The two vendor power/brightness values are not directly comparable system measurements. PR3 must measure complete worn-stack power and in-eye luminance itself.
+Do not interpret the table as a product-level power ranking. The figures are vendor light-engine operating points under different conditions. B wins v0.1 on **integration-risk isolation and measurement simplicity**, not because A is assumed to consume more power.
 
 ## 9. Optical Gates
 
@@ -409,17 +414,18 @@ These are PR3 internal planning envelopes, not vendor quotes. A production BOM i
 
 ### Official/vendor technical material
 
-- JBD, Roadrunner II product launch (2026-06-17): 800 x 600, 30 deg class, 6 lm, 0.18 cm3, 98 mW typical projector figure, up to 6,000-nit in-eye claim with 30 deg diffractive waveguide, monocular dev-kit announcement. https://www.jb-display.com/news/roadrunner-ii-full-color-microled-projector
-- JBD, Hummingbird II product page: 500 x 380, 25 deg, 0.2 cm3, 0.5 g, 3 lm, typical projector power stated at 95 mW on the product page, up to 4,000-nit in-eye claim with waveguide. https://www.jb-display.com/hummingbird-ii
-- TriLite, Trixel 3 / 2026 technical material: <1 cm3, <1.5 g, >=30 deg, 1024 x 768, 15 lm, about 320 mW at stated typical operating condition; engineering samples/evaluation hardware available. https://www.trilite-tech.com/
-- DigiLens, Crystal30 G4 datasheet: 30 deg diagonal, >3,000 nits to eye, 12 x 10 mm eyebox, 17 mm eye relief, 720 x 720, monocular option. https://www.digilens.com/
-- RayNeo X3 Pro official specifications: binocular full-color MicroLED/diffractive-waveguide consumer reference, 640 x 480 per eye, 30 deg FOV, 3,500-nit average / 6,000-nit peak stated brightness, 76 +/-1 g. https://www.rayneo.com/products/rayneo-x3-pro-ai-display-glasses
+- JBD, Roadrunner II launch (2026-06-17): 800 x 600, 30 deg, 33.3 PPD, 6 lm, 0.18 cm3, 98 mW typical projector power, up to 6,000-nit in-eye claim with a 30 deg diffractive waveguide, and a monocular development-kit announcement. https://www.jb-display.com/newsdetails/88.html
+- JBD current product site: Hummingbird II is listed at 0.5 g, 0.2 cm3, and 95 mW; useful as a secondary current MicroLED reference. https://www.jb-display.com/
+- TriLite, Trixel 3 Cube official material (2025-2026): approximately 1 cm3, 1.5 g, up to 15 lm, ~145 mW typical power, integrated MEMS driver electronics, and engineering-sample availability. https://www.trilite-tech.com/trilite-unveils-trixel-3-cube-projection-display-for-ar-glasses-and-automotive-applications/
+- TriLite, current Trixel 3 product flyer: <1 cm3, <1.5 g, >=30 deg FOV, 1024 x 768, 15 lm, 320 mW at the stated typical 20%-pixel-on / 5-lm operating condition. https://www.trilite-tech.com/wp-content/uploads/product-flyer-trixel-3.pdf
+- DigiLens, Crystal30 G4 InsightKit: 30 deg diagonal, >3,000 nits to eye, 12 x 10 mm eyebox, 17 mm eye relief, 720 x 720, 60 fps, monocular option. https://www.digilens.com/wp-content/uploads/2025/07/DL-Crystal30-G4-v2.35.pdf
+- RayNeo X3 Pro official specifications: binocular full-color MicroLED/diffractive-waveguide consumer reference, 640 x 480, 30 deg FOV, 3,500-nit average / 6,000-nit peak stated brightness, and 76 +/-1 g. https://www.rayneo.com/products/x3-pro-ai-display-glasses
 
 ### Research evidence
 
-- Yang et al., *Synthetic aperture waveguide holography for compact mixed-reality displays with large etendue*, Nature Photonics (2025), DOI: 10.1038/s41566-025-01718-w. Demonstrated 38 deg diagonal FOV, 9 x 8 mm eyebox, 23-33 mm eye-relief range in a research prototype. This supports the lower eyebox gate as physically meaningful; it does not authorize CGH in v0.1.
+- Choi et al., *Synthetic aperture waveguide holography for compact mixed-reality displays with large etendue*, Nature Photonics (2025), DOI: 10.1038/s41566-025-01718-w. Demonstrated 38 deg diagonal FOV, 9 x 8 mm eyebox, and 23-33 mm eye-relief range in a research prototype. This supports the lower eyebox gate as physically meaningful; it does not authorize CGH in v0.1.
 - Lyu et al., *2D Pupil Expansion Full-Color Volume Holographic Waveguide AR Display*, Laser & Photonics Reviews (first published 2025; 2026 issue), DOI: 10.1002/lpor.202502085. Reported 28 deg diagonal FOV, 14 x 16 mm eyebox, 15 mm eye relief, and 53.9% full-FOV white-light brightness uniformity. This is an evidence point for the difficulty of simultaneously achieving eyebox, color, and uniformity.
-- Qin et al., *Hybrid Reflective-Diffractive Waveguide Display with High Optical Efficiency*, Laser & Photonics Reviews (2025). Reported a 30 deg prototype, 12 x 10 mm eyebox, and high optical efficiency; used here as an additional research-scale feasibility point rather than a PR3 claim.
+- Qin et al., *Hybrid Reflective-Diffractive Waveguide Display with High Optical Efficiency*, Laser & Photonics Reviews (2025). Reported a 30 deg prototype and 12 x 10 mm eyebox; used here as an additional research-scale feasibility point rather than a PR3 claim.
 
 ## 14. Blockers before procurement / build
 
