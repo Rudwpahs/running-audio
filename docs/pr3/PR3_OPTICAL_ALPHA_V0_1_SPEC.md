@@ -1,452 +1,631 @@
 # PR3 Optical Alpha v0.1 Spec
 
 Date: 2026-09-27
-Status: Alpha specification / optical feasibility gate
-Scope: near-eye see-through optical alpha only. No CGH product implementation, retinal-projection product path, dynamic holographic video, or eye-tracked pupil steering before the gates in this document pass.
+Status: **FINAL FOR BENCH FEASIBILITY**
+Scope: near-eye see-through optical feasibility alpha only. No CGH product implementation, retinal-projection product path, dynamic holographic video, eye-tracked pupil steering, or binocular product integration before the eight gates in this document pass.
 
-## 1. Decision summary
+## 1. Purpose and decision
 
 PR3 Optical Alpha v0.1 answers one question:
 
-> Can a glasses-like, monocular near-eye display deliver a stable and readable AI information layer with adequate eyebox, brightness, image quality, size, mass, power, and heat?
+> Can a glasses-like, monocular near-eye optical chain produce a stable, readable image with sufficient eyebox, movement tolerance, brightness, uniformity, artifact control, size, power, and thermal behavior to justify further PR3 product work?
 
-Baseline flow:
+The Alpha is **not** a finished pair of glasses. Its purpose is optical feasibility and measurement discipline.
 
-`Phone / compute -> renderer -> light engine -> matched HOE or waveguide -> eye`
+Common optical chain:
 
-### v0.1 architecture decision
+`Phone / compute -> renderer -> light source/display -> collimation / beam conditioning -> coupling -> HOE or waveguide -> eye / camera`
 
-- **Monocular first.** Binocular is not a v0.1 requirement.
+Architecture decision for v0.1:
+
+- **Monocular first.** Binocular is a later promotion step.
 - **Primary path B: microdisplay + matched waveguide.** Full-color MicroLED is preferred when accessible.
-- **Path A: LBS + HOE remains a v0.2 comparison path.** Do not discard it, but do not let custom HOE fabrication, scanner tuning, laser safety, speckle, or wavelength/angular matching become first-alpha variables.
-- Prefer a **matched projector + waveguide development/evaluation path** over a loose projector plus unrelated waveguide.
-- A matched LCoS + waveguide kit is acceptable as an early optical-gate fallback if current MicroLED hardware is inaccessible, but its power/mass results do not qualify the final MicroLED product path.
+- **Path A: LBS + HOE remains the comparison path.** It is not rejected; it is deferred as the default first build because it couples laser wavelength, MEMS scan calibration, HOE Bragg/angular matching, speckle, and laser-safety variables into the first experiment.
+- Prefer a **matched projector + waveguide / HOE evaluation path** over a loose projector and unrelated combiner.
+- A matched LCoS + waveguide kit may be used to close optical Gates 1-6 when MicroLED access is blocked, but its size/power result does not close Gates 7-8 for the intended MicroLED path.
 
-The B decision is an **alpha-risk decision**, not a claim that current LBS is intrinsically worse in power or form factor. Current LBS engineering samples are already highly competitive on engine size and power; B is selected because it reduces the number of coupled optical variables in the first feasibility build.
+The choice of B is therefore an **alpha-risk-isolation decision**, not a statement that LBS is inferior in long-term size, power, or brightness.
 
 ## 2. Evidence boundary
 
-Vendor specifications in this document establish sourcing feasibility and comparison points only. Research prototypes establish physically demonstrated ranges only. Neither substitutes for a PR3 measurement.
+Vendor specifications establish sourcing feasibility and engineering reference points only. Research prototypes establish physically demonstrated ranges only. Neither is a PR3 result.
 
-No PR3 performance claim may be made until it is measured on the PR3 alpha using the procedures below.
+Rules:
 
-## 3. Optical Alpha v0.1 requirements
+1. Do not combine values from different product revisions or operating conditions into one imaginary configuration.
+2. Do not treat projector brightness or lumens as in-eye brightness.
+3. Do not use a phone camera as an absolute luminance instrument.
+4. Do not claim eyebox from a vendor number alone; measure the contiguous usable region on the PR3 bench.
+5. Do not claim optical efficiency unless input luminous flux and output luminance are measured or supplied under compatible conditions.
+6. Every gate must be closed on one coherent Alpha configuration; passing different gates on unrelated setups is not a full Alpha pass.
 
-| Parameter | Target | Minimum gate | Notes / measurement |
+## 3. PR3 Optical Alpha v0.1 target specification
+
+| Parameter | Target | Minimum gate / rule | Measurement |
 | --- | ---: | ---: | --- |
-| Display strategy | monocular see-through | monocular see-through | one display eye for v0.1 |
-| Primary content | text, icon, arrow, status card | same | no cinematic/video requirement |
-| Diagonal usable FOV | 30 deg | 25 deg | measured visible content region |
-| Eyebox | 12 x 10 mm | 9 x 8 mm | contiguous usable region at eye-relief plane |
-| Nominal eye relief | 18-20 mm | 15 mm | pupil/cornea reference plane to last optical surface |
-| Addressable resolution | 800 x 600 class | 640 x 480 class | raster source; system MTF must still be checked |
-| Effective angular resolution | >=28 PPD | >=22 PPD | center region; report method and axis/diagonal basis |
-| In-eye luminance, representative 20% white UI | >=3,000 cd/m2 | >=1,500 cd/m2 | nominal pupil position |
-| Stretch in-eye luminance | >=5,000 cd/m2 | not required | only if thermal/power budget remains valid |
-| White-field luminance uniformity | >=70% | >=55% | `Lmin / Lmax`, fixed 9-point FOV grid |
-| RGB registration, central 60% FOV | <=1.5 px RMS target | <=3 px RMS | white grid / RGB edge target |
-| Secondary ghost/stray peak, central 60% | <=5% target | <=10% | relative to primary feature at same test exposure |
-| Optical module bbox, waveguide excluded | <=25 x 15 x 8 mm | <=30 x 20 x 10 mm | engine + required coupling/relay package |
-| Optical module volume, waveguide excluded | <=3 cm3 | <=6 cm3 | remote bench controller excluded |
-| Display-side temple local thickness | <=10 mm | <=12 mm | future glasses-like integration envelope |
-| Total worn alpha mass | <=70 g | <=85 g | off-head bench controller excluded only when not worn |
+| Display strategy | monocular see-through | monocular see-through | one display eye |
+| Primary content | text, icon, arrow, short status card | same | no cinematic/video requirement |
+| Diagonal usable FOV | 30 deg | >=25 deg | measure H/V/D usable region |
+| Eyebox | 12 x 10 mm | >=9 x 8 mm | contiguous usable region |
+| Nominal eye relief | 18-20 mm | >=15 mm | pupil plane to last optical surface |
+| Addressable resolution | 800 x 600 class | >=640 x 480 class | source raster; also report MTF if available |
+| Effective angular resolution | >=28 PPD | >=22 PPD | center region, axis definition recorded |
+| Representative 20% white UI, in-eye luminance | >=3,000 cd/m2 | >=1,500 cd/m2 | nominal pupil position |
+| Stretch in-eye luminance | >=5,000 cd/m2 | not required | only if power/thermal remain valid |
+| Optical luminous efficiency | >=750 nits/lm average preferred | diagnostic unless calibrated input lm available | report average nits/lm; center-only value must be labeled |
+| White-field luminance uniformity | >=70% | >=55% | Lmin/Lmax, 9-point FOV grid |
+| RGB registration, central 60% FOV | <=1.5 px RMS | <=3 px RMS | RGB edge / white-grid target |
+| Secondary ghost/stray peak, central 60% | <=5% | <=10% | relative to primary feature, same exposure |
+| Optical engine + collimation/coupling bbox | <=25 x 15 x 8 mm | <=30 x 20 x 10 mm | waveguide/HOE substrate excluded |
+| Engine-side optical volume | <=3 cm3 | <=6 cm3 | off-head controller excluded |
+| Combiner footprint | <=60 x 45 mm preferred | <=65 x 50 mm | width x height of worn HOE/waveguide |
+| Combiner thickness | <=2.0 mm preferred | <=3.0 mm | maximum worn optical substrate stack |
+| Display-side temple local thickness | <=10 mm | <=12 mm | future integration envelope |
+| Whole worn Alpha mass | <=70 g | <=85 g | off-head controller excluded only if truly off-head |
 | Display stack average electrical power | <=0.6 W | <=1.0 W | representative UI workload |
 | Whole worn electronics average power | <=1.0 W | <=1.5 W | phone compute excluded |
-| Whole worn electronics short peak | <=1.5 W | <=2.0 W | log duration and workload |
+| Whole worn electronics short peak | <=1.5 W | <=2.0 W | duration/workload logged |
 | Skin/contact surface after 30 min | <=42 C | <45 C | 25 +/-2 C ambient |
-| Continuous optical run | >=30 min | >=30 min | no thermal brightness collapse or unstable image |
+| Continuous run | >=30 min | >=30 min | no unstable image or thermal collapse |
 
-The size, temple, mass, power, and thermal values above are PR3 engineering targets, not vendor claims.
+The size, mass, power, thermal, artifact, and alignment thresholds are PR3 internal Alpha engineering criteria, not industry standards.
 
-## 4. Monocular versus binocular strategy
+## 4. Standardized comparison: A vs B
 
-### v0.1: monocular
+### Candidate A — LBS + HOE
 
-Monocular is sufficient to validate the core PR3 experience: short text, icons, navigation cues, AI status, and notifications. It removes binocular alignment, inter-pupillary variation, vergence, two-channel calibration, duplicated display power, and duplicated optical mass from the first optical experiment.
+Chain:
 
-### Binocular promotion gate
+`renderer -> RGB laser diodes -> MEMS scanner / LBS engine -> beam conditioning / optional relay -> matched HOE incoupling / combiner -> eye`
 
-Do not start a binocular product alpha until the monocular build passes Gates 1-6. A later binocular alpha must add explicit inter-eye brightness/color matching, image registration, IPD coverage, binocular comfort, duplicated-power, and mass-balance requirements rather than assuming monocular results transfer automatically.
+Current reference class: TriLite Trixel 3 / Trixel 3 Cube.
 
-## 5. Image-quality definitions
+### Candidate B — microdisplay + waveguide
 
-### 5.1 Readability
+Chain:
 
-At nominal eye position and eye relief, render all of:
+`renderer -> full-color microdisplay projector -> collimator -> input coupler -> waveguide / pupil expansion -> output coupler -> eye`
 
-- Korean and Latin high-contrast text;
-- thin and thick geometric lines;
-- arrows and simple icons;
-- grayscale steps;
-- RGB primaries and white;
-- a geometric alignment grid.
+Preferred light-engine class: full-color MicroLED. Current references include JBD Roadrunner II / Hummingbird II and matched waveguide kits such as DigiLens Crystal30 G4.
 
-Pass requires reference text to remain readable across the central 60% of usable FOV without repeated frame repositioning.
+### Comparison table
 
-### 5.2 FOV
+| Metric | A. LBS + HOE | B. microdisplay + waveguide | PR3 standardization |
+| --- | --- | --- | --- |
+| FOV | Current Trixel material is ~24 x 18 deg to >=30 deg class depending revision/material | Roadrunner II 30 deg; Crystal30 G4 30 deg | report H/V/D usable FOV on final coupled setup |
+| Eyebox | Determined mainly by HOE/exit-pupil-expansion design; no single engine number | Current matched waveguide references reach ~10 x 10 to 12 x 10 mm | map contiguous usable X/Y region at fixed eye relief |
+| Eye relief | HOE/system dependent | Crystal30 reference 17 mm; recent research commonly ~15 mm+ | gate >=15 mm; target 18-20 mm |
+| Resolution | Trixel public material spans XGA-class / 1024 x 768-class depending current revision | Roadrunner II 800 x 600; Hummingbird II 500 x 380; Crystal30 InsightKit 720 x 720 | use actual addressable source and effective PPD |
+| Brightness | Engine output up to 15 lm; in-eye brightness depends strongly on HOE and EPE | Roadrunner II vendor reference up to 6,000 nits with 30-deg waveguide; Crystal30 >3,000 nits to eye | calibrated in-eye cd/m2 at nominal pupil |
+| Optical efficiency | Public matched LBS+HOE system value not sufficiently standardized for PR3 | Crystal30 waveguide reference: >750 nits/lm average unpolarized, >1500 nits/lm average polarized; 30-deg full-color research/commercial references are ~1300 nits/lm class and above | when calibrated input lumens exist, report average nits/lm; otherwise do not invent a value |
+| Image uniformity | Sensitive to HOE recording, Bragg detuning, scan calibration, wavelength | Waveguide EPE efficiency/uniformity tradeoff is a central risk; research full-color VHOE result 53.9% white-field uniformity; Roadrunner projector material reports >95% source-image brightness uniformity but that is not the final waveguide uniformity | 9-point final-system Lmin/Lmax |
+| Rainbow/artifact | Speckle, coherent stray light, HOE ghost orders, scan distortion | Diffractive rainbow, color nonuniformity, pupil-dependent ghost/stray orders | fixed exposure, RGB registration, ghost-peak ratio, photos at fixed pupil points |
+| Light-engine size | Trixel 3 / Cube approximately <=1 cm3 class, ~1.5 g | Roadrunner II 0.18 cm3; Hummingbird II 0.2 cm3 and 0.5 g | measure actual engine + mandatory coupling optics, not bare chip only |
+| HOE/waveguide size | Custom/sample dependent; lens-like substrate required for wearable Alpha | Crystal30 G4 public reference is about 59 x 45 mm, 1.2 mm thick, 6 g | report W x H x T and mass of worn combiner |
+| Alignment tolerance | High integration sensitivity: laser wavelength, scanner geometry, HOE angle/Bragg condition | High projector/coupler pupil sensitivity; substantially reduced by matched/keyed kits | perform relative-pose sweep and 3x reseat repeatability test |
+| Power | Trixel 3 Cube current official material ~145 mW typical; other current Trixel 3 operating points <320 mW / ~320 mW depending definition | Roadrunner II ~98 mW typical projector; Hummingbird II 95 mW typical | measure complete display stack, not engine only |
+| Thermal | Engine low-power potential is strong; laser/driver hotspots must be mapped | Engine power is very low but bridge/driver/system can dominate | 30-min contact-surface and component logging |
+| Weight | LBS engine ~1.5 g class; HOE/mount/driver determine system | Hummingbird II 0.5 g; commercial binocular full-color system reference RayNeo X3 Pro is 76 +/-1 g total | weigh engine, combiner, mounts, driver, and whole worn Alpha separately |
+| BOM | LBS samples obtainable; custom/matched HOE and calibration create uncertainty | Projector/dev-kit ecosystem stronger; matched waveguide remains B2B/RFQ | use procurement envelope until quotes arrive |
+| Component access | TriLite engineering samples/evaluation kit publicly offered; custom HOE is the hard part | JBD projector/dev path and DigiLens InsightKit-class matched routes exist; pricing/lead time commonly RFQ | supplier confirmation required before buy |
+| Fabrication difficulty | Very high if custom HOE is required | Medium-high with matched kit; very high if fabricating waveguide itself | v0.1 does not fabricate multilayer waveguide or custom dynamic holographic optics |
+| v0.1 suitability | comparison / fallback if matched LBS+HOE system is available | **selected baseline** | choose the setup that removes the most unknown optical variables |
 
-Report horizontal, vertical, and diagonal usable FOV. “Usable” excludes regions where clipping, severe blur, severe color separation, or luminance loss prevents the reference content from being read.
+### Alignment tolerance normalization
 
-### 5.3 Eyebox
+Do not compare alignment tolerance using vague words such as "easy" or "tight" only.
 
-Vendor exit-pupil numbers are not accepted as the PR3 eyebox result.
+For either A or B, after nominal optimization measure:
 
-At the nominal eye-relief plane, map an X/Y grid and mark a sample usable only when all are true:
+- lateral source-to-combiner tolerance: `Delta x80`, `Delta y80`;
+- axial tolerance: `Delta z80`;
+- angular tolerance: `pitch80`, `yaw80`, and roll if relevant;
+- each `80` value is the positive/negative range within which center luminance remains >=80% of nominal, usable FOV remains >=90% of nominal, and no new Gate-6 artifact failure appears;
+- perform three remove/reseat cycles using only mechanical fiducials/stops. After each reseat, center luminance must recover within +/-20%, usable FOV >=90% of baseline, and eyebox area >=80% of baseline without re-fabricating optics.
 
-1. center reference text remains visible;
-2. >=80% of intended content remains unclipped;
-3. local white-field luminance is >=50% of nominal-center luminance;
-4. severe color breakup does not prevent reading.
+These are bench integration metrics, not claims about production tolerance stacks.
 
-The reported eyebox is the largest contiguous region satisfying the definition.
+## 5. Optical efficiency definition
 
-- Gate: >=9 x 8 mm.
-- Target: >=12 x 10 mm.
+Preferred system metric:
 
-### 5.4 Uniformity
+`luminous efficiency = average in-eye luminance over the defined field/eyebox sample set / calibrated light-engine luminous flux`
+
+Unit: `nits/lm`.
+
+Rules:
+
+- use input luminous flux measured at the light-engine output or supplied for the exact operating point;
+- if only center luminance is available, report `center nits/lm` and do not compare it directly with an average IDMS-like value;
+- if input lumens are unknown, optical efficiency remains `NOT MEASURED`, not estimated from electrical power;
+- power efficiency may additionally be reported as `center nits/W` or `average nits/W`, but this is a different metric.
+
+Reference context:
+
+- DigiLens Crystal30 G4 public material lists average luminance efficiency >750 nits/lm for unpolarized engines and >1500 nits/lm for polarized engines, with higher peak values.
+- Light: Science & Applications (2024) reports a 30-deg full-color SRG-waveguide example around 1300 nits/lm (~3%) and a 20-deg example around 4500 nits/lm (~10%), illustrating the FOV-efficiency tradeoff.
+- A 2025 hybrid reflective-diffractive research prototype reported 2556.9 nits/lm average at 30 deg with a 12 x 10 mm eyebox.
+
+PR3 v0.1 does not make optical efficiency a standalone hard gate when input flux cannot be calibrated. Brightness, thermal, and power remain mandatory gates.
+
+## 6. Image-quality definitions and test patterns
+
+### Required deterministic patterns
+
+Use the same files for A and B:
+
+1. full white;
+2. 20% area centered white UI card on black;
+3. white Korean/Latin text on black;
+4. 1-pixel / 2-pixel geometric grid;
+5. RGB edge-registration target;
+6. grayscale ramp and 10-step gray bars;
+7. RGB primaries + white patches;
+8. isolated white point and isolated white line on black for ghost/stray detection;
+9. checkerboard / line-pair target for effective sharpness;
+10. corner markers for clipping/FOV mapping.
+
+All comparison images must use fixed renderer scale, gamma/profile, source drive setting, and camera exposure unless a test explicitly varies them.
+
+### Usable FOV
+
+Report horizontal, vertical, and diagonal FOV. A region is not counted as usable if clipping, severe blur, severe color separation, or luminance loss prevents reference text/grid recognition.
+
+### Eyebox
+
+At the nominal eye-relief plane, map X/Y positions. A sample point is usable only if all are true:
+
+- center text is visible;
+- >=80% of the intended frame remains unclipped;
+- local white-field luminance is >=50% of nominal-center luminance;
+- severe color breakup does not prevent reading.
+
+The reported eyebox is the largest contiguous usable region.
+
+### Uniformity
 
 Use a fixed 9-point FOV grid: center, four cardinal midpoints, four corners.
 
 `white-field uniformity = minimum measured luminance / maximum measured luminance`
 
-- Gate: >=0.55.
-- Target: >=0.70.
+Retain all nine raw values.
 
-Also retain all nine raw measurements. A single center-brightness measurement is insufficient.
+### Artifact metrics
 
-### 5.5 Rainbow, color breakup, ghosting, and stray light
+At nominal pupil plus the four main eyebox-edge positions, record:
 
-Use fixed camera exposure, fixed pupil proxy, and white grid / white glyph test patterns.
+- RGB registration RMS in pixels;
+- strongest secondary ghost/stray peak divided by primary peak under identical exposure;
+- whether a secondary readable copy of a glyph appears;
+- qualitative rainbow/speckle image at fixed exposure, tagged with pupil coordinates;
+- source-specific notes: speckle for LBS; rainbow/color walkoff for diffractive waveguides.
 
-Minimum gate:
+## 7. Eight Optical Gates
 
-- RGB edge-registration RMS <=3 px in the central 60% FOV;
-- strongest secondary ghost/stray peak <=10% of the primary feature in the central 60% under the same exposure;
-- no secondary image may form a second readable copy of a reference glyph in the central 60%;
-- photographically document edge rainbow/color breakup at the same pupil coordinates used for the FOV grid.
+No CGH product path, retinal projection, dynamic holographic video, eye-tracked pupil steering, custom dynamic SLM/HOE architecture, or binocular product integration is admitted before **all eight gates** pass on one coherent Alpha configuration.
 
-Target: <=1.5 px RMS RGB registration and <=5% secondary peak.
+### Gate 1 — visible image
 
-These metrics are internal alpha acceptance metrics, not optical-industry standards.
+Measurement:
 
-## 6. Candidate A — LBS + HOE
+- nominal eye position and eye relief;
+- full RGB, text, grid, and corner-marker patterns;
+- 10-minute static run after alignment lock.
 
-Architecture:
+PASS when:
 
-`renderer -> RGB laser sources -> MEMS beam scanner -> matched/custom HOE -> eye`
+- Korean and Latin text are readable;
+- grid/corner markers are recognizable over the usable region;
+- diagonal usable FOV >=25 deg;
+- no continuous manual optical adjustment is required during the 10-minute run;
+- no complete image loss or unstable scan/frame behavior occurs.
 
-### Strengths
+Target: >=30 deg usable diagonal FOV.
 
-- very small light-engine package is possible;
-- raster scan can avoid a conventional panel and some relay-optics volume;
-- strong long-term form-factor potential;
-- wide color gamut and high source brightness are possible;
-- current Trixel 3 Cube-class LBS power is already competitive at engine level;
-- remains relevant for future pupil-steered or specialized optical architectures.
+### Gate 2 — eyebox
 
-### First-alpha burdens
+Measurement:
 
-- laser wavelength and HOE Bragg/angular matching are tightly coupled;
-- scanner calibration and geometric stability become system variables;
-- speckle and coherent stray-light behavior require management;
-- laser eye-safety work is an immediate human-use requirement;
-- a custom HOE adds recording/fabrication NRE and alignment iteration;
-- light-engine lumens or scanner brightness do not predict in-eye brightness after coupling and pupil expansion.
+- camera/pupil proxy at nominal eye-relief plane;
+- 3-4 mm pupil stop where practical;
+- sweep X/Y in 1 mm steps; refine boundaries to 0.5 mm;
+- retain full pass/fail map and local luminance.
 
-### Current reference points
+PASS when contiguous usable eyebox is:
 
-TriLite's latest integration-facing Trixel 3 Cube material reports approximately 1 cm3 volume, 1.5 g mass, up to 15 lm, and around 145 mW typical power, with engineering samples available. A separate current Trixel 3 platform flyer published in 2026 lists <1 cm3, <1.5 g, >=30 deg FOV, 1024 x 768, 15 lm, and 320 mW for the stated 20%-pixel-on / 5-lm use condition. These figures describe closely related product/platform revisions and operating definitions and must not be mixed into one imaginary configuration.
+- width >=9 mm;
+- height >=8 mm;
+- eye relief >=15 mm.
 
-For PR3, vendor engineering-sample data is a sourcing/reference point only. The final LBS+HOE result depends on the selected HOE/coupler, wavelengths, incidence geometry, pupil expansion, calibration, and safety constraints.
+Target: >=12 x 10 mm at 18-20 mm eye relief.
 
-### Alpha fit
+### Gate 3 — head/eye movement tolerance
 
-**v0.2 comparison candidate, not v0.1 baseline.**
+Bench measurement:
 
-Use A after B has established the basic optical usability target, or earlier only if a supplier can provide a genuinely matched LBS+HOE evaluation system that removes most custom optical variables.
+- traverse the eye-camera proxy through at least +/-4.5 mm X and +/-4.0 mm Y around nominal pupil;
+- repeat at least three horizontal and three vertical traversals;
+- also check Z at nominal eye relief +/-2 mm where fixture travel allows;
+- record video and timestamps.
 
-## 7. Candidate B — microdisplay + waveguide
+PASS when:
 
-Architecture:
+- no complete image dropout >100 ms occurs inside the accepted eyebox;
+- total complete-dropout time is <1% of traverse time inside the accepted region;
+- reference text remains readable during normal traverse speed;
+- ordinary small frame motion does not require one exact head pose.
 
-`renderer -> microdisplay projector -> collimation/coupling optics -> matched waveguide -> eye`
+### Gate 4 — brightness
 
-Preferred light engine: full-color MicroLED.
+Measurement:
 
-### Strengths
+- calibrated luminance meter or imaging photometer at nominal pupil;
+- required scenes: full white, 20% white UI card, white text;
+- record source drive, ambient lux, eye relief, and pupil aperture;
+- use controlled lab condition for comparison and separately record practical readability at ~300-500 lux indoor, ~2,000-5,000 lux bright/window condition, and ~10,000-20,000 lux outdoor shade when available.
 
-- deterministic raster patterns simplify optical debugging and quantitative measurement;
-- mature driver interfaces simplify renderer bring-up;
-- current MicroLED projectors are sub-cc and low-power at the engine level;
-- matched projector/waveguide or monocular development paths exist;
-- waveguide performance can be isolated from scan-calibration variables;
-- no coherent-laser speckle term in the preferred MicroLED path.
+PASS when:
 
-### Burdens
+- representative 20% white UI center luminance >=1,500 cd/m2;
+- after the 30-minute thermal run it remains >=80% of the stabilized early-run value **and** remains above 1,500 cd/m2;
+- text remains practically readable indoors, bright/window condition, and outdoor shade.
 
-- coupling optics and waveguide alignment remain sensitive;
-- pupil expansion trades optical efficiency against uniformity;
-- full-color dispersion/rainbow and ghost orders remain key risks;
-- public component pricing and optical prescriptions are commonly unavailable;
-- engine power alone understates driver, bridge, and system power.
+Target: >=3,000 cd/m2 center. Direct-sun readability is a stretch test, not a v0.1 requirement.
 
-### Current reference points
+### Gate 5 — image uniformity
 
-JBD Roadrunner II (announced June 2026) publishes 800 x 600 SVGA, 30 deg class optics, 33.3 PPD in its stated configuration, 6 lm, up to 6,000-nit in-eye brightness with a 30 deg diffractive waveguide, 98 mW typical projector power, and 0.18 cm3 projector volume. JBD also introduced a monocular full-color AR development kit.
+Measurement:
 
-DigiLens Crystal30 G4 InsightKit publishes a matched waveguide + Avegant LCoS configuration with 30 deg diagonal FOV, >3,000 nits to eye, 12 x 10 mm eyebox, 17 mm eye relief, 720 x 720, and a monocular option. Its listed light engine is not the preferred PR3 MicroLED path, but the complete kit is a useful current feasibility anchor for waveguide-level geometry and brightness.
+- full-white pattern;
+- fixed 9-point FOV grid;
+- same drive and pupil position;
+- repeat at center pupil and, if time allows, four eyebox-edge pupil locations.
 
-### Alpha fit
+PASS when:
 
-**Selected v0.1 baseline.**
+- center-pupil white-field `Lmin/Lmax >=0.55`;
+- no single sampled corner or edge is so dim that reference text becomes unreadable;
+- the result is recorded with all nine raw luminance values.
 
-First procurement preference is a matched MicroLED projector + waveguide/dev kit. If that is blocked, a matched non-MicroLED waveguide kit may be used to validate Gates 1-4, while Gates 5-6 remain provisional for the future target engine.
+Target: `Lmin/Lmax >=0.70`.
 
-## 8. A vs B comparison
+### Gate 6 — artifact / rainbow / ghost
 
-| Factor | A. LBS + HOE | B. microdisplay + waveguide |
-| --- | --- | --- |
-| Implementation difficulty | very high for first custom system | medium-high with matched kit |
-| Component access | LBS engineering samples exist; matched/custom HOE is harder | current projector/dev-kit and waveguide ecosystem is stronger |
-| Alpha planning cost | KRW 3M-12M+ | KRW 2M-8M |
-| Current engine-level power reference | Trixel 3 Cube ~145 mW; another current Trixel 3 operating point is 320 mW | Roadrunner II ~98 mW typical projector power |
-| Current source/system brightness reference | up to 15 lm engine; final in-eye result depends strongly on HOE/waveguide | Roadrunner II vendor states up to 6,000 nits with matched 30 deg waveguide |
-| Current FOV reference | current Trixel 3 platform flyer >=30 deg | Roadrunner II 30 deg; Crystal30 G4 InsightKit 30 deg |
-| Eyebox path | custom HOE/EPE dependent | 12 x 10 mm is available as a current matched-kit reference point |
-| Form-factor potential | excellent | excellent |
-| Alignment burden | very high: laser + MEMS + HOE wavelength/angle | high, lower with a matched projector/waveguide kit |
-| Speckle concern | material | low for preferred MicroLED path |
-| Eye-safety burden | direct laser-source burden | conventional display safety path; product safety still required |
-| Measurement/debug simplicity | moderate | high |
-| v0.1 suitability | defer | **select** |
+Measurement:
 
-Do not interpret the table as a product-level power ranking. The figures are vendor light-engine operating points under different conditions. B wins v0.1 on **integration-risk isolation and measurement simplicity**, not because A is assumed to consume more power.
+- RGB edge target, white grid, isolated point, isolated line;
+- fixed manual exposure;
+- nominal pupil plus four principal eyebox-edge positions.
 
-## 9. Optical Gates
+PASS when in the central 60% usable FOV:
 
-No CGH product path, retinal projection, dynamic holographic video, or eye-tracked pupil steering is admitted before **all six** gates pass on one coherent alpha configuration.
+- RGB edge-registration RMS <=3 px;
+- strongest secondary ghost/stray peak <=10% of the primary peak under the same exposure;
+- no second readable copy of a reference glyph is formed;
+- no persistent rainbow/color breakup prevents reading reference text;
+- for LBS, speckle must not erase thin reference strokes or create false readable detail.
 
-### Gate 1 — stable image visibility
+Target: RGB registration <=1.5 px RMS and ghost/stray peak <=5%.
 
-Pass when:
+### Gate 7 — optical module size / mass feasibility
 
-- full RGB pattern is visible at nominal eye position;
-- Korean and Latin reference text is readable;
-- geometric grid is recognizable across the usable FOV;
-- image remains stable for a 10-minute static run without continuous manual optical adjustment.
+Measurement:
 
-A bright spot or partial image is not a pass.
+- measure the real engine + mandatory collimation/coupling hardware bounding box;
+- measure combiner width, height, thickness, and mass;
+- place optical components in a glasses-like geometric fixture, even if controller electronics remain off-head;
+- record total worn Alpha mass and display-side local temple thickness.
 
-### Gate 2 — sufficient eyebox
+PASS when:
 
-Pass when the measured contiguous usable eyebox is >=9 x 8 mm at >=15 mm eye relief using Section 5.3.
+- engine-side optical bbox <=30 x 20 x 10 mm and <=6 cm3;
+- combiner footprint <=65 x 50 mm and thickness <=3.0 mm;
+- display-side temple local max <=12 mm for the modeled/integrated optical position;
+- whole worn Alpha mass <=85 g.
 
-Target: >=12 x 10 mm at nominal 18-20 mm eye relief.
+Target: engine-side bbox <=25 x 15 x 8 mm / <=3 cm3, combiner <=60 x 45 x 2 mm, temple <=10 mm, whole worn Alpha <=70 g.
 
-### Gate 3 — head/eye movement persistence
+This is a feasibility geometry gate, not an industrial-design freeze.
 
-Bench pass:
+### Gate 8 — power / thermal feasibility
 
-- sweep the pupil-camera proxy through at least +/-4.5 mm X and +/-4.0 mm Y at the gate eye-relief plane;
-- perform at least three horizontal and three vertical traversals inside the accepted eyebox;
-- no complete image loss lasting >100 ms is allowed inside the accepted region;
-- total complete-dropout time must be <1% of recorded traverse time.
+Measurement:
 
-Wearer check:
+- ambient 25 +/-2 C;
+- representative 20% white UI workload;
+- 30-minute continuous run;
+- log display-engine power, driver/bridge power where separable, whole worn power, center luminance, and temperatures at 0, 5, 10, 20, and 30 minutes;
+- fixed temperature points: engine body, driver/bridge hotspot, display-side temple/contact surface, opposite-side reference surface.
 
-- normal blink, small head motion, and ordinary frame micro-slip must not require the wearer to hold one exact pose to read a short card.
+PASS when:
 
-### Gate 4 — usable brightness
+- display stack average <=1.0 W;
+- whole worn electronics average <=1.5 W, excluding phone compute;
+- short peak <=2.0 W;
+- no ordinary skin/contact surface reaches 45 C;
+- no reboot, image dropout, optical drift, or thermal brightness collapse occurs;
+- 30-minute reference luminance remains >=80% of stabilized early-run value and Gate 4 remains passed.
 
-Use calibrated photometric measurement at the nominal pupil position.
+Targets: display stack <=0.6 W average, whole worn <=1.0 W average, peak <=1.5 W, contact surfaces <=42 C.
 
-Required scenes:
+## 8. Alpha bench experiment
 
-- full white field;
-- 20% area white UI card on transparent/black background;
-- white text on transparent/black background.
+### 8.1 Physical optical layout
 
-Pass:
+Common bench:
 
-- representative 20% white UI >=1,500 cd/m2 center;
-- target >=3,000 cd/m2;
-- after the 30-minute thermal run, reference-scene luminance must remain >=80% of its stabilized early-run value and remain above the minimum gate;
-- text must be practically readable indoors, near a bright window, and outdoors in shade.
+`light source/display -> collimation / beam conditioning -> input coupling -> HOE/waveguide propagation / pupil expansion -> outcoupling -> eye/camera pupil plane`
 
-Direct-sun readability is a later stretch test, not a v0.1 gate.
+#### Bench A — LBS + HOE
 
-### Gate 5 — wearable size and mass
+`PC/phone pattern -> Trixel-class RGB LBS -> integrated beam shaping / optional relay -> matched HOE incoupling/combiner -> pupil plane camera`
 
-Pass when:
+Notes:
 
-- total worn alpha mass <=85 g;
-- display-side temple local maximum <=12 mm;
-- optical engine is represented in a glasses-like location rather than a remote tabletop surrogate;
-- worn optical module fits within the minimum bounding/volume envelope;
-- a 30-minute wear check shows no immediate mechanical showstopper such as unstable slipping or a localized pressure point that prevents continued use.
+- if the selected LBS already provides the required beam conditioning, do not add relay optics merely to match the generic diagram;
+- use supplier-recommended wavelengths/drive and certified evaluation conditions;
+- human viewing beyond certified evaluation conditions is blocked until laser eye-safety review is complete;
+- enclose or shield uncontrolled laser paths and use appropriate lab safety procedures.
 
-Target: <=70 g and <=10 mm temple local maximum.
+#### Bench B — microdisplay + waveguide
 
-### Gate 6 — power and thermal
+`PC/phone pattern -> MicroLED/LCoS projector -> collimator -> matched input coupler -> waveguide + EPE/outcoupler -> pupil plane camera`
 
-At 25 +/-2 C ambient with the representative UI workload:
+Notes:
 
-- display stack average <=1.0 W; target <=0.6 W;
-- whole worn electronics average <=1.5 W; target <=1.0 W;
-- short peak <=2.0 W; target <=1.5 W;
-- no ordinary skin/contact surface may reach 45 C;
-- target skin/contact surfaces <=42 C after 30 minutes;
-- no reboot, image dropout, optical drift, or brightness collapse attributable to heat.
+- prefer a vendor-matched projector/collimator/waveguide path;
+- do not buy an arbitrary loose waveguide before input-pupil, polarization, angular, spectral, and mechanical compatibility are confirmed.
 
-Phone compute power is reported separately and excluded from worn-glasses power.
+### 8.2 Mechanical layout
 
-## 10. Alpha bench configuration
+Minimum stages:
 
-### 10.1 Required categories
+- rigid optical breadboard/rail or equivalent stiff base;
+- source/projector mount with XYZ and fine pitch/yaw where the kit does not key the pose;
+- combiner mount with repeatable fiducials/stops;
+- eye/camera XYZ translation stage with >= +/-10 mm X/Y travel and eye-relief Z adjustment;
+- 3-4 mm pupil-stop holder;
+- glasses-like surrogate fixture for Gate 7.
 
-1. **Compute/render source**
-   - phone, PC, or SBC capable of deterministic RGB test patterns;
-   - MIPI/HDMI/USB bridge as required by the selected evaluation hardware.
+Motorized stages are not required for v0.1. Manual micrometer stages are acceptable if positions are recorded.
 
-2. **Light engine**
-   - preferred: full-color MicroLED projector/evaluation module;
-   - acceptable early fallback: matched alternative microdisplay engine supplied with the waveguide kit.
-
-3. **Optical combiner**
-   - waveguide specifically matched to the chosen projector/coupler;
-   - avoid a random loose waveguide as the first experiment.
-
-4. **Mechanical alignment**
-   - rigid optical base;
-   - XYZ translation for eye-camera proxy;
-   - Z adjustment for eye relief;
-   - fine tip/tilt for projector/coupler where exposed;
-   - repeatable glasses-like frame fixture.
-
-5. **Eye/pupil proxy imaging**
-   - camera with manual exposure/focus;
-   - interchangeable ~3-4 mm aperture/pupil stop where practical;
-   - translation range at least +/-10 mm X/Y around nominal pupil.
-
-6. **Photometry**
-   - calibrated luminance meter / imaging photometer preferred;
-   - calibrated spot luminance measurement is acceptable with repeated stage positions;
-   - a phone camera alone is not accepted for absolute cd/m2 gate measurements.
-
-7. **Power and thermal**
-   - bench supply or inline power analyzer with logging;
-   - thermocouples or calibrated temperature probes at fixed contact locations;
-   - IR camera optional for hotspot discovery, with emissivity limitations documented.
-
-8. **Physical metrology**
-   - digital scale;
-   - calipers;
-   - simple center-of-mass/balance jig;
-   - ambient illuminance meter for repeatable readability conditions.
-
-### 10.2 Suggested bench sequence
-
-1. Bring up image with vendor/matched optics; do not optimize industrial design.
-2. Lock deterministic test patterns and camera exposure.
-3. Establish nominal eye relief and optical axis.
-4. Measure usable FOV and Gate 1.
-5. Map X/Y eyebox in 1 mm steps, refining edges to 0.5 mm if needed.
-6. Run movement persistence sweeps and record video/dropout timestamps.
-7. Measure nine-point luminance uniformity and artifact metrics.
-8. Measure absolute representative-scene in-eye luminance.
-9. Put the same optical stack into a glasses-like mass/geometry fixture.
-10. Log 30-minute power, luminance retention, and contact temperatures.
-11. Freeze the result as PASS/FAIL per gate; do not average away a failed gate.
+### 8.3 Bench sequence
+
+1. **Incoming inspection** — record part revisions, dimensions, weight, optical interface, driver firmware, mechanical drawings, and supplier operating limits.
+2. **Display-only bring-up** — verify deterministic test patterns before the combiner.
+3. **Nominal coupling** — establish vendor/reference geometry, optical axis, polarization, and nominal eye relief.
+4. **Gate 1** — visible image and usable FOV.
+5. **Gate 2** — eyebox X/Y map.
+6. **Gate 3** — movement traverse and Z robustness.
+7. **Gate 4** — absolute luminance.
+8. **Gate 5** — 9-point uniformity.
+9. **Gate 6** — ghost/rainbow/RGB registration/speckle record.
+10. **Alignment sensitivity** — determine Delta x80 / Delta y80 / Delta z80 / pitch80 / yaw80 and perform 3x reseat test.
+11. **Optical efficiency** — measure nits/lm only if calibrated input flux is available.
+12. **Gate 7** — glasses-like geometry, combiner/engine dimensions, worn mass.
+13. **Gate 8** — 30-minute power/thermal/luminance-retention run.
+14. Freeze the run as PASS/FAIL per gate. Do not average away a failed gate.
+
+## 9. Parts for Alpha
+
+### 9.1 Required before a meaningful optical Alpha
+
+- one **matched optical path**:
+  - preferred B: MicroLED projector + compatible/matched waveguide/dev kit;
+  - A comparison: LBS engineering sample/eval kit + matched HOE/combiner path;
+- vendor driver/control electronics and SDK or image-input method;
+- deterministic test-pattern source (PC, phone, SBC);
+- rigid optical base and repeatable mounts;
+- projector/source fine alignment capability if not vendor-keyed;
+- XYZ + Z eye/camera stage;
+- manual-exposure camera with fixed-focus/fixed-exposure operation;
+- 3-4 mm pupil stop/aperture;
+- calibrated luminance meter or imaging photometer access;
+- inline power analyzer or logged bench supply;
+- thermocouples / calibrated contact temperature probes;
+- digital scale and calipers;
+- ambient lux meter;
+- for A: supplier safety documentation plus appropriate laser-safe bench controls.
+
+### 9.2 Substitutable without invalidating early optical feasibility
+
+- MicroLED may be temporarily replaced by a matched LCoS/DLP projector to close Gates 1-6; Gates 7-8 must later be repeated with the intended engine class.
+- imaging photometer may be replaced by a calibrated spot luminance meter plus repeated stage positions.
+- motorized translation may be replaced by manual micrometer stages.
+- optical breadboard may be replaced by a sufficiently rigid machined/jig fixture.
+- PC may be replaced by phone/SBC if deterministic pixels and drive settings are preserved.
+- IR camera may supplement but not replace contact probes for the thermal gate.
+
+### 9.3 Later / explicitly not needed for v0.1
+
+- custom CGH renderer;
+- phase-only SLM;
+- dynamic holographic video pipeline;
+- retinal projection hardware;
+- eye tracker / pupil steering;
+- binocular second optical channel;
+- custom prescription integration;
+- custom consumer frame tooling;
+- custom battery / production PCB;
+- custom multilayer waveguide fabrication;
+- custom dynamic HOE recording system.
+
+## 10. Purchase-before-check specification list
+
+Do not purchase a light engine or combiner until the following fields are known or explicitly marked unavailable.
+
+### Light engine / projector
+
+- exact model and revision;
+- display technology: LBS / MicroLED / LCoS / DLP;
+- resolution and refresh rate;
+- supported FOV with the intended projection optics;
+- luminous flux at specified pattern / drive point;
+- projector brightness-uniformity definition;
+- exit-pupil diameter / EPD where applicable;
+- virtual-image distance / focus distance;
+- output polarization state and requirements;
+- output wavelength(s) / spectral bandwidth;
+- required collimator / projection lens and whether included;
+- optical-interface drawing: chief-ray angle, pupil location, pupil size, NA/F-number where available;
+- engine dimensions, weight, connector/flex keep-out;
+- electrical input, typical/peak power, and the exact workload used to quote power;
+- operating temperature and thermal recommendations;
+- MIPI/HDMI/USB/other interface;
+- SDK, driver-board, firmware, and test-pattern access;
+- engineering-sample/evaluation-kit availability;
+- lead time, MOQ, sample price/quote, and return restrictions.
+
+### Waveguide / HOE / combiner
+
+- matched light-engine class and approved projector list;
+- FOV H/V/D;
+- eyebox definition and dimensions;
+- eye relief;
+- input pupil size/location and required chief-ray angle;
+- polarization requirements;
+- wavelength / spectral bandwidth;
+- average and peak luminance efficiency, including whether reported as nits/lm and how averaged;
+- brightness and color uniformity definition;
+- MTF/sharpness metric;
+- transparency;
+- eye glow / stray-light metric if available;
+- substrate dimensions, thickness, weight;
+- in-coupler position/size and mechanical datum drawing;
+- allowed source-coupler alignment tolerance or calibration procedure;
+- required adhesive/mounting restrictions;
+- environmental limits;
+- sample availability and whether the combiner is supplied pre-aligned to a projector.
+
+### Additional checks for A — LBS + HOE
+
+- exact RGB wavelengths and wavelength tolerances;
+- laser classification / eye-safety documentation for the supplied evaluation condition;
+- scan trajectory calibration method;
+- distortion correction / TCM equivalent;
+- HOE recording wavelengths and Bragg incidence geometry;
+- speckle mitigation method if any;
+- supplier end-to-end calibration availability.
+
+### Additional checks for B — microdisplay + waveguide
+
+- microdisplay pixel pitch and projector MTF;
+- X-cube / color-combiner alignment if full-color projector uses separate RGB panels;
+- waveguide compatibility with unpolarized vs polarized source;
+- input-coupler pupil match;
+- whether quoted in-eye nits are center, average, or peak and at what source lumens;
+- whether projector + waveguide can be purchased as one matched evaluation configuration.
 
 ## 11. Measurement record schema
 
-Every run should record at minimum:
+Every run records at minimum:
 
 - run ID, date, operator;
-- light-engine vendor/model/serial or sample ID;
-- waveguide/coupler ID and revision;
-- renderer resolution/refresh/test pattern;
+- path A/B;
+- light-engine model/revision/sample ID;
+- combiner model/revision/sample ID;
+- collimator/coupler revision;
+- renderer resolution, refresh, test-pattern file/version;
 - drive/brightness setting;
 - ambient temperature and illuminance;
-- eye relief;
-- horizontal/vertical/diagonal usable FOV;
-- measured eyebox width/height and full X/Y pass map;
+- eye relief and pupil-stop diameter;
+- H/V/D usable FOV;
+- X/Y eyebox pass map;
+- movement traverse videos/timestamps;
 - nine luminance values and calculated uniformity;
-- representative-scene center luminance;
+- 20% UI center luminance;
+- input lumens if measured and resulting nits/lm metric;
 - RGB registration RMS;
 - ghost/stray peak ratio;
+- artifact photos keyed to pupil coordinates;
+- Delta x80 / Delta y80 / Delta z80 / pitch80 / yaw80 where measured;
+- three reseat results;
+- engine/optics dimensions and volume;
+- combiner W/H/T and mass;
+- display-side temple thickness in surrogate geometry;
+- total worn mass;
 - display-stack average/peak power;
 - whole-worn average/peak power;
 - temperatures at 0, 5, 10, 20, 30 minutes;
 - luminance at stabilized start and 30 minutes;
-- optical module dimensions/volume;
-- total worn mass, left/right mass, temple thickness;
-- each Gate 1-6 result with a linked evidence photo/video/log.
+- Gate 1-8 PASS/FAIL with linked evidence file.
 
 ## 12. BOM / procurement envelope
 
-Public list pricing is insufficient for a production BOM because current AR projectors and waveguides are commonly RFQ/evaluation products.
+Public pricing is insufficient for a production BOM because current AR projectors and combiners are commonly B2B/RFQ components.
 
-### v0.1 planning allowance — B
+### B — microdisplay + matched waveguide
 
-**KRW 2M-8M** for one monocular optical prototype, assuming photometric instruments can be borrowed, rented, or otherwise accessed rather than purchased new.
+Planning envelope for one monocular optical Alpha: **KRW 2M-8M**.
 
-Categories:
+Assumption: calibrated photometry is borrowed, rented, or accessed through a lab rather than purchased as a new high-end imaging photometer.
 
-- matched light engine / waveguide / dev hardware: primary cost;
+Cost categories:
+
+- matched projector/waveguide/dev hardware — primary unknown and likely largest line;
 - driver/bridge/control electronics;
-- mechanical mounts and glasses-like fixtures;
-- cables, adapters, power instrumentation consumables;
-- optical test targets/apertures/ND material;
-- measurement equipment rental/access if required.
+- optical/mechanical stages and fixtures;
+- pupil proxy/camera hardware if not already available;
+- power/thermal instrumentation;
+- test targets, apertures, cables, adapters, ND/optical consumables;
+- metrology rental/access.
 
-### v0.2 planning allowance — A
+### A — LBS + matched/custom HOE
 
-**KRW 3M-12M+** for LBS + matched/custom HOE exploration. Custom HOE exposure/fabrication NRE and repeated optical iteration make the upper bound uncertain.
+Planning envelope: **KRW 3M-12M+**.
 
-These are PR3 internal planning envelopes, not vendor quotes. A production BOM is blocked until:
+Uncertainty is higher because custom/matched HOE recording, exposure/fabrication NRE, laser-safe integration, and repeated calibration can dominate cost.
 
-1. the selected path passes the optical gates;
-2. a realistic integrated architecture is frozen;
-3. at least three relevant supplier quotes or equivalent sourcing records are obtained.
+These are internal planning envelopes, not vendor quotations. A production BOM is blocked until:
+
+1. one optical path passes all eight gates;
+2. the integrated architecture is frozen;
+3. at least three relevant supplier quotations or equivalent sourcing records are collected.
 
 ## 13. Evidence anchors reviewed 2026-09-27
 
-### Official/vendor technical material
+### Official / vendor technical material
 
-- JBD, Roadrunner II launch (2026-06-17): 800 x 600, 30 deg, 33.3 PPD, 6 lm, 0.18 cm3, 98 mW typical projector power, up to 6,000-nit in-eye claim with a 30 deg diffractive waveguide, and a monocular development-kit announcement. https://www.jb-display.com/newsdetails/88.html
-- JBD current product site: Hummingbird II is listed at 0.5 g, 0.2 cm3, and 95 mW; useful as a secondary current MicroLED reference. https://www.jb-display.com/
-- TriLite, Trixel 3 Cube official material (2025-2026): approximately 1 cm3, 1.5 g, up to 15 lm, ~145 mW typical power, integrated MEMS driver electronics, and engineering-sample availability. https://www.trilite-tech.com/trilite-unveils-trixel-3-cube-projection-display-for-ar-glasses-and-automotive-applications/
-- TriLite, current Trixel 3 product flyer: <1 cm3, <1.5 g, >=30 deg FOV, 1024 x 768, 15 lm, 320 mW at the stated typical 20%-pixel-on / 5-lm operating condition. https://www.trilite-tech.com/wp-content/uploads/product-flyer-trixel-3.pdf
-- DigiLens, Crystal30 G4 InsightKit: 30 deg diagonal, >3,000 nits to eye, 12 x 10 mm eyebox, 17 mm eye relief, 720 x 720, 60 fps, monocular option. https://www.digilens.com/wp-content/uploads/2025/07/DL-Crystal30-G4-v2.35.pdf
-- RayNeo X3 Pro official specifications: binocular full-color MicroLED/diffractive-waveguide consumer reference, 640 x 480, 30 deg FOV, 3,500-nit average / 6,000-nit peak stated brightness, and 76 +/-1 g. https://www.rayneo.com/products/x3-pro-ai-display-glasses
+- JBD, **Roadrunner II** launch, 2026-06-17: 800 x 600, 30-deg class, 33.3 PPD, 6 lm, 98 mW typical projector power, up to 6,000-nit in-eye claim with a 30-deg diffractive waveguide; source-image brightness uniformity >95% in the published launch material. https://www.jb-display.com/newsdetails/88.html
+- JBD, **Hummingbird II** product page: 500 x 380, 25 deg, 0.2 cm3, 0.5 g, 3 lm, 95 mW typical, up to 4,000-nit eye-level brightness with waveguide. https://www.jb-display.com/product_des/17.html
+- TriLite, **Trixel 3 Cube**: approximately 1 cm3, 1.5 g, up to 15 lm, ~145 mW typical in the integration-facing Cube material, integrated MEMS driver electronics, engineering samples. https://www.trilite-tech.com/trilite-unveils-trixel-3-cube-projection-display-for-ar-glasses-and-automotive-applications/
+- TriLite, **Trixel 3** current product/engineering material: <1 cm3, ~1.5 g, 15 lm, sub-320/320-mW-class stated operating points depending public document/revision; engineering sample and evaluation kit available. https://www.trilite-tech.com/product/ and https://www.trilite-tech.com/wp-content/uploads/product-flyer-trixel-3.pdf
+- DigiLens, **Crystal30 G4**: 30-deg diagonal, 17 mm eye relief, ~59 x 45 mm reference footprint, 1.2 mm thickness, 6 g, >90% transparency, average luminance efficiency >750 nits/lm unpolarized and >1500 nits/lm polarized in the 4th-generation waveguide sheet. https://www.digilens.com/wp-content/uploads/2024/10/DL-Crystal30-4th-Gen-090324-08.pdf
+- DigiLens, **Crystal30 G4 InsightKit**: matched waveguide + Avegant LCoS configuration, 30-deg diagonal, >3,000 nits to eye, 12 x 10 mm eyebox, 17 mm eye relief, 720 x 720, 60 fps, monocular option. https://www.digilens.com/wp-content/uploads/2025/07/DL-Crystal30-G4-v2.35.pdf
+- RayNeo, **X3 Pro** commercial system reference: binocular full-color MicroLED + diffractive waveguide, 640 x 480, 30 deg, 3,500-nit average / 6,000-nit peak stated brightness, 76 +/-1 g total system weight. https://www.rayneo.com/products/x3-pro-ai-display-glasses
 
 ### Research evidence
 
-- Choi et al., *Synthetic aperture waveguide holography for compact mixed-reality displays with large etendue*, Nature Photonics (2025), DOI: 10.1038/s41566-025-01718-w. Demonstrated 38 deg diagonal FOV, 9 x 8 mm eyebox, and 23-33 mm eye-relief range in a research prototype. This supports the lower eyebox gate as physically meaningful; it does not authorize CGH in v0.1.
-- Lyu et al., *2D Pupil Expansion Full-Color Volume Holographic Waveguide AR Display*, Laser & Photonics Reviews (first published 2025; 2026 issue), DOI: 10.1002/lpor.202502085. Reported 28 deg diagonal FOV, 14 x 16 mm eyebox, 15 mm eye relief, and 53.9% full-FOV white-light brightness uniformity. This is an evidence point for the difficulty of simultaneously achieving eyebox, color, and uniformity.
-- Qin et al., *Hybrid Reflective-Diffractive Waveguide Display with High Optical Efficiency*, Laser & Photonics Reviews (2025). Reported a 30 deg prototype and 12 x 10 mm eyebox; used here as an additional research-scale feasibility point rather than a PR3 claim.
+- Ding et al., **Breaking the in-coupling efficiency limit in waveguide-based AR displays with polarization volume gratings**, Light: Science & Applications 13, 185 (2024), DOI: 10.1038/s41377-024-01537-8. Discusses the efficiency/uniformity/FOV tradeoff and cites 20-deg ~4500 nits/lm (~10%) vs 30-deg ~1300 nits/lm (~3%) full-color SRG-waveguide examples.
+- Choi et al., **Synthetic aperture waveguide holography for compact mixed-reality displays with large etendue**, Nature Photonics (2025), DOI: 10.1038/s41566-025-01718-w. Demonstrated 38-deg diagonal FOV, 9 x 8 mm eyebox, and 23-33 mm eye-relief range. It is used only as physical evidence for gate ranges; it does not authorize CGH implementation in v0.1.
+- Lyu et al., **2D Pupil Expansion Full-Color Volume Holographic Waveguide AR Display**, Laser & Photonics Reviews, DOI: 10.1002/lpor.202502085. Reported 28-deg diagonal, 14 x 16 mm eyebox, 15 mm eye relief, and 53.9% full-FOV white-light brightness uniformity.
+- Qin et al., **Hybrid Reflective-Diffractive Waveguide Display with High Optical Efficiency**, Laser & Photonics Reviews, DOI: 10.1002/lpor.202500957. Reported 30-deg FOV, 12 x 10 mm eyebox, and 2556.9 nits/lm average optical efficiency in a research prototype.
+- Li et al., **Eye-Box Measurement for Augmented-Reality Waveguides with Pupil Expansion**, SID Symposium Digest (2025), DOI: 10.1002/sdtp.18232. Supports treating eyebox as a measured 3D usable region rather than a single nominal vendor rectangle.
+- **Prediction of assembly accuracy in multilayer diffractive optical waveguides based on virtual assembly**, Optics Communications 593 (2025), 132196, DOI: 10.1016/j.optcom.2025.132196. Highlights the severe assembly-accuracy burden in multilayer diffractive-waveguide fabrication; PR3 v0.1 therefore buys/uses a matched combiner rather than fabricating such a stack.
+- Lin et al., **Bragg Condition Matching Technique between Volume Holographic Optical Elements in Light Field Near-Eye Displays**, Optica DH 2026, Th2C.2. Reinforces Bragg-condition sensitivity in multi-HOE systems and the need to treat angular/material variation explicitly in A.
 
-## 14. Blockers before procurement / build
+## 14. Current blockers
 
-1. **Matched hardware access.** Roadrunner II-class MicroLED projectors and appropriate waveguides are not normal retail parts; availability, lead time, and pricing need supplier confirmation.
-2. **Public optical prescription gap.** Coupler/waveguide matching parameters are generally not public enough to justify buying unrelated loose parts.
-3. **Absolute photometry.** Gate 4 cannot be credibly closed with a phone camera alone; calibrated luminance measurement access is required.
-4. **BOM uncertainty.** Public RFQ products do not support a production BOM today.
-5. **LBS human-use safety.** Path A requires laser eye-safety analysis before human-viewing experiments beyond supplier-certified evaluation conditions.
-6. **Industrial-design targets remain internal.** 10-12 mm temple thickness and <=70/85 g mass must be validated after real parts are selected.
+1. **Matched hardware availability** — Roadrunner II-class projectors and suitable waveguides are not ordinary retail parts; actual availability, lead time, and price need supplier confirmation.
+2. **Optical-interface data** — loose waveguide purchases are unsafe until pupil position/size, chief-ray angle, polarization, spectrum, and mechanical datums are known.
+3. **Absolute photometry access** — Gate 4 cannot be credibly closed with an iPhone camera alone.
+4. **Optical-efficiency instrumentation** — nits/lm comparison requires calibrated input luminous flux; without it the metric remains unmeasured.
+5. **A-path laser safety** — human viewing beyond supplier-certified evaluation conditions requires laser eye-safety review and appropriate lab controls.
+6. **BOM uncertainty** — current B2B/RFQ components do not support a credible production BOM yet.
+7. **Mechanical integration evidence** — the 10-12 mm temple and <=70/85 g goals remain internal targets until real parts are mounted in a glasses-like surrogate.
 
-## 15. Freeze rule
+## 15. Freeze rule and next engineering step
 
-Until Gates 1-6 pass, PR3 work may include:
+Until Gates 1-8 pass, PR3 work may include:
 
 - deterministic raster renderer/test patterns;
-- static calibration and color/uniformity compensation experiments;
+- static calibration and color/uniformity compensation;
 - bench alignment tooling;
-- data logging and measurement automation;
-- sourcing of matched evaluation hardware.
+- measurement logging/automation;
+- supplier outreach and matched-evaluation-hardware sourcing;
+- passive glasses-like surrogate mounting for Gate 7.
 
-Do **not** add product implementation for:
+Do **not** start product implementation for:
 
 - CGH rendering pipeline;
 - dynamic holographic video;
@@ -455,4 +634,6 @@ Do **not** add product implementation for:
 - custom dynamic HOE/SLM product architecture;
 - binocular product integration.
 
-The next engineering decision after this spec is procurement/bench feasibility, not holographic feature implementation.
+The next engineering decision after this spec is:
+
+**obtain one matched B-path evaluation configuration (or a matched A-path system if supplier access is unexpectedly better) -> build the bench -> close Gate 1 first -> proceed sequentially through Gate 8 -> only then decide whether PR3 advances to a wearable product alpha.**
