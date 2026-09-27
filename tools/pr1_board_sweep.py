@@ -43,18 +43,10 @@ RX_FIELD_MAP = {
 }
 
 REQUIRED_RESULT_METRICS = [
-    "rssi_dbm",
-    "crc_good",
-    "crc_bad",
-    "missing",
-    "queue_depth",
-    "max_queue_depth",
-    "scheduler_misses",
-    "irq_to_spi_us_p99",
-    "spi_duration_us_p99",
-    "rx_processing_us_p99",
-    "spi_end_to_rearm_start_us_p99",
-    "rx_rearm_us_p99",
+    "rssi_dbm", "crc_good", "crc_bad", "missing", "queue_depth",
+    "max_queue_depth", "scheduler_misses", "irq_to_spi_us_p99",
+    "spi_duration_us_p99", "rx_processing_us_p99",
+    "spi_end_to_rearm_start_us_p99", "rx_rearm_us_p99",
     "irq_to_rx_ready_us_p99",
 ]
 
@@ -176,9 +168,9 @@ def classify_bottleneck(
 ) -> dict[str, str | float | None]:
     """Classify the dominant non-overlapping receiver turnaround component.
 
-    Labels are diagnostic candidates only. rx_processing_us_p99 overlaps the
-    SPI interval and is not added to the turnaround decomposition; the
-    non-overlapping SPI-end -> re-arm-start interval is labeled rx_processing.
+    rx_processing_us_p99 overlaps the SPI interval and is retained as a
+    diagnostic only. The non-overlapping SPI-end -> re-arm-start interval is
+    labeled rx_processing for bottleneck classification.
     """
     total = metrics.get("irq_to_rx_ready_us_p99")
     components = {
@@ -545,10 +537,24 @@ def _load_manifest(root: Path) -> list[dict]:
     return runs
 
 
+def _captured_result(meta: dict, run_dir: Path) -> dict | None:
+    files = meta.get("files", {})
+    rx_path = run_dir / files.get("rx_log", "rx.log")
+    tx_path = run_dir / files.get("tx_log", "tx.log")
+    if not rx_path.exists() or not tx_path.exists():
+        return None
+    rx_lines = rx_path.read_text(encoding="utf-8", errors="replace").splitlines()
+    tx_lines = tx_path.read_text(encoding="utf-8", errors="replace").splitlines()
+    return parse_run_logs(meta, rx_lines, tx_lines)
+
+
 def experiment_status(root: Path) -> dict:
     manifest = _load_manifest(root)
     completed_ids: set[str] = set()
     captured_ids: set[str] = set()
+    invalid_runs: list[dict[str, str]] = []
+    under_target_runs: list[str] = []
+
     for meta in manifest:
         run_id = str(meta["run_id"])
         run_dir = root / "runs" / run_id
@@ -556,12 +562,24 @@ def experiment_status(root: Path) -> dict:
         rx_path = run_dir / files.get("rx_log", "rx.log")
         tx_path = run_dir / files.get("tx_log", "tx.log")
         result_path = run_dir / "result.json"
+        result: dict | None = None
+
         if rx_path.exists() and tx_path.exists():
             captured_ids.add(run_id)
         if result_path.exists():
             result = json.loads(result_path.read_text(encoding="utf-8"))
+        elif run_id in captured_ids:
+            try:
+                result = _captured_result(meta, run_dir)
+            except (OSError, ValueError, KeyError, json.JSONDecodeError) as exc:
+                invalid_runs.append({"run_id": run_id, "error": str(exc)})
+
+        if result is not None:
             if bool(result.get("derived", {}).get("target_reached")):
                 completed_ids.add(run_id)
+            elif run_id in captured_ids:
+                under_target_runs.append(run_id)
+
     pending = [meta for meta in manifest if str(meta["run_id"]) not in completed_ids]
     next_run = pending[0] if pending else None
     return {
@@ -572,6 +590,8 @@ def experiment_status(root: Path) -> dict:
         "pending_gaps_us": [int(item["gap_us"]) for item in pending],
         "next_run_id": str(next_run["run_id"]) if next_run else None,
         "next_gap_us": int(next_run["gap_us"]) if next_run else None,
+        "under_target_runs": under_target_runs,
+        "invalid_runs": invalid_runs,
     }
 
 
@@ -601,6 +621,7 @@ def prepare_next_run(root: Path, project_dir: Path, *, tx_port: str) -> dict:
         "generated_config": str(generated),
         "flash_command": flash_command,
         "tracked_platformio_unchanged": True,
+        "status": status,
     }
 
 
@@ -610,13 +631,9 @@ def analyze_directory(root: Path) -> dict:
     for metadata_path in sorted(run_root.glob("*/metadata.json")):
         run_dir = metadata_path.parent
         meta = json.loads(metadata_path.read_text(encoding="utf-8"))
-        rx_path = run_dir / meta.get("files", {}).get("rx_log", "rx.log")
-        tx_path = run_dir / meta.get("files", {}).get("tx_log", "tx.log")
-        if not rx_path.exists() or not tx_path.exists():
+        result = _captured_result(meta, run_dir)
+        if result is None:
             continue
-        rx_lines = rx_path.read_text(encoding="utf-8", errors="replace").splitlines()
-        tx_lines = tx_path.read_text(encoding="utf-8", errors="replace").splitlines()
-        result = parse_run_logs(meta, rx_lines, tx_lines)
         (run_dir / "result.json").write_text(json.dumps(result, indent=2), encoding="utf-8")
         results.append(result)
     if not results:
@@ -633,7 +650,7 @@ def main(argv: list[str] | None = None) -> int:
     plan.add_argument("--firmware-sha", required=True)
     plan.add_argument("--target-packets", type=int, default=1000)
 
-    status = sub.add_parser("status", help="show completed/pending runs and the next frozen sweep gap")
+    status = sub.add_parser("status", help="validate captured logs and show the next frozen sweep gap")
     status.add_argument("output_dir", type=Path)
 
     next_run = sub.add_parser("next", help="prepare the next generated TX config without editing tracked platformio.ini")
