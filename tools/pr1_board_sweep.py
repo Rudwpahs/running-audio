@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Host-side planning, parsing, analysis, and report generation for the PR1 SX1280 sweep."""
+"""Host-side planning, parsing, analysis, and orchestration for the PR1 SX1280 sweep."""
 
 from __future__ import annotations
 
@@ -41,6 +41,22 @@ RX_FIELD_MAP = {
     "irq_to_rx_ready_us": "irq_to_rx_ready_us_p99",
     "trace_overwrites": "trace_overwrites",
 }
+
+REQUIRED_RESULT_METRICS = [
+    "rssi_dbm",
+    "crc_good",
+    "crc_bad",
+    "missing",
+    "queue_depth",
+    "max_queue_depth",
+    "scheduler_misses",
+    "irq_to_spi_us_p99",
+    "spi_duration_us_p99",
+    "rx_processing_us_p99",
+    "spi_end_to_rearm_start_us_p99",
+    "rx_rearm_us_p99",
+    "irq_to_rx_ready_us_p99",
+]
 
 RESULT_CSV_FIELDS = [
     "run_id", "phase", "gap_us", "target_packets", "packet_count",
@@ -139,7 +155,9 @@ def _expect_float(meta: dict[str, str], key: str, expected: float, source: str) 
         raise ValueError(f"{source} {key}: expected {expected}, got {actual}")
 
 
-def _validate_live_profile(meta: dict[str, str], *, role: str, expected_gap_us: int | None, source: str) -> None:
+def _validate_live_profile(
+    meta: dict[str, str], *, role: str, expected_gap_us: int | None, source: str
+) -> None:
     _expect_text(meta, "runtime_role", role, source)
     _expect_int(meta, "rf_enabled", 1, source)
     _expect_int(meta, "sx1280_spi_hz", FROZEN_BASELINE["sx1280_spi_hz"], source)
@@ -153,24 +171,39 @@ def _validate_live_profile(meta: dict[str, str], *, role: str, expected_gap_us: 
         _expect_int(meta, "tx_gap_us", expected_gap_us, source)
 
 
-def _classify(metrics: dict[str, int | None], loss_rate: float) -> dict[str, str | float | None]:
+def classify_bottleneck(
+    metrics: dict[str, int | None], loss_rate: float
+) -> dict[str, str | float | None]:
+    """Classify the dominant non-overlapping receiver turnaround component.
+
+    Labels are diagnostic candidates only. rx_processing_us_p99 overlaps the
+    SPI interval and is not added to the turnaround decomposition; the
+    non-overlapping SPI-end -> re-arm-start interval is labeled rx_processing.
+    """
     total = metrics.get("irq_to_rx_ready_us_p99")
     components = {
         "scheduler_wakeup": metrics.get("irq_to_spi_us_p99"),
-        "spi_transaction": metrics.get("spi_duration_us_p99"),
-        "post_spi_processing": metrics.get("spi_end_to_rearm_start_us_p99"),
-        "rx_rearm": metrics.get("rx_rearm_us_p99"),
+        "spi": metrics.get("spi_duration_us_p99"),
+        "rx_processing": metrics.get("spi_end_to_rearm_start_us_p99"),
+        "rearm": metrics.get("rx_rearm_us_p99"),
     }
-    present = {k: v for k, v in components.items() if isinstance(v, int)}
+    present = {key: value for key, value in components.items() if isinstance(value, int)}
+    common = {"confidence": "low", "evidence_boundary": "diagnostic_candidate_not_causal_proof"}
     if loss_rate <= 0:
-        return {"label": "no_loss_observed", "confidence": "low", "dominant_share": None}
+        return {"label": "no_loss_observed", "dominant_share": None, **common}
     if not isinstance(total, int) or total <= 0 or len(present) < 4:
-        return {"label": "insufficient_timing_evidence", "confidence": "low", "dominant_share": None}
+        return {"label": "insufficient_timing_evidence", "dominant_share": None, **common}
     label, value = max(present.items(), key=lambda item: item[1])
     share = value / total
     if share >= 0.45:
-        return {"label": label, "confidence": "low", "dominant_share": round(share, 4)}
-    return {"label": "receiver_turnaround_mixed", "confidence": "low", "dominant_share": round(share, 4)}
+        return {"label": label, "dominant_share": round(share, 4), **common}
+    return {"label": "receiver_turnaround_mixed", "dominant_share": round(share, 4), **common}
+
+
+def _require_result_metrics(metrics: dict[str, int | None]) -> None:
+    missing = [name for name in REQUIRED_RESULT_METRICS if not isinstance(metrics.get(name), int)]
+    if missing:
+        raise ValueError("run telemetry missing required metrics: " + ", ".join(missing))
 
 
 def parse_run_logs(metadata: dict, rx_lines: Iterable[str], tx_lines: Iterable[str] | None = None) -> dict:
@@ -189,19 +222,18 @@ def parse_run_logs(metadata: dict, rx_lines: Iterable[str], tx_lines: Iterable[s
     for raw_name, result_name in RX_FIELD_MAP.items():
         metrics[result_name] = rx_tel.get(raw_name)
     metrics["scheduler_misses"] = tx_tel.get("scheduler_misses", rx_tel.get("scheduler_misses"))
+    _require_result_metrics(metrics)
 
-    crc_good = metrics.get("crc_good")
-    missing = metrics.get("missing")
-    if not isinstance(crc_good, int) or not isinstance(missing, int):
-        raise ValueError("rx log must contain crc_good and missing telemetry")
-
-    # missing is derived from successful sequence gaps. A CRC-failed packet can later
-    # appear in that gap, so crc_bad must not be added again to the packet span.
+    crc_good = metrics["crc_good"]
+    missing = metrics["missing"]
+    assert isinstance(crc_good, int)
+    assert isinstance(missing, int)
     packet_count = crc_good + missing
     loss_rate = (missing / packet_count) if packet_count else 0.0
-    crc_bad = metrics.get("crc_bad")
-    crc_bad_rate = (crc_bad / packet_count) if isinstance(crc_bad, int) and packet_count else 0.0
-    classification = _classify(metrics, loss_rate)
+    crc_bad = metrics["crc_bad"]
+    assert isinstance(crc_bad, int)
+    crc_bad_rate = (crc_bad / packet_count) if packet_count else 0.0
+    classification = classify_bottleneck(metrics, loss_rate)
 
     return {
         "schema_version": SCHEMA_VERSION,
@@ -221,7 +253,8 @@ def parse_run_logs(metadata: dict, rx_lines: Iterable[str], tx_lines: Iterable[s
         "evidence": {
             "packet_count_source": "rx_sequence_span=crc_good+missing",
             "crc_bad_overlap_warning": "crc_bad may overlap sequence-derived missing and is not additive",
-            "scheduler_misses_source": "tx" if "scheduler_misses" in tx_tel else "rx_or_unobserved",
+            "scheduler_misses_source": "tx" if "scheduler_misses" in tx_tel else "rx",
+            "evidence_boundary": "measured_diagnostics_not_causal_proof",
         },
         "revalidate_10000": False,
     }
@@ -236,9 +269,7 @@ def render_tx_sweep_config(base_text: str, gap_us: int) -> str:
     return base_text.replace(needle, f"-D PR1_TX_GAP_US={gap_us}", 1)
 
 
-def build_flash_command(
-    *, project_dir: Path, config_path: Path, environment: str, port: str
-) -> list[str]:
+def build_flash_command(*, project_dir: Path, config_path: Path, environment: str, port: str) -> list[str]:
     return [
         "pio", "run",
         "--project-dir", str(project_dir),
@@ -257,6 +288,24 @@ def _transition_threshold(a: dict, b: dict) -> tuple[float, float]:
     pooled = ((p1 * n1) + (p2 * n2)) / (n1 + n2)
     se = math.sqrt(max(0.0, pooled * (1.0 - pooled) * ((1.0 / n1) + (1.0 / n2))))
     return abs(p2 - p1), max(0.005, 3.0 * se)
+
+
+def _receiver_saturation_candidate(better: dict, worse: dict, loss_delta: float) -> bool:
+    better_total = better.get("metrics", {}).get("irq_to_rx_ready_us_p99")
+    worse_total = worse.get("metrics", {}).get("irq_to_rx_ready_us_p99")
+    if not isinstance(better_total, int) or not isinstance(worse_total, int):
+        return False
+    if better_total <= 0 or worse_total < better_total * 1.25:
+        return False
+    better_crc = float(better.get("derived", {}).get("crc_bad_rate", 0.0))
+    worse_crc = float(worse.get("derived", {}).get("crc_bad_rate", 0.0))
+    if abs(worse_crc - better_crc) > max(0.01, loss_delta * 0.25):
+        return False
+    better_rssi = better.get("metrics", {}).get("rssi_dbm")
+    worse_rssi = worse.get("metrics", {}).get("rssi_dbm")
+    if isinstance(better_rssi, int) and isinstance(worse_rssi, int) and abs(worse_rssi - better_rssi) > 6:
+        return False
+    return True
 
 
 def analyze_sweep(results: Sequence[dict]) -> dict:
@@ -283,18 +332,33 @@ def analyze_sweep(results: Sequence[dict]) -> dict:
             marked.update((higher_gap, lower_gap))
 
     revalidate = [gap for gap in SWEEP_GAPS_US if gap in marked]
-    bottleneck = {"label": "insufficient_transition_evidence", "confidence": "low", "evidence_gap_us": None}
+    bottleneck = {
+        "label": "insufficient_transition_evidence",
+        "confidence": "low",
+        "evidence_gap_us": None,
+        "candidates": [],
+        "evidence_boundary": "not_causal_proof",
+    }
     if transitions:
         strongest = max(transitions, key=lambda item: item["absolute_delta"])
-        candidates = [
-            row for row in ordered
-            if int(row["gap_us"]) in {strongest["higher_gap_us"], strongest["lower_gap_us"]}
-        ]
-        if candidates:
-            evidence_row = max(candidates, key=lambda row: float(row["derived"]["loss_rate"]))
-            label = evidence_row.get("classification", {}).get("label", "insufficient_timing_evidence")
+        pair = [row for row in ordered if int(row["gap_us"]) in {strongest["higher_gap_us"], strongest["lower_gap_us"]}]
+        if len(pair) == 2:
+            pair.sort(key=lambda row: float(row["derived"]["loss_rate"]))
+            better, worse = pair[0], pair[1]
+            label = worse.get("classification", {}).get("label", "insufficient_timing_evidence")
             confidence = "medium" if label not in {"no_loss_observed", "insufficient_timing_evidence"} else "low"
-            bottleneck = {"label": label, "confidence": confidence, "evidence_gap_us": int(evidence_row["gap_us"])}
+            candidates: list[str] = []
+            if label not in {"no_loss_observed", "insufficient_timing_evidence"}:
+                candidates.append(label)
+            if _receiver_saturation_candidate(better, worse, strongest["absolute_delta"]):
+                candidates.append("receiver_saturation_candidate")
+            bottleneck = {
+                "label": label,
+                "confidence": confidence,
+                "evidence_gap_us": int(worse["gap_us"]),
+                "candidates": candidates,
+                "evidence_boundary": "not_causal_proof",
+            }
     return {
         "transition_rule": "abs(loss_delta) >= max(0.5 percentage points, 3*pooled-binomial-SE)",
         "missing_gaps_us": missing_gaps,
@@ -385,6 +449,46 @@ def _svg_chart(path: Path, rows: Sequence[dict], series: Sequence[tuple[str, str
     path.write_text("\n".join(parts), encoding="utf-8")
 
 
+def render_summary(document: dict) -> str:
+    runs = document["runs"]
+    analysis = document["analysis"]
+    completed = sum(bool(run.get("derived", {}).get("target_reached")) for run in runs)
+    revalidate = analysis.get("revalidate_10000_gaps_us", [])
+    transitions = analysis.get("transitions", [])
+    bottleneck = analysis.get("bottleneck_summary", {})
+    candidates = bottleneck.get("candidates", [])
+    lines = [
+        "# PR1 board sweep summary",
+        "",
+        f"Completed runs: {completed}/{len(SWEEP_GAPS_US)}",
+        f"Parsed runs: {len(runs)}/{len(SWEEP_GAPS_US)}",
+        "Missing sweep gaps: " + (", ".join(str(gap) for gap in analysis.get("missing_gaps_us", [])) if analysis.get("missing_gaps_us") else "none"),
+        "",
+        "## Loss transitions",
+    ]
+    if transitions:
+        for item in transitions:
+            lines.append(f"- {item['higher_gap_us']} -> {item['lower_gap_us']} us: loss delta {item['absolute_delta'] * 100:.3f} percentage points")
+    else:
+        lines.append("- none detected from completed adjacent points")
+    lines.extend([
+        "",
+        "## 10,000-packet revalidation",
+        "- " + (", ".join(f"{gap} us" for gap in revalidate) if revalidate else "none marked yet"),
+        "",
+        "## Bottleneck candidates",
+        f"- primary: {bottleneck.get('label', 'insufficient_transition_evidence')}",
+        "- candidates: " + (", ".join(candidates) if candidates else "insufficient evidence"),
+        f"- confidence: {bottleneck.get('confidence', 'low')}",
+        "",
+        "## Evidence boundary",
+        "These labels are diagnostic hypotheses from measured timing/loss correlation, not causal proof. The frozen RF baseline is unchanged.",
+        "Packet count is the RX-observed sequence span (crc_good + missing), not an exact TX-attempt counter.",
+        "",
+    ])
+    return "\n".join(lines)
+
+
 def write_sweep_outputs(results: Sequence[dict], output_dir: Path) -> dict:
     output_dir.mkdir(parents=True, exist_ok=True)
     analysis = analyze_sweep(results)
@@ -409,11 +513,13 @@ def write_sweep_outputs(results: Sequence[dict], output_dir: Path) -> dict:
     timing_keys = [
         ("irq_to_spi_us_p99", "IRQ to SPI p99"),
         ("spi_duration_us_p99", "SPI duration p99"),
+        ("rx_processing_us_p99", "RX processing (overlapping) p99"),
         ("spi_end_to_rearm_start_us_p99", "SPI end to rearm start p99"),
         ("rx_rearm_us_p99", "RX rearm p99"),
         ("irq_to_rx_ready_us_p99", "IRQ to RX ready p99"),
     ]
     _svg_chart(output_dir / "timing_p99.svg", flat, timing_keys, "PR1 RX timing p99", "microseconds")
+    (output_dir / "summary.md").write_text(render_summary(document), encoding="utf-8")
     return document
 
 
@@ -431,6 +537,73 @@ def create_plan(output_dir: Path, firmware_sha: str, target_packets: int = 1000)
     return manifest
 
 
+def _load_manifest(root: Path) -> list[dict]:
+    document = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
+    runs = document.get("runs")
+    if not isinstance(runs, list):
+        raise ValueError("manifest.json must contain a runs array")
+    return runs
+
+
+def experiment_status(root: Path) -> dict:
+    manifest = _load_manifest(root)
+    completed_ids: set[str] = set()
+    captured_ids: set[str] = set()
+    for meta in manifest:
+        run_id = str(meta["run_id"])
+        run_dir = root / "runs" / run_id
+        files = meta.get("files", {})
+        rx_path = run_dir / files.get("rx_log", "rx.log")
+        tx_path = run_dir / files.get("tx_log", "tx.log")
+        result_path = run_dir / "result.json"
+        if rx_path.exists() and tx_path.exists():
+            captured_ids.add(run_id)
+        if result_path.exists():
+            result = json.loads(result_path.read_text(encoding="utf-8"))
+            if bool(result.get("derived", {}).get("target_reached")):
+                completed_ids.add(run_id)
+    pending = [meta for meta in manifest if str(meta["run_id"]) not in completed_ids]
+    next_run = pending[0] if pending else None
+    return {
+        "total_runs": len(manifest),
+        "completed_runs": len(completed_ids),
+        "captured_runs": len(captured_ids),
+        "pending_runs": len(pending),
+        "pending_gaps_us": [int(item["gap_us"]) for item in pending],
+        "next_run_id": str(next_run["run_id"]) if next_run else None,
+        "next_gap_us": int(next_run["gap_us"]) if next_run else None,
+    }
+
+
+def prepare_next_run(root: Path, project_dir: Path, *, tx_port: str) -> dict:
+    status = experiment_status(root)
+    run_id = status["next_run_id"]
+    if run_id is None:
+        raise ValueError("all planned baseline runs are complete")
+    metadata_path = root / "runs" / str(run_id) / "metadata.json"
+    meta = json.loads(metadata_path.read_text(encoding="utf-8"))
+    gap_us = int(meta["gap_us"])
+    base_path = project_dir / "platformio.ini"
+    base_text = base_path.read_text(encoding="utf-8")
+    generated = root / "generated" / f"tx-{gap_us}us.ini"
+    generated.parent.mkdir(parents=True, exist_ok=True)
+    generated.write_text(render_tx_sweep_config(base_text, gap_us), encoding="utf-8")
+    run_dir = metadata_path.parent
+    files = meta.get("files", {})
+    flash_command = build_flash_command(project_dir=project_dir, config_path=generated, environment="rf_tx_compile", port=tx_port)
+    return {
+        "run_id": str(run_id),
+        "gap_us": gap_us,
+        "target_packets": int(meta["target_packets"]),
+        "metadata": str(metadata_path),
+        "rx_log": str(run_dir / files.get("rx_log", "rx.log")),
+        "tx_log": str(run_dir / files.get("tx_log", "tx.log")),
+        "generated_config": str(generated),
+        "flash_command": flash_command,
+        "tracked_platformio_unchanged": True,
+    }
+
+
 def analyze_directory(root: Path) -> dict:
     results: list[dict] = []
     run_root = root / "runs"
@@ -439,10 +612,10 @@ def analyze_directory(root: Path) -> dict:
         meta = json.loads(metadata_path.read_text(encoding="utf-8"))
         rx_path = run_dir / meta.get("files", {}).get("rx_log", "rx.log")
         tx_path = run_dir / meta.get("files", {}).get("tx_log", "tx.log")
-        if not rx_path.exists():
+        if not rx_path.exists() or not tx_path.exists():
             continue
         rx_lines = rx_path.read_text(encoding="utf-8", errors="replace").splitlines()
-        tx_lines = tx_path.read_text(encoding="utf-8", errors="replace").splitlines() if tx_path.exists() else None
+        tx_lines = tx_path.read_text(encoding="utf-8", errors="replace").splitlines()
         result = parse_run_logs(meta, rx_lines, tx_lines)
         (run_dir / "result.json").write_text(json.dumps(result, indent=2), encoding="utf-8")
         results.append(result)
@@ -460,7 +633,16 @@ def main(argv: list[str] | None = None) -> int:
     plan.add_argument("--firmware-sha", required=True)
     plan.add_argument("--target-packets", type=int, default=1000)
 
-    analyze = sub.add_parser("analyze", help="parse completed run logs and write CSV/JSON/SVG reports")
+    status = sub.add_parser("status", help="show completed/pending runs and the next frozen sweep gap")
+    status.add_argument("output_dir", type=Path)
+
+    next_run = sub.add_parser("next", help="prepare the next generated TX config without editing tracked platformio.ini")
+    next_run.add_argument("output_dir", type=Path)
+    next_run.add_argument("project_dir", type=Path)
+    next_run.add_argument("--tx-port", required=True)
+    next_run.add_argument("--flash", action="store_true")
+
+    analyze = sub.add_parser("analyze", help="parse completed run logs and write CSV/JSON/SVG/summary reports")
     analyze.add_argument("output_dir", type=Path)
 
     flash_tx = sub.add_parser("flash-tx", help="flash one TX sweep gap using an untracked generated PlatformIO config")
@@ -475,6 +657,15 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "plan":
             runs = create_plan(args.output_dir, args.firmware_sha, args.target_packets)
             print(json.dumps({"runs": len(runs), "gaps_us": SWEEP_GAPS_US}))
+        elif args.command == "status":
+            print(json.dumps(experiment_status(args.output_dir), indent=2))
+        elif args.command == "next":
+            prepared = prepare_next_run(args.output_dir, args.project_dir, tx_port=args.tx_port)
+            print(json.dumps(prepared, indent=2))
+            if args.flash:
+                completed = subprocess.run(prepared["flash_command"], check=False)
+                if completed.returncode != 0:
+                    return completed.returncode
         elif args.command == "analyze":
             doc = analyze_directory(args.output_dir)
             print(json.dumps(doc["analysis"], indent=2))
@@ -484,12 +675,7 @@ def main(argv: list[str] | None = None) -> int:
             rendered = render_tx_sweep_config(base_text, args.gap_us)
             args.config_out.parent.mkdir(parents=True, exist_ok=True)
             args.config_out.write_text(rendered, encoding="utf-8")
-            command = build_flash_command(
-                project_dir=args.project_dir,
-                config_path=args.config_out,
-                environment="rf_tx_compile",
-                port=args.port,
-            )
+            command = build_flash_command(project_dir=args.project_dir, config_path=args.config_out, environment="rf_tx_compile", port=args.port)
             print(" ".join(shlex.quote(part) for part in command))
             if not args.dry_run:
                 completed = subprocess.run(command, check=False)
