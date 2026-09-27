@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "pr1_board_sweep_results.schema.json",
+  "title": "PR1 board sweep aggregate results",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "runs", "analysis"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "runs": {"type": "array", "items": {"$ref": "#/$defs/run_result"}},
+    "analysis": {"$ref": "#/$defs/analysis"}
+  },
+  "$defs": {
+    "metrics": {
+      "type": "object",
+      "required": [
+        "rssi_dbm", "crc_good", "crc_bad", "missing", "queue_depth",
+        "max_queue_depth", "scheduler_misses", "irq_to_spi_us_p99",
+        "spi_duration_us_p99", "rx_processing_us_p99",
+        "spi_end_to_rearm_start_us_p99", "rx_rearm_us_p99",
+        "irq_to_rx_ready_us_p99"
+      ],
+      "properties": {
+        "rssi_dbm": {"type": "integer"},
+        "crc_good": {"type": "integer", "minimum": 0},
+        "crc_bad": {"type": "integer", "minimum": 0},
+        "missing": {"type": "integer", "minimum": 0},
+        "queue_depth": {"type": "integer", "minimum": 0},
+        "max_queue_depth": {"type": "integer", "minimum": 0},
+        "scheduler_misses": {"type": "integer", "minimum": 0},
+        "irq_to_spi_us_p99": {"type": "integer", "minimum": 0},
+        "spi_duration_us_p99": {"type": "integer", "minimum": 0},
+        "rx_processing_us_p99": {"type": "integer", "minimum": 0},
+        "spi_end_to_rearm_start_us_p99": {"type": "integer", "minimum": 0},
+        "rx_rearm_us_p99": {"type": "integer", "minimum": 0},
+        "irq_to_rx_ready_us_p99": {"type": "integer", "minimum": 0},
+        "trace_overwrites": {"type": ["integer", "null"], "minimum": 0}
+      }
+    },
+    "run_result": {
+      "type": "object",
+      "required": [
+        "schema_version", "run_id", "phase", "gap_us", "target_packets",
+        "firmware_sha", "packet_count", "metrics", "derived",
+        "classification", "evidence", "revalidate_10000"
+      ],
+      "properties": {
+        "schema_version": {"const": 1},
+        "run_id": {"type": "string"},
+        "phase": {"enum": ["baseline", "revalidate"]},
+        "gap_us": {"enum": [5000,1000,500,300,250,225,200,175,150,125,0]},
+        "target_packets": {"type": "integer", "minimum": 1},
+        "firmware_sha": {"type": "string"},
+        "packet_count": {"type": "integer", "minimum": 0},
+        "metrics": {"$ref": "#/$defs/metrics"},
+        "derived": {
+          "type": "object",
+          "required": ["loss_rate", "crc_bad_rate", "target_reached"],
+          "properties": {
+            "loss_rate": {"type": "number", "minimum": 0},
+            "crc_bad_rate": {"type": "number", "minimum": 0},
+            "target_reached": {"type": "boolean"}
+          }
+        },
+        "classification": {
+          "type": "object",
+          "required": ["label", "confidence", "dominant_share", "evidence_boundary"],
+          "properties": {
+            "label": {"type": "string"},
+            "confidence": {"enum": ["low", "medium"]},
+            "dominant_share": {"type": ["number", "null"]},
+            "evidence_boundary": {"type": "string"}
+          }
+        },
+        "evidence": {"type": "object"},
+        "revalidate_10000": {"type": "boolean"}
+      }
+    },
+    "analysis": {
+      "type": "object",
+      "required": ["transition_rule", "missing_gaps_us", "transitions", "revalidate_10000_gaps_us", "bottleneck_summary"],
+      "properties": {
+        "transition_rule": {"type": "string"},
+        "missing_gaps_us": {"type": "array", "items": {"type": "integer"}},
+        "transitions": {"type": "array", "items": {"type": "object"}},
+        "revalidate_10000_gaps_us": {"type": "array", "items": {"type": "integer"}},
+        "bottleneck_summary": {
+          "type": "object",
+          "required": ["label", "confidence", "evidence_gap_us", "candidates", "evidence_boundary"],
+          "properties": {
+            "label": {"type": "string"},
+            "confidence": {"enum": ["low", "medium"]},
+            "evidence_gap_us": {"type": ["integer", "null"]},
+            "candidates": {"type": "array", "items": {"type": "string"}},
+            "evidence_boundary": {"type": "string"}
+          }
+        }
+      }
+    }
+  }
+}
