@@ -315,9 +315,34 @@ def _request_snapshot(serial_obj, log_fh, timeout_s: float) -> list[str]:
         # Keep the evidence, but never parse a truncated line as telemetry.
         log_fh.write("PR1_HOST_TRUNCATED_LINE " + _decode_line(bytes(pending)) + "\n")
         log_fh.flush()
+        raise TimeoutError("telemetry snapshot truncated mid-line")
     if not lines:
         raise TimeoutError("telemetry snapshot produced no serial lines")
     return lines
+
+
+def _snapshot_with_recovery(serial_obj, log_fh, timeout_s: float, *, attempts: int = 3) -> list[str]:
+    """Request a snapshot, reopening the port if USB output stalls.
+
+    Observed on the ESP32-S3 USB-Serial/JTAG after ~200 s: output stopped
+    mid-line and the next request got nothing until the host port was
+    reopened, while the RX kept receiving. Reopening with DTR/RTS low does
+    not reset the board, so counters and timing windows are preserved.
+    """
+    last_error: Exception | None = None
+    for attempt in range(attempts):
+        try:
+            return _request_snapshot(serial_obj, log_fh, timeout_s)
+        except TimeoutError as exc:
+            last_error = exc
+        if attempt + 1 < attempts and hasattr(serial_obj, "close") and hasattr(serial_obj, "open"):
+            log_fh.write(f"PR1_HOST_SERIAL_REOPEN reason={last_error}\n")
+            log_fh.flush()
+            serial_obj.close()
+            time.sleep(0.5)
+            serial_obj.open()
+    assert last_error is not None
+    raise last_error
 
 
 def _packet_span_from_snapshot(lines: Iterable[str]) -> int:
@@ -383,7 +408,7 @@ def capture_run_from_serial(
                     raise TimeoutError(
                         f"packet target not reached after {max_polls} telemetry polls: {observed}/{target_packets}"
                     )
-                progress_lines = _request_snapshot(rx_serial, rx_fh, read_timeout_s)
+                progress_lines = _snapshot_with_recovery(rx_serial, rx_fh, read_timeout_s)
                 polls += 1
                 try:
                     observed = _packet_span_from_snapshot(progress_lines)
@@ -400,8 +425,8 @@ def capture_run_from_serial(
             # final RX snapshot. The firmware's DurationWindow<64> p99 values
             # remain the source of timing percentiles.
             sleep_fn(final_settle_s)
-            _request_snapshot(rx_serial, rx_fh, read_timeout_s)
-            _request_snapshot(tx_serial, tx_fh, read_timeout_s)
+            _snapshot_with_recovery(rx_serial, rx_fh, read_timeout_s)
+            _snapshot_with_recovery(tx_serial, tx_fh, read_timeout_s)
 
         result = parse_run_logs(
             metadata,
