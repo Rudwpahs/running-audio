@@ -1,0 +1,8 @@
+{
+  "status": "error",
+  "updated_utc": "2026-09-29T09:54:38.139099Z",
+  "run_id": "d01-gap-150us-100k",
+  "gap_us": 150,
+  "target_packets": 100000,
+  "error": "telemetry snapshot produced no serial lines"
+}

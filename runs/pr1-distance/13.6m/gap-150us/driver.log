@@ -1,0 +1,2 @@
+﻿RUN dist=13.6m gap=150us packets=10312 missing=247 loss=2.395% crc_bad=207 rssi=-88
+exit=0

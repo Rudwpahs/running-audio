@@ -1,0 +1,128 @@
+{
+  "schema_version": 1,
+  "runs": [
+    {
+      "schema_version": 1,
+      "run_id": "r01-gap-125us-10k",
+      "phase": "revalidate",
+      "gap_us": 125,
+      "target_packets": 10000,
+      "firmware_sha": "d1b7ec2b1130fd63fb0eb11fd900b0622766f14c",
+      "packet_count": 10413,
+      "metrics": {
+        "rssi_dbm": -48,
+        "crc_good": 10304,
+        "crc_bad": 5,
+        "missing": 109,
+        "queue_depth": 0,
+        "max_queue_depth": 1,
+        "irq_to_spi_us_p99": 6,
+        "spi_duration_us_p99": 1247,
+        "rx_processing_us_p99": 1248,
+        "spi_end_to_rearm_start_us_p99": 137,
+        "rx_rearm_us_p99": 420,
+        "irq_to_rx_ready_us_p99": 1795,
+        "trace_overwrites": 92653,
+        "scheduler_misses": 0
+      },
+      "derived": {
+        "loss_rate": 0.010467684624987995,
+        "crc_bad_rate": 0.0004801690194948622,
+        "target_reached": true
+      },
+      "classification": {
+        "label": "spi",
+        "dominant_share": 0.6947,
+        "confidence": "low",
+        "evidence_boundary": "diagnostic_candidate_not_causal_proof"
+      },
+      "evidence": {
+        "packet_count_source": "rx_sequence_span=crc_good+missing",
+        "crc_bad_overlap_warning": "crc_bad may overlap sequence-derived missing and is not additive",
+        "scheduler_misses_source": "tx",
+        "evidence_boundary": "measured_diagnostics_not_causal_proof"
+      },
+      "revalidate_10000": true
+    },
+    {
+      "schema_version": 1,
+      "run_id": "r02-gap-0us-10k",
+      "phase": "revalidate",
+      "gap_us": 0,
+      "target_packets": 10000,
+      "firmware_sha": "d1b7ec2b1130fd63fb0eb11fd900b0622766f14c",
+      "packet_count": 10556,
+      "metrics": {
+        "rssi_dbm": -49,
+        "crc_good": 5277,
+        "crc_bad": 3,
+        "missing": 5279,
+        "queue_depth": 0,
+        "max_queue_depth": 1,
+        "irq_to_spi_us_p99": 6,
+        "spi_duration_us_p99": 1247,
+        "rx_processing_us_p99": 1249,
+        "spi_end_to_rearm_start_us_p99": 137,
+        "rx_rearm_us_p99": 422,
+        "irq_to_rx_ready_us_p99": 1796,
+        "trace_overwrites": 47392,
+        "scheduler_misses": 0
+      },
+      "derived": {
+        "loss_rate": 0.5000947328533536,
+        "crc_bad_rate": 0.00028419856006062905,
+        "target_reached": true
+      },
+      "classification": {
+        "label": "spi",
+        "dominant_share": 0.6943,
+        "confidence": "low",
+        "evidence_boundary": "diagnostic_candidate_not_causal_proof"
+      },
+      "evidence": {
+        "packet_count_source": "rx_sequence_span=crc_good+missing",
+        "crc_bad_overlap_warning": "crc_bad may overlap sequence-derived missing and is not additive",
+        "scheduler_misses_source": "tx",
+        "evidence_boundary": "measured_diagnostics_not_causal_proof"
+      },
+      "revalidate_10000": true
+    }
+  ],
+  "analysis": {
+    "transition_rule": "abs(loss_delta) >= max(0.5 percentage points, 3*pooled-binomial-SE)",
+    "missing_gaps_us": [
+      5000,
+      1000,
+      500,
+      300,
+      250,
+      225,
+      200,
+      175,
+      150
+    ],
+    "transitions": [
+      {
+        "higher_gap_us": 125,
+        "lower_gap_us": 0,
+        "higher_loss_rate": 0.010467684624987995,
+        "lower_loss_rate": 0.5000947328533536,
+        "absolute_delta": 0.4896270482283656,
+        "material_threshold": 0.018105320921872402
+      }
+    ],
+    "revalidate_10000_gaps_us": [
+      125,
+      0
+    ],
+    "bottleneck_summary": {
+      "label": "spi",
+      "confidence": "medium",
+      "evidence_gap_us": 0,
+      "candidates": [
+        "spi"
+      ],
+      "evidence_boundary": "not_causal_proof"
+    }
+  }
+}

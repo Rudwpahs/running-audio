@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "run_id": "dist-5m-gap-150us-10k",
+  "created_utc": "2026-09-29T11:28:47.176315Z",
+  "gap_us": 150,
+  "target_packets": 10000,
+  "phase": "revalidate",
+  "firmware_sha": "d1b7ec2b1130fd63fb0eb11fd900b0622766f14c",
+  "frozen_baseline": {
+    "frequency_mhz": 2404.0,
+    "bitrate_kbps": 1300,
+    "coding_rate": 3,
+    "output_dbm": 0,
+    "packet_bytes": 116,
+    "sx1280_spi_hz": 2000000,
+    "adaptive_layers": false
+  },
+  "files": {
+    "rx_log": "rx.log",
+    "tx_log": "tx.log"
+  },
+  "notes": "",
+  "gate": "gate5_distance",
+  "distance_m": 5.0,
+  "distance_source": "operator-reported",
+  "tx_power": "usb_power_bank_untethered",
+  "ports": {
+    "rx": "COM3",
+    "tx": null
+  },
+  "build_identity": {
+    "source_head_sha": "fe1d8c477280e2766e29d80e30c4ae82f8f87f63",
+    "frozen_firmware_sha": "d1b7ec2b1130fd63fb0eb11fd900b0622766f14c",
+    "git_dirty": false,
+    "platformio_version": "PlatformIO Core, version 6.1.19",
+    "platformio_ini_sha256": "6f79f96979b96bf460260b1c13cdf85e16b6d647f183232e921e72e0bde094a3",
+    "controller_file_sha256": "3fb2bc70c53f9b8518a64ef0f06acba4eea4c38c896c7022a4155db8ae026a2b"
+  }
+}

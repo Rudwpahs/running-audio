@@ -1,0 +1,49 @@
+[  0.10] hard reset pulsed (DTR held 0)
+[  0.10] PR1_RUNTIME_BOOT
+[  0.10] runtime_profile=phase1-fixed-flrc-tx
+[  0.10] runtime_role=tx
+[  0.10] board_family=LILYGO T3-S3-MVSRBoard
+[  0.10] board_reference_revision=V1.1 upstream reference
+[  0.11] radio_target=SX1280
+[  0.11] upstream_reference_commit=840a2e788b3192c4e9bddf0640c1ecaf703c2598
+[  0.11] hardware_veriESP-ROM:esp32s3-20210327
+[  0.11] Build:Mar 27 2021
+[  0.11] rst:0x15 (USB_UART_CHIP_RESET),boot:0x3a (SPI_FAST_FLASH_BOOT)
+[  0.11] Saved PC:0x420271ba
+[  0.11] SPIWP:0xee
+[  0.11] mode:DIO, clock div:1
+[  0.11] load:0x3fce3808,len:0x44c
+[  0.11] load:0x403c9700,len:0xbd8
+[  0.11] load:0x403cc700,len:0x2a80
+[  0.11] entry 0x403c98d0
+[  0.59] PR1_RUNTIME_BOOT
+[  0.59] runtime_profile=phase1-fixed-flrc-tx
+[  0.59] runtime_role=tx
+[  0.59] board_family=LILYGO T3-S3-MVSRBoard
+[  0.59] board_reference_revision=V1.1 upstream reference
+[  0.59] radio_target=SX1280
+[  0.59] upstream_reference_commit=840a2e788b3192c4e9bddf0640c1ecaf703c2598
+[  0.59] hardware_verified=0
+[  0.59] protocol_version=1
+[  0.60] protocol_header_bytes=16
+[  0.60] rf_enabled=1
+[  0.60] sx1280_spi_hz=2000000
+[  0.60] sx1280_cs=7
+[  0.60] sx1280_rst=8
+[  0.60] sx1280_sclk=5
+[  0.60] sx1280_mosi=6
+[  0.60] sx1280_miso=3
+[  0.60] sx1280_dio1=9
+[  0.60] sx1280_busy=36
+[  0.60] sx1280_tx_enable=10
+[  0.60] sx1280_rx_enable=21
+[  0.60] PR1_FIXED_FLRC_PROFILE
+[  0.60] frequency_mhz=2404.000
+[  0.60] bitrate_kbps=1300
+[  0.60] coding_rate=3
+[  0.60] output_dbm=0
+[  0.60] tx_gap_us=150
+[  0.60] packet_bytes=116
+[  0.60] adaptive_layers=off
+[  0.60] PR1_RUNTIME_LIVE_READY
+[  3.14] lines 47

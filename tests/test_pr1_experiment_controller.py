@@ -14,6 +14,7 @@ from pr1_experiment_controller import (  # noqa: E402
     archive_partial_attempt,
     build_dry_run_plan,
     build_session_metadata,
+    _request_snapshot,
     capture_run_from_serial,
     estimate_initial_wait_s,
     prepare_build_matrix,
@@ -157,7 +158,10 @@ build_flags =
         self.assertEqual(kinds.count("safe_flash"), 2)
         self.assertEqual(kinds.count("rx_flash"), 1)
         self.assertEqual(kinds.count("tx_gap_flash"), 11)
-        self.assertEqual(kinds.count("rx_reset"), 10)
+        self.assertEqual(kinds.count("rx_reset"), 11)
+        for index, kind in enumerate(kinds):
+            if kind == "tx_gap_flash":
+                self.assertEqual(kinds[index + 1], "rx_reset")
         self.assertEqual(plan["steps"][-1]["kind"], "analyze")
 
     def test_capture_auto_polls_then_settles_and_writes_result(self):
@@ -234,6 +238,29 @@ build_flags =
             self.assertTrue(Path(archived["rx_log"]).exists())
             self.assertTrue(Path(archived["tx_log"]).exists())
             self.assertFalse((run_dir / "rx.log").exists())
+
+    def test_snapshot_joins_line_split_across_usb_reads(self):
+        class SplitSerial:
+            def __init__(self):
+                self._reads = deque([
+                    b"PR1T v=1 t_us=1 field=crc_good value=10\n",
+                    b"PR1T v=1 t_us=1 field=miss",  # readline() timed out mid-line
+                    b"",
+                    b"ing value=2\n",
+                    b"PR1T v=1 t_us=1 field=capability_mask value=12\n",
+                ])
+
+            def write(self, data):
+                return len(data)
+
+            def readline(self):
+                return self._reads.popleft() if self._reads else b""
+
+        with tempfile.TemporaryDirectory() as tmp:
+            with (Path(tmp) / "rx.log").open("w", encoding="utf-8") as log_fh:
+                lines = _request_snapshot(SplitSerial(), log_fh, timeout_s=1.0)
+        self.assertIn("PR1T v=1 t_us=1 field=missing value=2", lines)
+        self.assertTrue(lines[-1].endswith("field=capability_mask value=12"))
 
     def test_initial_wait_scales_with_target_and_gap(self):
         self.assertGreater(estimate_initial_wait_s(5000, 1000), estimate_initial_wait_s(0, 1000))

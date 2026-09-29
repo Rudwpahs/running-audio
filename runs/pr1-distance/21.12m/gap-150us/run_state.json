@@ -1,0 +1,1 @@
+﻿{"status": "interrupted", "reason": "host (Claude) decision: no link. 0 crc_good, 3 crc_bad, no RSSI in ~34 s of RX uptime (~11k TX packets expected at 150 us). Stopped by host to avoid a 600-poll timeout; logs preserved.", "updated_local": "2026-09-29T20:43:58.8653705+09:00"}

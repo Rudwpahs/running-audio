@@ -135,6 +135,10 @@ def _build_entry(
 
 def prepare_build_matrix(session_root: Path, project_dir: Path) -> dict:
     """Generate frozen per-gap configs and independent PlatformIO build caches."""
+    # PlatformIO chdirs into --project-dir before resolving --project-conf and
+    # PLATFORMIO_BUILD_DIR, so relative paths would land inside the firmware tree.
+    session_root = session_root.resolve()
+    project_dir = project_dir.resolve()
     base_path = project_dir / "platformio.ini"
     base_text = base_path.read_text(encoding="utf-8")
     generated_dir = session_root / "generated"
@@ -195,18 +199,18 @@ def build_dry_run_plan(
             ]
         )
     steps.append({"kind": "rx_flash", "board": "rx", "port": rx_port})
-    for index, gap_us in enumerate(SWEEP_GAPS_US):
-        if index > 0:
-            steps.append(
-                {
-                    "kind": "rx_reset",
-                    "board": "rx",
-                    "port": rx_port,
-                    "verification": "fresh PR1_RUNTIME_BOOT + PR1_RUNTIME_LIVE_READY required",
-                }
-            )
+    for gap_us in SWEEP_GAPS_US:
         steps.append(
             {"kind": "tx_gap_flash", "board": "tx", "port": tx_port, "gap_us": gap_us}
+        )
+        # After the TX flash so no previous-gap packet reaches the fresh RX.
+        steps.append(
+            {
+                "kind": "rx_reset",
+                "board": "rx",
+                "port": rx_port,
+                "verification": "fresh PR1_RUNTIME_BOOT + PR1_RUNTIME_LIVE_READY required",
+            }
         )
         steps.append(
             {
@@ -248,14 +252,35 @@ def _decode_line(raw: bytes | str) -> str:
     return str(raw).rstrip("\r\n")
 
 
+SNAPSHOT_LAST_FIELD = "field=capability_mask"
+SNAPSHOT_IDLE_READS = 3
+
+
+def _read_complete_line(serial_obj, pending: bytearray) -> str | None:
+    """Return one newline-terminated line, or None when nothing complete yet.
+
+    pyserial's readline() returns a partial line on timeout; USB delivery can
+    split a line, so fragments are joined until the newline arrives.
+    """
+    raw = serial_obj.readline()
+    if not raw:
+        return None
+    pending.extend(raw.encode() if isinstance(raw, str) else raw)
+    if not pending.endswith(b"\n"):
+        return None
+    line = _decode_line(bytes(pending))
+    pending.clear()
+    return line
+
+
 def _read_until_marker(serial_obj, log_fh, marker: str, timeout_s: float) -> list[str]:
     deadline = time.monotonic() + timeout_s
     lines: list[str] = []
+    pending = bytearray()
     while time.monotonic() < deadline:
-        raw = serial_obj.readline()
-        if not raw:
+        line = _read_complete_line(serial_obj, pending)
+        if line is None:
             continue
-        line = _decode_line(raw)
         log_fh.write(line + "\n")
         log_fh.flush()
         lines.append(line)
@@ -270,19 +295,54 @@ def _request_snapshot(serial_obj, log_fh, timeout_s: float) -> list[str]:
         serial_obj.flush()
     deadline = time.monotonic() + timeout_s
     lines: list[str] = []
+    pending = bytearray()
+    idle_reads = 0
     while time.monotonic() < deadline:
-        raw = serial_obj.readline()
-        if not raw:
-            if lines:
+        line = _read_complete_line(serial_obj, pending)
+        if line is None:
+            # Stop only after the snapshot went quiet with no fragment pending.
+            idle_reads = 0 if pending else idle_reads + 1
+            if lines and not pending and idle_reads >= SNAPSHOT_IDLE_READS:
                 break
             continue
-        line = _decode_line(raw)
+        idle_reads = 0
         log_fh.write(line + "\n")
         log_fh.flush()
         lines.append(line)
+        if SNAPSHOT_LAST_FIELD in line:
+            break
+    if pending:
+        # Keep the evidence, but never parse a truncated line as telemetry.
+        log_fh.write("PR1_HOST_TRUNCATED_LINE " + _decode_line(bytes(pending)) + "\n")
+        log_fh.flush()
+        raise TimeoutError("telemetry snapshot truncated mid-line")
     if not lines:
         raise TimeoutError("telemetry snapshot produced no serial lines")
     return lines
+
+
+def _snapshot_with_recovery(serial_obj, log_fh, timeout_s: float, *, attempts: int = 3) -> list[str]:
+    """Request a snapshot, reopening the port if USB output stalls.
+
+    Observed on the ESP32-S3 USB-Serial/JTAG after ~200 s: output stopped
+    mid-line and the next request got nothing until the host port was
+    reopened, while the RX kept receiving. Reopening with DTR/RTS low does
+    not reset the board, so counters and timing windows are preserved.
+    """
+    last_error: Exception | None = None
+    for attempt in range(attempts):
+        try:
+            return _request_snapshot(serial_obj, log_fh, timeout_s)
+        except TimeoutError as exc:
+            last_error = exc
+        if attempt + 1 < attempts and hasattr(serial_obj, "close") and hasattr(serial_obj, "open"):
+            log_fh.write(f"PR1_HOST_SERIAL_REOPEN reason={last_error}\n")
+            log_fh.flush()
+            serial_obj.close()
+            time.sleep(0.5)
+            serial_obj.open()
+    assert last_error is not None
+    raise last_error
 
 
 def _packet_span_from_snapshot(lines: Iterable[str]) -> int:
@@ -305,6 +365,7 @@ def capture_run_from_serial(
     poll_wait_s: float = 0.75,
     settle_s: float | None = None,
     read_timeout_s: float = 1.0,
+    boot_timeout_s: float = 10.0,
     max_polls: int = 240,
 ) -> dict:
     """Capture one run while continuously preserving serial evidence to disk."""
@@ -329,8 +390,11 @@ def capture_run_from_serial(
         with rx_path.open("w", encoding="utf-8", buffering=1) as rx_fh, tx_path.open(
             "w", encoding="utf-8", buffering=1
         ) as tx_fh:
-            rx_boot = _read_until_marker(rx_serial, rx_fh, "PR1_RUNTIME_LIVE_READY", read_timeout_s)
-            tx_boot = _read_until_marker(tx_serial, tx_fh, "PR1_RUNTIME_LIVE_READY", read_timeout_s)
+            rx_boot = _read_until_marker(rx_serial, rx_fh, "PR1_RUNTIME_LIVE_READY", boot_timeout_s)
+            tx_boot = _read_until_marker(tx_serial, tx_fh, "PR1_RUNTIME_LIVE_READY", boot_timeout_s)
+            for name, boot in (("rx", rx_boot), ("tx", tx_boot)):
+                if "PR1_RUNTIME_BOOT" not in (line.strip() for line in boot):
+                    raise TimeoutError(f"{name} LIVE_READY observed without a fresh PR1_RUNTIME_BOOT")
             rx_meta, _ = _parse_kv_and_telemetry(rx_boot)
             tx_meta, _ = _parse_kv_and_telemetry(tx_boot)
             _validate_live_profile(rx_meta, role="rx", expected_gap_us=None, source="rx")
@@ -344,9 +408,15 @@ def capture_run_from_serial(
                     raise TimeoutError(
                         f"packet target not reached after {max_polls} telemetry polls: {observed}/{target_packets}"
                     )
-                progress_lines = _request_snapshot(rx_serial, rx_fh, read_timeout_s)
-                observed = _packet_span_from_snapshot(progress_lines)
+                progress_lines = _snapshot_with_recovery(rx_serial, rx_fh, read_timeout_s)
                 polls += 1
+                try:
+                    observed = _packet_span_from_snapshot(progress_lines)
+                except ValueError:
+                    # An incomplete progress snapshot only delays the stop
+                    # decision; the final snapshot is still validated strictly.
+                    sleep_fn(poll_wait_s)
+                    continue
                 if observed < target_packets:
                     sleep_fn(poll_wait_s)
 
@@ -355,8 +425,8 @@ def capture_run_from_serial(
             # final RX snapshot. The firmware's DurationWindow<64> p99 values
             # remain the source of timing percentiles.
             sleep_fn(final_settle_s)
-            _request_snapshot(rx_serial, rx_fh, read_timeout_s)
-            _request_snapshot(tx_serial, tx_fh, read_timeout_s)
+            _snapshot_with_recovery(rx_serial, rx_fh, read_timeout_s)
+            _snapshot_with_recovery(tx_serial, tx_fh, read_timeout_s)
 
         result = parse_run_logs(
             metadata,
@@ -498,12 +568,26 @@ def _serial_module():
 
 def _open_serial(port: str):
     serial = _serial_module()
-    return serial.Serial(port=port, baudrate=SERIAL_BAUD, timeout=0.20, write_timeout=1.0)
+    ser = serial.Serial()
+    ser.port = port
+    ser.baudrate = SERIAL_BAUD
+    ser.timeout = 0.20
+    ser.write_timeout = 1.0
+    # Open with both control lines low so opening never pulses the
+    # USB-Serial/JTAG reset or strap logic.
+    ser.dtr = False
+    ser.rts = False
+    ser.open()
+    return ser
 
 
 def _verify_safe_boot(port: str, timeout_s: float = 6.0) -> None:
     ser = _open_serial(port)
     try:
+        # Boot output printed before the host opened the port is lost, so
+        # reset with the port open and require a fresh boot block.
+        _drain_stale_input(ser)
+        _pulse_reset(ser)
         deadline = time.monotonic() + timeout_s
         saw_boot = False
         while time.monotonic() < deadline:
@@ -520,13 +604,29 @@ def _verify_safe_boot(port: str, timeout_s: float = 6.0) -> None:
         ser.close()
 
 
+def _drain_stale_input(serial_obj, *, settle_s: float = 0.30) -> None:
+    """Drop output the device buffered while the port was closed.
+
+    USB-Serial/JTAG delivers it a moment after open, so wait before flushing;
+    otherwise an old boot block could be mistaken for the fresh one.
+    """
+    time.sleep(settle_s)
+    serial_obj.reset_input_buffer()
+
+
 def _pulse_reset(serial_obj, *, sleep_fn: Callable[[float], None] = time.sleep) -> None:
     """Best-effort USB/UART reset pulse; fresh boot is still mandatory afterward."""
+    # Windows usbser.sys only sends SET_CONTROL_LINE_STATE when DTR is written,
+    # so an RTS-only change never reaches the ESP32-S3 USB-Serial/JTAG (same
+    # workaround as esptool). DTR must stay low at release or the ROM enters
+    # download mode instead of booting the app.
     try:
         serial_obj.dtr = False
         serial_obj.rts = True
+        serial_obj.dtr = False
         sleep_fn(0.10)
         serial_obj.rts = False
+        serial_obj.dtr = False
         sleep_fn(0.35)
     except Exception as exc:
         raise RuntimeError(f"automatic RX reset pulse failed: {exc}") from exc
@@ -582,13 +682,6 @@ def run_hardware_session(
             if (run_dir / "rx.log").exists() or (run_dir / "tx.log").exists():
                 archive_partial_attempt(run_dir)
 
-            if completed_this_process > 0:
-                if manual_rx_reset:
-                    print(f"Reset RX board on {rx_port}, then press Enter to continue.", flush=True)
-                    input()
-                else:
-                    _pulse_reset(rx_ser)
-
             gap_us = int(meta["gap_us"])
             tx_entry = by_gap[gap_us]
             tx_upload = _execute(
@@ -597,8 +690,25 @@ def run_hardware_session(
             if tx_upload.returncode != 0:
                 raise RuntimeError(f"TX upload failed for gap {gap_us} us")
 
+            # The TX boot block printed right after upload is lost before the
+            # port opens; reset the same image with the port open to capture it.
             tx_ser = _open_serial(tx_port)
             try:
+                _drain_stale_input(tx_ser)
+                _pulse_reset(tx_ser)
+
+                # Reset RX only after the new-gap TX image is running. Resetting
+                # before the TX upload lets the previous gap's TX seed the fresh RX
+                # sequence reference; the new TX then restarts at seq 0, lands
+                # BeforeOrigin, and is counted in crc_good but never in missing.
+                # Stale input is dropped so the boot markers read next are fresh.
+                _drain_stale_input(rx_ser)
+                if manual_rx_reset:
+                    print(f"Reset RX board on {rx_port}, then press Enter to continue.", flush=True)
+                    input()
+                else:
+                    _pulse_reset(rx_ser)
+
                 capture_run_from_serial(meta, run_dir, rx_ser, tx_ser)
             finally:
                 tx_ser.close()

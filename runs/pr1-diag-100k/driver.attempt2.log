@@ -1,0 +1,97 @@
+﻿Processing rf_tx_compile (platform: espressif32 @ 6.5.0; board: esp32-s3-devkitc-1; framework: arduino)
+--------------------------------------------------------------------------------
+Verbose mode can be enabled via `-v, --verbose` option
+CONFIGURATION: https://docs.platformio.org/page/boards/espressif32/esp32-s3-devkitc-1.html
+PLATFORM: Espressif 32 (6.5.0) > Espressif ESP32-S3-DevKitC-1-N8 (8 MB QD, No PSRAM)
+HARDWARE: ESP32S3 240MHz, 320KB RAM, 8MB Flash
+DEBUG: Current (esp-builtin) On-board (esp-builtin) External (cmsis-dap, esp-bridge, esp-prog, iot-bus-jtag, jlink, minimodule, olimex-arm-usb-ocd, olimex-arm-usb-ocd-h, olimex-arm-usb-tiny-h, olimex-jtag-tiny, tumpa)
+PACKAGES: 
+ - framework-arduinoespressif32 @ 3.20014.231204 (2.0.14) 
+ - tool-esptoolpy @ 1.40501.0 (4.5.1) 
+ - tool-mkfatfs @ 2.0.1 
+ - tool-mklittlefs @ 1.203.210628 (2.3) 
+ - tool-mkspiffs @ 2.230.0 (2.30) 
+ - toolchain-riscv32-esp @ 8.4.0+2021r2-patch5 
+ - toolchain-xtensa-esp32s3 @ 8.4.0+2021r2-patch5
+LDF: Library Dependency Finder -> https://bit.ly/configure-pio-ldf
+LDF Modes: Finder ~ chain, Compatibility ~ soft
+Found 34 compatible libraries
+Scanning dependencies...
+Dependency Graph
+|-- RadioLib @ 7.7.1
+|-- SPI @ 2.0.0
+Building in release mode
+Retrieving maximum program size C:\Users\USER\Projects\running-audio\runs\pr1-board-test\build\tx-150us\rf_tx_compile\firmware.elf
+Checking size C:\Users\USER\Projects\running-audio\runs\pr1-board-test\build\tx-150us\rf_tx_compile\firmware.elf
+Advanced Memory Usage is available via "PlatformIO Home > Project Inspect"
+RAM:   [=         ]   7.5% (used 24540 bytes from 327680 bytes)
+Flash: [=         ]   9.6% (used 301097 bytes from 3145728 bytes)
+Configuring upload protocol...
+AVAILABLE: cmsis-dap, esp-bridge, esp-builtin, esp-prog, espota, esptool, iot-bus-jtag, jlink, minimodule, olimex-arm-usb-ocd, olimex-arm-usb-ocd-h, olimex-arm-usb-tiny-h, olimex-jtag-tiny, tumpa
+CURRENT: upload_protocol = esptool
+Looking for upload port...
+Using manually specified: COM4
+Uploading C:\Users\USER\Projects\running-audio\runs\pr1-board-test\build\tx-150us\rf_tx_compile\firmware.bin
+esptool.py v4.5.1
+Serial port COM4
+Connecting...
+Chip is ESP32-S3 (revision v0.2)
+Features: WiFi, BLE
+Crystal is 40MHz
+MAC: b8:f8:62:d9:26:b4
+Uploading stub...
+Running stub...
+Stub running...
+Changing baud rate to 460800
+Changed.
+Configuring flash size...
+Flash will be erased from 0x00000000 to 0x00003fff...
+Flash will be erased from 0x00008000 to 0x00008fff...
+Flash will be erased from 0x0000e000 to 0x0000ffff...
+Flash will be erased from 0x00010000 to 0x00059fff...
+Compressed 15104 bytes to 10401...
+Writing at 0x00000000... (100 %)
+Wrote 15104 bytes (10401 compressed) at 0x00000000 in 0.3 seconds (effective 418.1 kbit/s)...
+Hash of data verified.
+Compressed 3072 bytes to 137...
+Writing at 0x00008000... (100 %)
+Wrote 3072 bytes (137 compressed) at 0x00008000 in 0.1 seconds (effective 434.9 kbit/s)...
+Hash of data verified.
+Compressed 8192 bytes to 47...
+Writing at 0x0000e000... (100 %)
+Wrote 8192 bytes (47 compressed) at 0x0000e000 in 0.1 seconds (effective 649.1 kbit/s)...
+Hash of data verified.
+Compressed 301456 bytes to 168954...
+Writing at 0x00010000... (9 %)
+Writing at 0x0001b93c... (18 %)
+Writing at 0x000243d1... (27 %)
+Writing at 0x0002a0f6... (36 %)
+Writing at 0x0002f64f... (45 %)
+Writing at 0x00034ab3... (54 %)
+Writing at 0x0003a1cc... (63 %)
+Writing at 0x0004318a... (72 %)
+Writing at 0x0004ca4f... (81 %)
+Writing at 0x00051f4a... (90 %)
+Writing at 0x00057ad2... (100 %)
+Wrote 301456 bytes (168954 compressed) at 0x00010000 in 2.8 seconds (effective 859.5 kbit/s)...
+Hash of data verified.
+
+Leaving...
+Hard resetting via RTS pin...
+========================= [SUCCESS] Took 11.99 seconds =========================
+
+Environment    Status    Duration
+-------------  --------  ------------
+rf_tx_compile  SUCCESS   00:00:11.994
+========================= 1 succeeded in 00:00:11.994 =========================
+Traceback (most recent call last):
+  File "C:\Users\USER\Projects\running-audio\runs\pr1-diag-100k\diag_driver.py", line 70, in <module>
+    results.append(ctl.capture_run_from_serial(meta, run_dir, rx_ser, tx_ser, max_polls=600))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\USER\Projects\running-audio\tools\pr1_experiment_controller.py", line 386, in capture_run_from_serial
+    progress_lines = _request_snapshot(rx_serial, rx_fh, read_timeout_s)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\USER\Projects\running-audio\tools\pr1_experiment_controller.py", line 319, in _request_snapshot
+    raise TimeoutError("telemetry snapshot produced no serial lines")
+TimeoutError: telemetry snapshot produced no serial lines
+exit=1

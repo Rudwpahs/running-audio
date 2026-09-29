@@ -1,0 +1,176 @@
+﻿Processing rf_tx_compile (platform: espressif32 @ 6.5.0; board: esp32-s3-devkitc-1; framework: arduino)
+--------------------------------------------------------------------------------
+Verbose mode can be enabled via `-v, --verbose` option
+CONFIGURATION: https://docs.platformio.org/page/boards/espressif32/esp32-s3-devkitc-1.html
+PLATFORM: Espressif 32 (6.5.0) > Espressif ESP32-S3-DevKitC-1-N8 (8 MB QD, No PSRAM)
+HARDWARE: ESP32S3 240MHz, 320KB RAM, 8MB Flash
+DEBUG: Current (esp-builtin) On-board (esp-builtin) External (cmsis-dap, esp-bridge, esp-prog, iot-bus-jtag, jlink, minimodule, olimex-arm-usb-ocd, olimex-arm-usb-ocd-h, olimex-arm-usb-tiny-h, olimex-jtag-tiny, tumpa)
+PACKAGES: 
+ - framework-arduinoespressif32 @ 3.20014.231204 (2.0.14) 
+ - tool-esptoolpy @ 1.40501.0 (4.5.1) 
+ - tool-mkfatfs @ 2.0.1 
+ - tool-mklittlefs @ 1.203.210628 (2.3) 
+ - tool-mkspiffs @ 2.230.0 (2.30) 
+ - toolchain-riscv32-esp @ 8.4.0+2021r2-patch5 
+ - toolchain-xtensa-esp32s3 @ 8.4.0+2021r2-patch5
+LDF: Library Dependency Finder -> https://bit.ly/configure-pio-ldf
+LDF Modes: Finder ~ chain, Compatibility ~ soft
+Found 34 compatible libraries
+Scanning dependencies...
+Dependency Graph
+|-- RadioLib @ 7.7.1
+|-- SPI @ 2.0.0
+Building in release mode
+Retrieving maximum program size C:\Users\USER\Projects\running-audio\runs\pr1-board-test\build\tx-125us\rf_tx_compile\firmware.elf
+Checking size C:\Users\USER\Projects\running-audio\runs\pr1-board-test\build\tx-125us\rf_tx_compile\firmware.elf
+Advanced Memory Usage is available via "PlatformIO Home > Project Inspect"
+RAM:   [=         ]   7.5% (used 24540 bytes from 327680 bytes)
+Flash: [=         ]   9.6% (used 301097 bytes from 3145728 bytes)
+Configuring upload protocol...
+AVAILABLE: cmsis-dap, esp-bridge, esp-builtin, esp-prog, espota, esptool, iot-bus-jtag, jlink, minimodule, olimex-arm-usb-ocd, olimex-arm-usb-ocd-h, olimex-arm-usb-tiny-h, olimex-jtag-tiny, tumpa
+CURRENT: upload_protocol = esptool
+Looking for upload port...
+Using manually specified: COM4
+Uploading C:\Users\USER\Projects\running-audio\runs\pr1-board-test\build\tx-125us\rf_tx_compile\firmware.bin
+esptool.py v4.5.1
+Serial port COM4
+Connecting...
+Chip is ESP32-S3 (revision v0.2)
+Features: WiFi, BLE
+Crystal is 40MHz
+MAC: b8:f8:62:d9:26:b4
+Uploading stub...
+Running stub...
+Stub running...
+Changing baud rate to 460800
+Changed.
+Configuring flash size...
+Flash will be erased from 0x00000000 to 0x00003fff...
+Flash will be erased from 0x00008000 to 0x00008fff...
+Flash will be erased from 0x0000e000 to 0x0000ffff...
+Flash will be erased from 0x00010000 to 0x00059fff...
+Compressed 15104 bytes to 10401...
+Writing at 0x00000000... (100 %)
+Wrote 15104 bytes (10401 compressed) at 0x00000000 in 0.3 seconds (effective 431.2 kbit/s)...
+Hash of data verified.
+Compressed 3072 bytes to 137...
+Writing at 0x00008000... (100 %)
+Wrote 3072 bytes (137 compressed) at 0x00008000 in 0.1 seconds (effective 442.1 kbit/s)...
+Hash of data verified.
+Compressed 8192 bytes to 47...
+Writing at 0x0000e000... (100 %)
+Wrote 8192 bytes (47 compressed) at 0x0000e000 in 0.1 seconds (effective 626.4 kbit/s)...
+Hash of data verified.
+Compressed 301456 bytes to 168957...
+Writing at 0x00010000... (9 %)
+Writing at 0x0001b930... (18 %)
+Writing at 0x000243c4... (27 %)
+Writing at 0x0002a0f3... (36 %)
+Writing at 0x0002f64b... (45 %)
+Writing at 0x00034ab0... (54 %)
+Writing at 0x0003a1c9... (63 %)
+Writing at 0x00043109... (72 %)
+Writing at 0x0004ca4c... (81 %)
+Writing at 0x00051f47... (90 %)
+Writing at 0x00057aca... (100 %)
+Wrote 301456 bytes (168957 compressed) at 0x00010000 in 2.8 seconds (effective 856.9 kbit/s)...
+Hash of data verified.
+
+Leaving...
+Hard resetting via RTS pin...
+========================= [SUCCESS] Took 11.85 seconds =========================
+
+Environment    Status    Duration
+-------------  --------  ------------
+rf_tx_compile  SUCCESS   00:00:11.850
+========================= 1 succeeded in 00:00:11.850 =========================
+RUN 125 complete 10413
+Processing rf_tx_compile (platform: espressif32 @ 6.5.0; board: esp32-s3-devkitc-1; framework: arduino)
+--------------------------------------------------------------------------------
+Verbose mode can be enabled via `-v, --verbose` option
+CONFIGURATION: https://docs.platformio.org/page/boards/espressif32/esp32-s3-devkitc-1.html
+PLATFORM: Espressif 32 (6.5.0) > Espressif ESP32-S3-DevKitC-1-N8 (8 MB QD, No PSRAM)
+HARDWARE: ESP32S3 240MHz, 320KB RAM, 8MB Flash
+DEBUG: Current (esp-builtin) On-board (esp-builtin) External (cmsis-dap, esp-bridge, esp-prog, iot-bus-jtag, jlink, minimodule, olimex-arm-usb-ocd, olimex-arm-usb-ocd-h, olimex-arm-usb-tiny-h, olimex-jtag-tiny, tumpa)
+PACKAGES: 
+ - framework-arduinoespressif32 @ 3.20014.231204 (2.0.14) 
+ - tool-esptoolpy @ 1.40501.0 (4.5.1) 
+ - tool-mkfatfs @ 2.0.1 
+ - tool-mklittlefs @ 1.203.210628 (2.3) 
+ - tool-mkspiffs @ 2.230.0 (2.30) 
+ - toolchain-riscv32-esp @ 8.4.0+2021r2-patch5 
+ - toolchain-xtensa-esp32s3 @ 8.4.0+2021r2-patch5
+LDF: Library Dependency Finder -> https://bit.ly/configure-pio-ldf
+LDF Modes: Finder ~ chain, Compatibility ~ soft
+Found 34 compatible libraries
+Scanning dependencies...
+Dependency Graph
+|-- RadioLib @ 7.7.1
+|-- SPI @ 2.0.0
+Building in release mode
+Retrieving maximum program size C:\Users\USER\Projects\running-audio\runs\pr1-board-test\build\tx-0us\rf_tx_compile\firmware.elf
+Checking size C:\Users\USER\Projects\running-audio\runs\pr1-board-test\build\tx-0us\rf_tx_compile\firmware.elf
+Advanced Memory Usage is available via "PlatformIO Home > Project Inspect"
+RAM:   [=         ]   7.5% (used 24540 bytes from 327680 bytes)
+Flash: [=         ]   9.6% (used 301097 bytes from 3145728 bytes)
+Configuring upload protocol...
+AVAILABLE: cmsis-dap, esp-bridge, esp-builtin, esp-prog, espota, esptool, iot-bus-jtag, jlink, minimodule, olimex-arm-usb-ocd, olimex-arm-usb-ocd-h, olimex-arm-usb-tiny-h, olimex-jtag-tiny, tumpa
+CURRENT: upload_protocol = esptool
+Looking for upload port...
+Using manually specified: COM4
+Uploading C:\Users\USER\Projects\running-audio\runs\pr1-board-test\build\tx-0us\rf_tx_compile\firmware.bin
+esptool.py v4.5.1
+Serial port COM4
+Connecting...
+Chip is ESP32-S3 (revision v0.2)
+Features: WiFi, BLE
+Crystal is 40MHz
+MAC: b8:f8:62:d9:26:b4
+Uploading stub...
+Running stub...
+Stub running...
+Changing baud rate to 460800
+Changed.
+Configuring flash size...
+Flash will be erased from 0x00000000 to 0x00003fff...
+Flash will be erased from 0x00008000 to 0x00008fff...
+Flash will be erased from 0x0000e000 to 0x0000ffff...
+Flash will be erased from 0x00010000 to 0x00059fff...
+Compressed 15104 bytes to 10401...
+Writing at 0x00000000... (100 %)
+Wrote 15104 bytes (10401 compressed) at 0x00000000 in 0.3 seconds (effective 425.8 kbit/s)...
+Hash of data verified.
+Compressed 3072 bytes to 137...
+Writing at 0x00008000... (100 %)
+Wrote 3072 bytes (137 compressed) at 0x00008000 in 0.1 seconds (effective 440.1 kbit/s)...
+Hash of data verified.
+Compressed 8192 bytes to 47...
+Writing at 0x0000e000... (100 %)
+Wrote 8192 bytes (47 compressed) at 0x0000e000 in 0.1 seconds (effective 617.4 kbit/s)...
+Hash of data verified.
+Compressed 301456 bytes to 168953...
+Writing at 0x00010000... (9 %)
+Writing at 0x0001b93c... (18 %)
+Writing at 0x000243d3... (27 %)
+Writing at 0x0002a0f8... (36 %)
+Writing at 0x0002f651... (45 %)
+Writing at 0x00034ab4... (54 %)
+Writing at 0x0003a1cc... (63 %)
+Writing at 0x0004318b... (72 %)
+Writing at 0x0004ca4f... (81 %)
+Writing at 0x00051f4b... (90 %)
+Writing at 0x00057acf... (100 %)
+Wrote 301456 bytes (168953 compressed) at 0x00010000 in 2.8 seconds (effective 851.9 kbit/s)...
+Hash of data verified.
+
+Leaving...
+Hard resetting via RTS pin...
+========================= [SUCCESS] Took 11.39 seconds =========================
+
+Environment    Status    Duration
+-------------  --------  ------------
+rf_tx_compile  SUCCESS   00:00:11.395
+========================= 1 succeeded in 00:00:11.395 =========================
+RUN 0 complete 10556
+REVALIDATE_DONE
+exit=0

@@ -1,0 +1,3 @@
+run_id,phase,gap_us,target_packets,packet_count,missing,loss_rate,crc_good,crc_bad,crc_bad_rate,rssi_dbm,queue_depth,max_queue_depth,scheduler_misses,irq_to_spi_us_p99,spi_duration_us_p99,rx_processing_us_p99,spi_end_to_rearm_start_us_p99,rx_rearm_us_p99,irq_to_rx_ready_us_p99,trace_overwrites,bottleneck,confidence,revalidate_10000
+d01-gap-150us-10k,revalidate,150,10000,10382,31,0.0029859371989982664,10351,12,0.0011558466576767482,-49,0,1,0,11,1246,1248,137,421,1792,93139,spi,low,False
+d02-gap-5000us-10k,revalidate,5000,10000,10166,10,0.0009836710603974032,10156,12,0.0011804052724768838,-53,0,1,0,13,1249,1251,137,417,1794,91384,spi,low,False

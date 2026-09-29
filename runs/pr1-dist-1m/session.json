@@ -1,0 +1,25 @@
+{
+  "created_utc": "2026-09-29T11:18:19.423517Z",
+  "purpose": "gate5_distance",
+  "distance_m": 1.0,
+  "distance_source": "operator-reported",
+  "previous_runs_distance_m": 0.5,
+  "source_session": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test",
+  "revalidate_gaps_us": [
+    150
+  ],
+  "target_packets": 10000,
+  "ports": {
+    "rx": "COM3",
+    "tx": "COM4"
+  },
+  "build_identity": {
+    "source_head_sha": "fe1d8c477280e2766e29d80e30c4ae82f8f87f63",
+    "frozen_firmware_sha": "d1b7ec2b1130fd63fb0eb11fd900b0622766f14c",
+    "git_dirty": false,
+    "platformio_version": "PlatformIO Core, version 6.1.19",
+    "platformio_ini_sha256": "6f79f96979b96bf460260b1c13cdf85e16b6d647f183232e921e72e0bde094a3",
+    "controller_file_sha256": "3fb2bc70c53f9b8518a64ef0f06acba4eea4c38c896c7022a4155db8ae026a2b"
+  },
+  "driver_file_sha256": "4bf641fc86e0099e6d77e5b9a5353a89b0b6892bf2b44a6a10cf4fdf8bb7cbc8"
+}

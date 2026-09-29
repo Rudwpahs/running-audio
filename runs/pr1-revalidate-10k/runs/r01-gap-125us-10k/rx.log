@@ -1,0 +1,235 @@
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0x15 (USB_UART_CHIP_RESET),boot:0x38 (SPI_FAST_FLASH_BOOT)
+Saved PC:0x420271be
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce3808,len:0x44c
+load:0x403c9700,len:0xbd8
+load:0x403cc700,len:0x2a80
+entry 0x403c98d0
+PR1_RUNTIME_BOOT
+runtime_profile=phase1-fixed-flrc-rx
+runtime_role=rx
+board_family=LILYGO T3-S3-MVSRBoard
+board_reference_revision=V1.1 upstream reference
+radio_target=SX1280
+upstream_reference_commit=840a2e788b3192c4e9bddf0640c1ecaf703c2598
+hardware_verified=0
+protocol_version=1
+protocol_header_bytes=16
+rf_enabled=1
+sx1280_spi_hz=2000000
+sx1280_cs=7
+sx1280_rst=8
+sx1280_sclk=5
+sx1280_mosi=6
+sx1280_miso=3
+sx1280_dio1=9
+sx1280_busy=36
+sx1280_tx_enable=10
+sx1280_rx_enable=21
+PR1_FIXED_FLRC_PROFILE
+frequency_mhz=2404.000
+bitrate_kbps=1300
+coding_rate=3
+output_dbm=0
+tx_gap_us=5000
+packet_bytes=116
+adaptive_layers=off
+PR1_RUNTIME_LIVE_READY
+PR1T v=1 t_us=18972746 field=device_state value=2
+PR1T v=1 t_us=18972746 field=rssi_dbm value=-49
+PR1T v=1 t_us=18972746 field=crc_good value=6357
+PR1T v=1 t_us=18972746 field=crc_bad value=4
+PR1T v=1 t_us=18972746 field=missing value=69
+PR1T v=1 t_us=18972746 field=queue_depth value=0
+PR1T v=1 t_us=18972746 field=max_queue_depth value=1
+PR1T v=1 t_us=18972746 field=irq_to_spi_us value=6
+PR1T v=1 t_us=18972746 field=spi_duration_us value=1247
+PR1T v=1 t_us=18972746 field=rx_processing_us value=1249
+PR1T v=1 t_us=18972746 field=spi_end_to_rearm_start_us value=137
+PR1T v=1 t_us=18972746 field=rx_rearm_us value=421
+PR1T v=1 t_us=18972746 field=irq_to_rx_ready_us value=1794
+PR1T v=1 t_us=18972746 field=trace_overwrites value=57121
+PR1T v=1 t_us=18972746 field=capability_mask value=12
+PR1T v=1 t_us=19944509 field=device_state value=2
+PR1T v=1 t_us=19944509 field=rssi_dbm value=-49
+PR1T v=1 t_us=19944509 field=crc_good value=6694
+PR1T v=1 t_us=19944509 field=crc_bad value=4
+PR1T v=1 t_us=19944509 field=missing value=72
+PR1T v=1 t_us=19944509 field=queue_depth value=0
+PR1T v=1 t_us=19944509 field=max_queue_depth value=1
+PR1T v=1 t_us=19944509 field=irq_to_spi_us value=9
+PR1T v=1 t_us=19944509 field=spi_duration_us value=1245
+PR1T v=1 t_us=19944509 field=rx_processing_us value=1246
+PR1T v=1 t_us=19944509 field=spi_end_to_rearm_start_us value=137
+PR1T v=1 t_us=19944509 field=rx_rearm_us value=421
+PR1T v=1 t_us=19944509 field=irq_to_rx_ready_us value=1793
+PR1T v=1 t_us=19944509 field=trace_overwrites value=60154
+PR1T v=1 t_us=19944509 field=capability_mask value=12
+PR1T v=1 t_us=20912353 field=device_state value=2
+PR1T v=1 t_us=20912353 field=rssi_dbm value=-49
+PR1T v=1 t_us=20912353 field=crc_good value=7031
+PR1T v=1 t_us=20912353 field=crc_bad value=4
+PR1T v=1 t_us=20912353 field=missing value=73
+PR1T v=1 t_us=20912353 field=queue_depth value=0
+PR1T v=1 t_us=20912353 field=max_queue_depth value=1
+PR1T v=1 t_us=20912353 field=irq_to_spi_us value=6
+PR1T v=1 t_us=20912353 field=spi_duration_us value=1250
+PR1T v=1 t_us=20912353 field=rx_processing_us value=1252
+PR1T v=1 t_us=20912353 field=spi_end_to_rearm_start_us value=137
+PR1T v=1 t_us=20912353 field=rx_rearm_us value=417
+PR1T v=1 t_us=20912353 field=irq_to_rx_ready_us value=1795
+PR1T v=1 t_us=20912353 field=trace_overwrites value=63187
+PR1T v=1 t_us=20912353 field=capability_mask value=12
+PR1T v=1 t_us=21884368 field=device_state value=2
+PR1T v=1 t_us=21884368 field=rssi_dbm value=-48
+PR1T v=1 t_us=21884368 field=crc_good value=7370
+PR1T v=1 t_us=21884368 field=crc_bad value=4
+PR1T v=1 t_us=21884368 field=missing value=74
+PR1T v=1 t_us=21884368 field=queue_depth value=0
+PR1T v=1 t_us=21884368 field=max_queue_depth value=1
+PR1T v=1 t_us=21884368 field=irq_to_spi_us value=10
+PR1T v=1 t_us=21884368 field=spi_duration_us value=1245
+PR1T v=1 t_us=21884368 field=rx_processing_us value=1247
+PR1T v=1 t_us=21884368 field=spi_end_to_rearm_start_us value=137
+PR1T v=1 t_us=21884368 field=rx_rearm_us value=422
+PR1T v=1 t_us=21884368 field=irq_to_rx_ready_us value=1792
+PR1T v=1 t_us=21884368 field=trace_overwrites value=66238
+PR1T v=1 t_us=21884368 field=capability_mask value=12
+PR1T v=1 t_us=22854402 field=device_state value=2
+PR1T v=1 t_us=22854402 field=rssi_dbm value=-49
+PR1T v=1 t_us=22854402 field=crc_good value=7706
+PR1T v=1 t_us=22854402 field=crc_bad value=4
+PR1T v=1 t_us=22854402 field=missing value=77
+PR1T v=1 t_us=22854402 field=queue_depth value=0
+PR1T v=1 t_us=22854402 field=max_queue_depth value=1
+PR1T v=1 t_us=22854402 field=irq_to_spi_us value=6
+PR1T v=1 t_us=22854402 field=spi_duration_us value=1249
+PR1T v=1 t_us=22854402 field=rx_processing_us value=1251
+PR1T v=1 t_us=22854402 field=spi_end_to_rearm_start_us value=137
+PR1T v=1 t_us=22854402 field=rx_rearm_us value=417
+PR1T v=1 t_us=22854402 field=irq_to_rx_ready_us value=1793
+PR1T v=1 t_us=22854402 field=trace_overwrites value=69262
+PR1T v=1 t_us=22854402 field=capability_mask value=12
+PR1T v=1 t_us=23827078 field=device_state value=2
+PR1T v=1 t_us=23827078 field=rssi_dbm value=-49
+PR1T v=1 t_us=23827078 field=crc_good value=8044
+PR1T v=1 t_us=23827078 field=crc_bad value=4
+PR1T v=1 t_us=23827078 field=missing value=79
+PR1T v=1 t_us=23827078 field=queue_depth value=0
+PR1T v=1 t_us=23827078 field=max_queue_depth value=1
+PR1T v=1 t_us=23827078 field=irq_to_spi_us value=6
+PR1T v=1 t_us=23827078 field=spi_duration_us value=1252
+PR1T v=1 t_us=23827078 field=rx_processing_us value=1253
+PR1T v=1 t_us=23827078 field=spi_end_to_rearm_start_us value=137
+PR1T v=1 t_us=23827078 field=rx_rearm_us value=417
+PR1T v=1 t_us=23827078 field=irq_to_rx_ready_us value=1796
+PR1T v=1 t_us=23827078 field=trace_overwrites value=72304
+PR1T v=1 t_us=23827078 field=capability_mask value=12
+PR1T v=1 t_us=24799840 field=device_state value=2
+PR1T v=1 t_us=24799840 field=rssi_dbm value=-49
+PR1T v=1 t_us=24799840 field=crc_good value=8381
+PR1T v=1 t_us=24799840 field=crc_bad value=4
+PR1T v=1 t_us=24799840 field=missing value=82
+PR1T v=1 t_us=24799840 field=queue_depth value=0
+PR1T v=1 t_us=24799840 field=max_queue_depth value=1
+PR1T v=1 t_us=24799840 field=irq_to_spi_us value=13
+PR1T v=1 t_us=24799840 field=spi_duration_us value=1249
+PR1T v=1 t_us=24799840 field=rx_processing_us value=1251
+PR1T v=1 t_us=24799840 field=spi_end_to_rearm_start_us value=137
+PR1T v=1 t_us=24799840 field=rx_rearm_us value=418
+PR1T v=1 t_us=24799840 field=irq_to_rx_ready_us value=1792
+PR1T v=1 t_us=24799840 field=trace_overwrites value=75337
+PR1T v=1 t_us=24799840 field=capability_mask value=12
+PR1T v=1 t_us=25772616 field=device_state value=2
+PR1T v=1 t_us=25772616 field=rssi_dbm value=-49
+PR1T v=1 t_us=25772616 field=crc_good value=8720
+PR1T v=1 t_us=25772616 field=crc_bad value=4
+PR1T v=1 t_us=25772616 field=missing value=83
+PR1T v=1 t_us=25772616 field=queue_depth value=0
+PR1T v=1 t_us=25772616 field=max_queue_depth value=1
+PR1T v=1 t_us=25772616 field=irq_to_spi_us value=6
+PR1T v=1 t_us=25772616 field=spi_duration_us value=1246
+PR1T v=1 t_us=25772616 field=rx_processing_us value=1248
+PR1T v=1 t_us=25772616 field=spi_end_to_rearm_start_us value=137
+PR1T v=1 t_us=25772616 field=rx_rearm_us value=421
+PR1T v=1 t_us=25772616 field=irq_to_rx_ready_us value=1793
+PR1T v=1 t_us=25772616 field=trace_overwrites value=78388
+PR1T v=1 t_us=25772616 field=capability_mask value=12
+PR1T v=1 t_us=26745425 field=device_state value=2
+PR1T v=1 t_us=26745425 field=rssi_dbm value=-49
+PR1T v=1 t_us=26745425 field=crc_good value=9053
+PR1T v=1 t_us=26745425 field=crc_bad value=4
+PR1T v=1 t_us=26745425 field=missing value=90
+PR1T v=1 t_us=26745425 field=queue_depth value=0
+PR1T v=1 t_us=26745425 field=max_queue_depth value=1
+PR1T v=1 t_us=26745425 field=irq_to_spi_us value=6
+PR1T v=1 t_us=26745425 field=spi_duration_us value=1249
+PR1T v=1 t_us=26745425 field=rx_processing_us value=1250
+PR1T v=1 t_us=26745425 field=spi_end_to_rearm_start_us value=137
+PR1T v=1 t_us=26745425 field=rx_rearm_us value=417
+PR1T v=1 t_us=26745425 field=irq_to_rx_ready_us value=1795
+PR1T v=1 t_us=26745425 field=trace_overwrites value=81385
+PR1T v=1 t_us=26745425 field=capability_mask value=12
+PR1T v=1 t_us=27715964 field=device_state value=2
+PR1T v=1 t_us=27715964 field=rssi_dbm value=-49
+PR1T v=1 t_us=27715964 field=crc_good value=9387
+PR1T v=1 t_us=27715964 field=crc_bad value=4
+PR1T v=1 t_us=27715964 field=missing value=95
+PR1T v=1 t_us=27715964 field=queue_depth value=0
+PR1T v=1 t_us=27715964 field=max_queue_depth value=1
+PR1T v=1 t_us=27715964 field=irq_to_spi_us value=6
+PR1T v=1 t_us=27715964 field=spi_duration_us value=1251
+PR1T v=1 t_us=27715964 field=rx_processing_us value=1252
+PR1T v=1 t_us=27715964 field=spi_end_to_rearm_start_us value=136
+PR1T v=1 t_us=27715964 field=rx_rearm_us value=418
+PR1T v=1 t_us=27715964 field=irq_to_rx_ready_us value=1794
+PR1T v=1 t_us=27715964 field=trace_overwrites value=84391
+PR1T v=1 t_us=27715964 field=capability_mask value=12
+PR1T v=1 t_us=28688126 field=device_state value=2
+PR1T v=1 t_us=28688126 field=rssi_dbm value=-49
+PR1T v=1 t_us=28688126 field=crc_good value=9723
+PR1T v=1 t_us=28688126 field=crc_bad value=4
+PR1T v=1 t_us=28688126 field=missing value=99
+PR1T v=1 t_us=28688126 field=queue_depth value=0
+PR1T v=1 t_us=28688126 field=max_queue_depth value=1
+PR1T v=1 t_us=28688126 field=irq_to_spi_us value=6
+PR1T v=1 t_us=28688126 field=spi_duration_us value=1246
+PR1T v=1 t_us=28688126 field=rx_processing_us value=1248
+PR1T v=1 t_us=28688126 field=spi_end_to_rearm_start_us value=138
+PR1T v=1 t_us=28688126 field=rx_rearm_us value=422
+PR1T v=1 t_us=28688126 field=irq_to_rx_ready_us value=1794
+PR1T v=1 t_us=28688126 field=trace_overwrites value=87415
+PR1T v=1 t_us=28688126 field=capability_mask value=12
+PR1T v=1 t_us=29659025 field=device_state value=2
+PR1T v=1 t_us=29659025 field=rssi_dbm value=-49
+PR1T v=1 t_us=29659025 field=crc_good value=10055
+PR1T v=1 t_us=29659025 field=crc_bad value=5
+PR1T v=1 t_us=29659025 field=missing value=106
+PR1T v=1 t_us=29659025 field=queue_depth value=0
+PR1T v=1 t_us=29659025 field=max_queue_depth value=1
+PR1T v=1 t_us=29659025 field=irq_to_spi_us value=6
+PR1T v=1 t_us=29659025 field=spi_duration_us value=1249
+PR1T v=1 t_us=29659025 field=rx_processing_us value=1251
+PR1T v=1 t_us=29659025 field=spi_end_to_rearm_start_us value=137
+PR1T v=1 t_us=29659025 field=rx_rearm_us value=418
+PR1T v=1 t_us=29659025 field=irq_to_rx_ready_us value=1795
+PR1T v=1 t_us=29659025 field=trace_overwrites value=90412
+PR1T v=1 t_us=29659025 field=capability_mask value=12
+PR1T v=1 t_us=30380037 field=device_state value=2
+PR1T v=1 t_us=30380037 field=rssi_dbm value=-48
+PR1T v=1 t_us=30380037 field=crc_good value=10304
+PR1T v=1 t_us=30380037 field=crc_bad value=5
+PR1T v=1 t_us=30380037 field=missing value=109
+PR1T v=1 t_us=30380037 field=queue_depth value=0
+PR1T v=1 t_us=30380037 field=max_queue_depth value=1
+PR1T v=1 t_us=30380037 field=irq_to_spi_us value=6
+PR1T v=1 t_us=30380037 field=spi_duration_us value=1247
+PR1T v=1 t_us=30380037 field=rx_processing_us value=1248
+PR1T v=1 t_us=30380037 field=spi_end_to_rearm_start_us value=137
+PR1T v=1 t_us=30380037 field=rx_rearm_us value=420
+PR1T v=1 t_us=30380037 field=irq_to_rx_ready_us value=1795
+PR1T v=1 t_us=30380037 field=trace_overwrites value=92653
+PR1T v=1 t_us=30380037 field=capability_mask value=12
