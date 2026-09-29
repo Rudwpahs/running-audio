@@ -157,7 +157,10 @@ build_flags =
         self.assertEqual(kinds.count("safe_flash"), 2)
         self.assertEqual(kinds.count("rx_flash"), 1)
         self.assertEqual(kinds.count("tx_gap_flash"), 11)
-        self.assertEqual(kinds.count("rx_reset"), 10)
+        self.assertEqual(kinds.count("rx_reset"), 11)
+        for index, kind in enumerate(kinds):
+            if kind == "tx_gap_flash":
+                self.assertEqual(kinds[index + 1], "rx_reset")
         self.assertEqual(plan["steps"][-1]["kind"], "analyze")
 
     def test_capture_auto_polls_then_settles_and_writes_result(self):

@@ -135,6 +135,10 @@ def _build_entry(
 
 def prepare_build_matrix(session_root: Path, project_dir: Path) -> dict:
     """Generate frozen per-gap configs and independent PlatformIO build caches."""
+    # PlatformIO chdirs into --project-dir before resolving --project-conf and
+    # PLATFORMIO_BUILD_DIR, so relative paths would land inside the firmware tree.
+    session_root = session_root.resolve()
+    project_dir = project_dir.resolve()
     base_path = project_dir / "platformio.ini"
     base_text = base_path.read_text(encoding="utf-8")
     generated_dir = session_root / "generated"
@@ -195,18 +199,18 @@ def build_dry_run_plan(
             ]
         )
     steps.append({"kind": "rx_flash", "board": "rx", "port": rx_port})
-    for index, gap_us in enumerate(SWEEP_GAPS_US):
-        if index > 0:
-            steps.append(
-                {
-                    "kind": "rx_reset",
-                    "board": "rx",
-                    "port": rx_port,
-                    "verification": "fresh PR1_RUNTIME_BOOT + PR1_RUNTIME_LIVE_READY required",
-                }
-            )
+    for gap_us in SWEEP_GAPS_US:
         steps.append(
             {"kind": "tx_gap_flash", "board": "tx", "port": tx_port, "gap_us": gap_us}
+        )
+        # After the TX flash so no previous-gap packet reaches the fresh RX.
+        steps.append(
+            {
+                "kind": "rx_reset",
+                "board": "rx",
+                "port": rx_port,
+                "verification": "fresh PR1_RUNTIME_BOOT + PR1_RUNTIME_LIVE_READY required",
+            }
         )
         steps.append(
             {
@@ -305,6 +309,7 @@ def capture_run_from_serial(
     poll_wait_s: float = 0.75,
     settle_s: float | None = None,
     read_timeout_s: float = 1.0,
+    boot_timeout_s: float = 10.0,
     max_polls: int = 240,
 ) -> dict:
     """Capture one run while continuously preserving serial evidence to disk."""
@@ -329,8 +334,11 @@ def capture_run_from_serial(
         with rx_path.open("w", encoding="utf-8", buffering=1) as rx_fh, tx_path.open(
             "w", encoding="utf-8", buffering=1
         ) as tx_fh:
-            rx_boot = _read_until_marker(rx_serial, rx_fh, "PR1_RUNTIME_LIVE_READY", read_timeout_s)
-            tx_boot = _read_until_marker(tx_serial, tx_fh, "PR1_RUNTIME_LIVE_READY", read_timeout_s)
+            rx_boot = _read_until_marker(rx_serial, rx_fh, "PR1_RUNTIME_LIVE_READY", boot_timeout_s)
+            tx_boot = _read_until_marker(tx_serial, tx_fh, "PR1_RUNTIME_LIVE_READY", boot_timeout_s)
+            for name, boot in (("rx", rx_boot), ("tx", tx_boot)):
+                if "PR1_RUNTIME_BOOT" not in (line.strip() for line in boot):
+                    raise TimeoutError(f"{name} LIVE_READY observed without a fresh PR1_RUNTIME_BOOT")
             rx_meta, _ = _parse_kv_and_telemetry(rx_boot)
             tx_meta, _ = _parse_kv_and_telemetry(tx_boot)
             _validate_live_profile(rx_meta, role="rx", expected_gap_us=None, source="rx")
@@ -498,12 +506,26 @@ def _serial_module():
 
 def _open_serial(port: str):
     serial = _serial_module()
-    return serial.Serial(port=port, baudrate=SERIAL_BAUD, timeout=0.20, write_timeout=1.0)
+    ser = serial.Serial()
+    ser.port = port
+    ser.baudrate = SERIAL_BAUD
+    ser.timeout = 0.20
+    ser.write_timeout = 1.0
+    # Open with both control lines low so opening never pulses the
+    # USB-Serial/JTAG reset or strap logic.
+    ser.dtr = False
+    ser.rts = False
+    ser.open()
+    return ser
 
 
 def _verify_safe_boot(port: str, timeout_s: float = 6.0) -> None:
     ser = _open_serial(port)
     try:
+        # Boot output printed before the host opened the port is lost, so
+        # reset with the port open and require a fresh boot block.
+        _drain_stale_input(ser)
+        _pulse_reset(ser)
         deadline = time.monotonic() + timeout_s
         saw_boot = False
         while time.monotonic() < deadline:
@@ -520,13 +542,29 @@ def _verify_safe_boot(port: str, timeout_s: float = 6.0) -> None:
         ser.close()
 
 
+def _drain_stale_input(serial_obj, *, settle_s: float = 0.30) -> None:
+    """Drop output the device buffered while the port was closed.
+
+    USB-Serial/JTAG delivers it a moment after open, so wait before flushing;
+    otherwise an old boot block could be mistaken for the fresh one.
+    """
+    time.sleep(settle_s)
+    serial_obj.reset_input_buffer()
+
+
 def _pulse_reset(serial_obj, *, sleep_fn: Callable[[float], None] = time.sleep) -> None:
     """Best-effort USB/UART reset pulse; fresh boot is still mandatory afterward."""
+    # Windows usbser.sys only sends SET_CONTROL_LINE_STATE when DTR is written,
+    # so an RTS-only change never reaches the ESP32-S3 USB-Serial/JTAG (same
+    # workaround as esptool). DTR must stay low at release or the ROM enters
+    # download mode instead of booting the app.
     try:
         serial_obj.dtr = False
         serial_obj.rts = True
+        serial_obj.dtr = False
         sleep_fn(0.10)
         serial_obj.rts = False
+        serial_obj.dtr = False
         sleep_fn(0.35)
     except Exception as exc:
         raise RuntimeError(f"automatic RX reset pulse failed: {exc}") from exc
@@ -582,13 +620,6 @@ def run_hardware_session(
             if (run_dir / "rx.log").exists() or (run_dir / "tx.log").exists():
                 archive_partial_attempt(run_dir)
 
-            if completed_this_process > 0:
-                if manual_rx_reset:
-                    print(f"Reset RX board on {rx_port}, then press Enter to continue.", flush=True)
-                    input()
-                else:
-                    _pulse_reset(rx_ser)
-
             gap_us = int(meta["gap_us"])
             tx_entry = by_gap[gap_us]
             tx_upload = _execute(
@@ -597,8 +628,25 @@ def run_hardware_session(
             if tx_upload.returncode != 0:
                 raise RuntimeError(f"TX upload failed for gap {gap_us} us")
 
+            # The TX boot block printed right after upload is lost before the
+            # port opens; reset the same image with the port open to capture it.
             tx_ser = _open_serial(tx_port)
             try:
+                _drain_stale_input(tx_ser)
+                _pulse_reset(tx_ser)
+
+                # Reset RX only after the new-gap TX image is running. Resetting
+                # before the TX upload lets the previous gap's TX seed the fresh RX
+                # sequence reference; the new TX then restarts at seq 0, lands
+                # BeforeOrigin, and is counted in crc_good but never in missing.
+                # Stale input is dropped so the boot markers read next are fresh.
+                _drain_stale_input(rx_ser)
+                if manual_rx_reset:
+                    print(f"Reset RX board on {rx_port}, then press Enter to continue.", flush=True)
+                    input()
+                else:
+                    _pulse_reset(rx_ser)
+
                 capture_run_from_serial(meta, run_dir, rx_ser, tx_ser)
             finally:
                 tx_ser.close()
