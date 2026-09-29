@@ -55,10 +55,32 @@ gap_us | run | packets | missing | loss % | CRC bad | RSSI | qmax | sched | irq�
 - RF/CRC: RSSI -47…-53 dBm stable, CRC bad ≤0.12% and not gap-correlated → does not explain the transition.
 - Past-data comparison: the earlier "≤150 µs ≈50% collapse" was not reproduced; collapse now only at 0 µs, mild degradation at 125 µs.
 
+## 6b. Gate 5 distance / NLOS (gap 150 µs, 10k per point, frozen baseline)
+TX untethered on a USB power bank (scheduler_misses unavailable, recorded null). Distances operator-reported.
+
+condition | packets | missing | loss % | unpolled-window loss | CRC bad | RSSI dBm | irq→ready p99
+---|---|---|---|---|---|---|---
+0.5 m LOS (Gate 4 run) | 10382 | 31 | 0.299 | 0.23% | 12 | -49 | 1792
+1 m LOS | 10311 | 21 | 0.204 | 0.09% | 4 | -69 | 1794
+5 m LOS | 10306 | 18 | 0.175 | 0.05% | 2 | -71 | 1794
+10 m LOS | 10310 | 20 | 0.194 | 0.03% | 4 | -74 | 1792
+13.6 m, 1 wall (NLOS) | 10312 | 247 | 2.395 | 1.70% | 207 | -88 | 1792
+20 m LOS corridor (laptop session) | 10384 | 1048 | 10.09 | 11.58% | 767 | -88 (-94 mid-run) | –
+21.12 m, ~7 walls (NLOS) | no link | – | – | – | 3 in ~34 s | – | –
+
+- Receiver turnaround timing is unchanged at every point; loss beyond 10 m is RF-limited (CRC bad tracks missing).
+- 1 m → 10 m RSSI drop is small, but 10 m → 20 m drops 14–20 dB (free space ≈ 6 dB): placement/antenna
+  orientation (horizontal whips, metal radiator grille, cable tied to antenna) is the leading suspect, not proven.
+- The 20 m LOS point came from the laptop session (branch `claude/pr1-20m-tuning-20260929`), same frozen images.
+- Output/coding A/B at 20 m is on that tuning branch and is **not** part of this baseline; its first step
+  (+3 dBm, 2.2% loss, RSSI -75) is confounded by a TX re-placement (RSSI +13 dB for a 3 dB change).
+
 ## 7. Host-harness issues found and fixed (host only)
 1. Relative paths → TX builds failed (pio chdir). 2. RX reset before TX upload let previous-gap packets seed RX sequence (loss under-count). 3. Windows usbser RTS-only change never reached the board (esptool DTR rewrite workaround); DTR must be low at release. 4. Boot block lost before port open → reset with port open, require fresh BOOT+LIVE_READY. 5. Snapshot lines split across USB reads / reader stopped early. 6. USB-Serial/JTAG output stalls after ~200 s (RX keeps running) → reopen port without reset.
 - Open measurement caveat: progress polling itself causes ≈1 loss per poll at short gaps. Future runs should minimise polls (e.g. rate-based single stop snapshot) — host-only change, not yet applied.
 
 ## 8. Follow-up / optimisation candidates (not implemented)
-- Next gates need physical setup: distance → body block → NLOS → movement → audio → long audio → park → locker → Bluetooth.
+- Gate 5 open items: controlled 20 m re-baseline (both antennas vertical, off metal, cable untied), 50 m / 100 m / max LOS.
+- Not started: Gate 6 body block, Gate 7 obstacle/locker door (only two wall points so far), Gate 8 movement,
+  Gate 9–10 real audio / long audio, Gate 11 park, Gate 12 locker, Gate 13 Bluetooth comparison.
 - Evidence-backed candidates only if a gap < 150 µs is required: SPI read path (dominant ~70% of turnaround), then rearm (~23%). No other candidate is supported by this data.
