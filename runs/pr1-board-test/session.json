@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "created_utc": "2026-09-29T09:32:10.969382Z",
+  "firmware_sha": "d1b7ec2b1130fd63fb0eb11fd900b0622766f14c",
+  "target_packets": 1000,
+  "sweep_gaps_us": [
+    5000,
+    1000,
+    500,
+    300,
+    250,
+    225,
+    200,
+    175,
+    150,
+    125,
+    0
+  ],
+  "ports": {
+    "rx": "COM3",
+    "tx": "COM4"
+  },
+  "serial_baud": 115200,
+  "build_identity": {
+    "source_head_sha": "42218da414c74624dcffec40e68e144ed36fd2ff",
+    "frozen_firmware_sha": "d1b7ec2b1130fd63fb0eb11fd900b0622766f14c",
+    "git_dirty": false,
+    "platformio_version": "PlatformIO Core, version 6.1.19",
+    "platformio_ini_sha256": "6f79f96979b96bf460260b1c13cdf85e16b6d647f183232e921e72e0bde094a3",
+    "controller_file_sha256": "4d2d09d44dc2cc24969ee0971564dab4c64d0c9df81d15070f015ef308c239dc"
+  },
+  "evidence_boundary": "host_orchestration_only_frozen_rf_baseline_unchanged",
+  "session_id": "pr1-20260929T093210.969382Z"
+}

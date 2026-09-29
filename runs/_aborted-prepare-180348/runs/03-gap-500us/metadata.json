@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "run_id": "03-gap-500us",
+  "created_utc": "2026-09-29T09:03:35.482897Z",
+  "gap_us": 500,
+  "target_packets": 1000,
+  "phase": "baseline",
+  "firmware_sha": "d1b7ec2b1130fd63fb0eb11fd900b0622766f14c",
+  "frozen_baseline": {
+    "frequency_mhz": 2404.0,
+    "bitrate_kbps": 1300,
+    "coding_rate": 3,
+    "output_dbm": 0,
+    "packet_bytes": 116,
+    "sx1280_spi_hz": 2000000,
+    "adaptive_layers": false
+  },
+  "files": {
+    "rx_log": "rx.log",
+    "tx_log": "tx.log"
+  },
+  "notes": "",
+  "session_id": "pr1-20260929T090335.480379Z",
+  "build_identity": {
+    "source_head_sha": "b7c4dee978ce0dbec852a7b077a3a157a7da0c20",
+    "frozen_firmware_sha": "d1b7ec2b1130fd63fb0eb11fd900b0622766f14c",
+    "git_dirty": false,
+    "platformio_version": "PlatformIO Core, version 6.1.19",
+    "platformio_ini_sha256": "6f79f96979b96bf460260b1c13cdf85e16b6d647f183232e921e72e0bde094a3",
+    "controller_file_sha256": "cc7f1e7bf1d1840de3e8485fb72f2d5e6467010b5c7957debc8cc4739d0748de"
+  },
+  "ports": {
+    "rx": "COM3",
+    "tx": "COM4"
+  }
+}

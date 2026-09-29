@@ -1,0 +1,109 @@
+{
+  "created_utc": "2026-09-29T09:30:46.792644Z",
+  "builds": [
+    {
+      "environment": "safe",
+      "gap_us": null,
+      "returncode": 0,
+      "build_dir": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\safe",
+      "firmware_bin": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\safe\\safe\\firmware.bin",
+      "firmware_bin_sha256": "db3f944b1055ba47c2c10346c640cf6942bf94ad03fd59e20cbbaef5779d95f5"
+    },
+    {
+      "environment": "rf_rx_compile",
+      "gap_us": null,
+      "returncode": 0,
+      "build_dir": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\rx",
+      "firmware_bin": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\rx\\rf_rx_compile\\firmware.bin",
+      "firmware_bin_sha256": "3cfbf7c62f787298a8743fda41e71a6715c81c5f6c846c36da43a5b4fedd71a3"
+    },
+    {
+      "environment": "rf_tx_compile",
+      "gap_us": 5000,
+      "returncode": 0,
+      "build_dir": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\tx-5000us",
+      "firmware_bin": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\tx-5000us\\rf_tx_compile\\firmware.bin",
+      "firmware_bin_sha256": "0cf98491fdb5b38a4311d6a120827642329d6070561529ec5bef9ceb72cabf90"
+    },
+    {
+      "environment": "rf_tx_compile",
+      "gap_us": 1000,
+      "returncode": 0,
+      "build_dir": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\tx-1000us",
+      "firmware_bin": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\tx-1000us\\rf_tx_compile\\firmware.bin",
+      "firmware_bin_sha256": "1775b373911f0e43de53097745672aeb7b314cf717195298417509b0991d853e"
+    },
+    {
+      "environment": "rf_tx_compile",
+      "gap_us": 500,
+      "returncode": 0,
+      "build_dir": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\tx-500us",
+      "firmware_bin": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\tx-500us\\rf_tx_compile\\firmware.bin",
+      "firmware_bin_sha256": "aee51857ba094a18fc58bf8e0b5ff499a7e27926481138c431983f9c4151d755"
+    },
+    {
+      "environment": "rf_tx_compile",
+      "gap_us": 300,
+      "returncode": 0,
+      "build_dir": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\tx-300us",
+      "firmware_bin": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\tx-300us\\rf_tx_compile\\firmware.bin",
+      "firmware_bin_sha256": "0ea6f0a787d2cc4403e5730300f8a0214cec47f449a1dd4f15a80a122bc930f1"
+    },
+    {
+      "environment": "rf_tx_compile",
+      "gap_us": 250,
+      "returncode": 0,
+      "build_dir": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\tx-250us",
+      "firmware_bin": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\tx-250us\\rf_tx_compile\\firmware.bin",
+      "firmware_bin_sha256": "3f9c5a74f21ecb0b4538b77684a1088b15abf4c9c4d80d7ab62b6926a681864b"
+    },
+    {
+      "environment": "rf_tx_compile",
+      "gap_us": 225,
+      "returncode": 0,
+      "build_dir": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\tx-225us",
+      "firmware_bin": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\tx-225us\\rf_tx_compile\\firmware.bin",
+      "firmware_bin_sha256": "64065bb027861c1155c5a2f74799afe6183985186dde325adf977a0cfc316eb4"
+    },
+    {
+      "environment": "rf_tx_compile",
+      "gap_us": 200,
+      "returncode": 0,
+      "build_dir": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\tx-200us",
+      "firmware_bin": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\tx-200us\\rf_tx_compile\\firmware.bin",
+      "firmware_bin_sha256": "f3e5ca3d5a908070abae6dfe9dd2063712826f9b0a717ea68d6831d96d9866c4"
+    },
+    {
+      "environment": "rf_tx_compile",
+      "gap_us": 175,
+      "returncode": 0,
+      "build_dir": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\tx-175us",
+      "firmware_bin": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\tx-175us\\rf_tx_compile\\firmware.bin",
+      "firmware_bin_sha256": "341d24132673e2f0e8eae390657125b7f6f1a49feb43c1cae088340b234ca8a6"
+    },
+    {
+      "environment": "rf_tx_compile",
+      "gap_us": 150,
+      "returncode": 0,
+      "build_dir": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\tx-150us",
+      "firmware_bin": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\tx-150us\\rf_tx_compile\\firmware.bin",
+      "firmware_bin_sha256": "4f990a2ba3f59ccd60787751c9a88dc7f7585078c3eb4e8498d3530ceaa02fa0"
+    },
+    {
+      "environment": "rf_tx_compile",
+      "gap_us": 125,
+      "returncode": 0,
+      "build_dir": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\tx-125us",
+      "firmware_bin": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\tx-125us\\rf_tx_compile\\firmware.bin",
+      "firmware_bin_sha256": "b11babc2ce0c7c841b25a1734a6cb0ee09e98528a2041a44aa9c98da05e33319"
+    },
+    {
+      "environment": "rf_tx_compile",
+      "gap_us": 0,
+      "returncode": 0,
+      "build_dir": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\tx-0us",
+      "firmware_bin": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\tx-0us\\rf_tx_compile\\firmware.bin",
+      "firmware_bin_sha256": "a831398460f15df341a8e645a225f9075f292837f7194fd044c441fc8f46e06a"
+    }
+  ]
+}

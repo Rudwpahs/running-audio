@@ -1,0 +1,505 @@
+{
+  "schema_version": 1,
+  "runs": [
+    {
+      "schema_version": 1,
+      "run_id": "01-gap-5000us",
+      "phase": "baseline",
+      "gap_us": 5000,
+      "target_packets": 1000,
+      "firmware_sha": "d1b7ec2b1130fd63fb0eb11fd900b0622766f14c",
+      "packet_count": 1172,
+      "metrics": {
+        "rssi_dbm": -49,
+        "crc_good": 1167,
+        "crc_bad": 0,
+        "missing": 5,
+        "queue_depth": 0,
+        "max_queue_depth": 1,
+        "irq_to_spi_us_p99": 6,
+        "spi_duration_us_p99": 1248,
+        "rx_processing_us_p99": 1250,
+        "spi_end_to_rearm_start_us_p99": 136,
+        "rx_rearm_us_p99": 421,
+        "irq_to_rx_ready_us_p99": 1794,
+        "trace_overwrites": 10375,
+        "scheduler_misses": 0
+      },
+      "derived": {
+        "loss_rate": 0.004266211604095563,
+        "crc_bad_rate": 0.0,
+        "target_reached": true
+      },
+      "classification": {
+        "label": "spi",
+        "dominant_share": 0.6957,
+        "confidence": "low",
+        "evidence_boundary": "diagnostic_candidate_not_causal_proof"
+      },
+      "evidence": {
+        "packet_count_source": "rx_sequence_span=crc_good+missing",
+        "crc_bad_overlap_warning": "crc_bad may overlap sequence-derived missing and is not additive",
+        "scheduler_misses_source": "tx",
+        "evidence_boundary": "measured_diagnostics_not_causal_proof"
+      },
+      "revalidate_10000": false
+    },
+    {
+      "schema_version": 1,
+      "run_id": "02-gap-1000us",
+      "phase": "baseline",
+      "gap_us": 1000,
+      "target_packets": 1000,
+      "firmware_sha": "d1b7ec2b1130fd63fb0eb11fd900b0622766f14c",
+      "packet_count": 1374,
+      "metrics": {
+        "rssi_dbm": -48,
+        "crc_good": 1371,
+        "crc_bad": 1,
+        "missing": 3,
+        "queue_depth": 0,
+        "max_queue_depth": 1,
+        "irq_to_spi_us_p99": 6,
+        "spi_duration_us_p99": 1250,
+        "rx_processing_us_p99": 1252,
+        "spi_end_to_rearm_start_us_p99": 137,
+        "rx_rearm_us_p99": 416,
+        "irq_to_rx_ready_us_p99": 1795,
+        "trace_overwrites": 12220,
+        "scheduler_misses": 0
+      },
+      "derived": {
+        "loss_rate": 0.002183406113537118,
+        "crc_bad_rate": 0.000727802037845706,
+        "target_reached": true
+      },
+      "classification": {
+        "label": "spi",
+        "dominant_share": 0.6964,
+        "confidence": "low",
+        "evidence_boundary": "diagnostic_candidate_not_causal_proof"
+      },
+      "evidence": {
+        "packet_count_source": "rx_sequence_span=crc_good+missing",
+        "crc_bad_overlap_warning": "crc_bad may overlap sequence-derived missing and is not additive",
+        "scheduler_misses_source": "tx",
+        "evidence_boundary": "measured_diagnostics_not_causal_proof"
+      },
+      "revalidate_10000": false
+    },
+    {
+      "schema_version": 1,
+      "run_id": "03-gap-500us",
+      "phase": "baseline",
+      "gap_us": 500,
+      "target_packets": 1000,
+      "firmware_sha": "d1b7ec2b1130fd63fb0eb11fd900b0622766f14c",
+      "packet_count": 1477,
+      "metrics": {
+        "rssi_dbm": -48,
+        "crc_good": 1473,
+        "crc_bad": 1,
+        "missing": 4,
+        "queue_depth": 0,
+        "max_queue_depth": 1,
+        "irq_to_spi_us_p99": 6,
+        "spi_duration_us_p99": 1251,
+        "rx_processing_us_p99": 1253,
+        "spi_end_to_rearm_start_us_p99": 138,
+        "rx_rearm_us_p99": 417,
+        "irq_to_rx_ready_us_p99": 1794,
+        "trace_overwrites": 13138,
+        "scheduler_misses": 0
+      },
+      "derived": {
+        "loss_rate": 0.002708192281651997,
+        "crc_bad_rate": 0.0006770480704129993,
+        "target_reached": true
+      },
+      "classification": {
+        "label": "spi",
+        "dominant_share": 0.6973,
+        "confidence": "low",
+        "evidence_boundary": "diagnostic_candidate_not_causal_proof"
+      },
+      "evidence": {
+        "packet_count_source": "rx_sequence_span=crc_good+missing",
+        "crc_bad_overlap_warning": "crc_bad may overlap sequence-derived missing and is not additive",
+        "scheduler_misses_source": "tx",
+        "evidence_boundary": "measured_diagnostics_not_causal_proof"
+      },
+      "revalidate_10000": false
+    },
+    {
+      "schema_version": 1,
+      "run_id": "04-gap-300us",
+      "phase": "baseline",
+      "gap_us": 300,
+      "target_packets": 1000,
+      "firmware_sha": "d1b7ec2b1130fd63fb0eb11fd900b0622766f14c",
+      "packet_count": 1530,
+      "metrics": {
+        "rssi_dbm": -49,
+        "crc_good": 1526,
+        "crc_bad": 0,
+        "missing": 4,
+        "queue_depth": 0,
+        "max_queue_depth": 1,
+        "irq_to_spi_us_p99": 5,
+        "spi_duration_us_p99": 1251,
+        "rx_processing_us_p99": 1253,
+        "spi_end_to_rearm_start_us_p99": 138,
+        "rx_rearm_us_p99": 417,
+        "irq_to_rx_ready_us_p99": 1796,
+        "trace_overwrites": 13606,
+        "scheduler_misses": 0
+      },
+      "derived": {
+        "loss_rate": 0.00261437908496732,
+        "crc_bad_rate": 0.0,
+        "target_reached": true
+      },
+      "classification": {
+        "label": "spi",
+        "dominant_share": 0.6965,
+        "confidence": "low",
+        "evidence_boundary": "diagnostic_candidate_not_causal_proof"
+      },
+      "evidence": {
+        "packet_count_source": "rx_sequence_span=crc_good+missing",
+        "crc_bad_overlap_warning": "crc_bad may overlap sequence-derived missing and is not additive",
+        "scheduler_misses_source": "tx",
+        "evidence_boundary": "measured_diagnostics_not_causal_proof"
+      },
+      "revalidate_10000": false
+    },
+    {
+      "schema_version": 1,
+      "run_id": "05-gap-250us",
+      "phase": "baseline",
+      "gap_us": 250,
+      "target_packets": 1000,
+      "firmware_sha": "d1b7ec2b1130fd63fb0eb11fd900b0622766f14c",
+      "packet_count": 1536,
+      "metrics": {
+        "rssi_dbm": -49,
+        "crc_good": 1530,
+        "crc_bad": 0,
+        "missing": 6,
+        "queue_depth": 0,
+        "max_queue_depth": 1,
+        "irq_to_spi_us_p99": 13,
+        "spi_duration_us_p99": 1246,
+        "rx_processing_us_p99": 1248,
+        "spi_end_to_rearm_start_us_p99": 137,
+        "rx_rearm_us_p99": 421,
+        "irq_to_rx_ready_us_p99": 1794,
+        "trace_overwrites": 13642,
+        "scheduler_misses": 0
+      },
+      "derived": {
+        "loss_rate": 0.00390625,
+        "crc_bad_rate": 0.0,
+        "target_reached": true
+      },
+      "classification": {
+        "label": "spi",
+        "dominant_share": 0.6945,
+        "confidence": "low",
+        "evidence_boundary": "diagnostic_candidate_not_causal_proof"
+      },
+      "evidence": {
+        "packet_count_source": "rx_sequence_span=crc_good+missing",
+        "crc_bad_overlap_warning": "crc_bad may overlap sequence-derived missing and is not additive",
+        "scheduler_misses_source": "tx",
+        "evidence_boundary": "measured_diagnostics_not_causal_proof"
+      },
+      "revalidate_10000": false
+    },
+    {
+      "schema_version": 1,
+      "run_id": "06-gap-225us",
+      "phase": "baseline",
+      "gap_us": 225,
+      "target_packets": 1000,
+      "firmware_sha": "d1b7ec2b1130fd63fb0eb11fd900b0622766f14c",
+      "packet_count": 1550,
+      "metrics": {
+        "rssi_dbm": -53,
+        "crc_good": 1547,
+        "crc_bad": 0,
+        "missing": 3,
+        "queue_depth": 0,
+        "max_queue_depth": 1,
+        "irq_to_spi_us_p99": 6,
+        "spi_duration_us_p99": 1245,
+        "rx_processing_us_p99": 1247,
+        "spi_end_to_rearm_start_us_p99": 136,
+        "rx_rearm_us_p99": 422,
+        "irq_to_rx_ready_us_p99": 1796,
+        "trace_overwrites": 13795,
+        "scheduler_misses": 0
+      },
+      "derived": {
+        "loss_rate": 0.001935483870967742,
+        "crc_bad_rate": 0.0,
+        "target_reached": true
+      },
+      "classification": {
+        "label": "spi",
+        "dominant_share": 0.6932,
+        "confidence": "low",
+        "evidence_boundary": "diagnostic_candidate_not_causal_proof"
+      },
+      "evidence": {
+        "packet_count_source": "rx_sequence_span=crc_good+missing",
+        "crc_bad_overlap_warning": "crc_bad may overlap sequence-derived missing and is not additive",
+        "scheduler_misses_source": "tx",
+        "evidence_boundary": "measured_diagnostics_not_causal_proof"
+      },
+      "revalidate_10000": false
+    },
+    {
+      "schema_version": 1,
+      "run_id": "07-gap-200us",
+      "phase": "baseline",
+      "gap_us": 200,
+      "target_packets": 1000,
+      "firmware_sha": "d1b7ec2b1130fd63fb0eb11fd900b0622766f14c",
+      "packet_count": 1554,
+      "metrics": {
+        "rssi_dbm": -53,
+        "crc_good": 1549,
+        "crc_bad": 0,
+        "missing": 5,
+        "queue_depth": 0,
+        "max_queue_depth": 1,
+        "irq_to_spi_us_p99": 6,
+        "spi_duration_us_p99": 1249,
+        "rx_processing_us_p99": 1250,
+        "spi_end_to_rearm_start_us_p99": 138,
+        "rx_rearm_us_p99": 418,
+        "irq_to_rx_ready_us_p99": 1793,
+        "trace_overwrites": 13813,
+        "scheduler_misses": 0
+      },
+      "derived": {
+        "loss_rate": 0.0032175032175032173,
+        "crc_bad_rate": 0.0,
+        "target_reached": true
+      },
+      "classification": {
+        "label": "spi",
+        "dominant_share": 0.6966,
+        "confidence": "low",
+        "evidence_boundary": "diagnostic_candidate_not_causal_proof"
+      },
+      "evidence": {
+        "packet_count_source": "rx_sequence_span=crc_good+missing",
+        "crc_bad_overlap_warning": "crc_bad may overlap sequence-derived missing and is not additive",
+        "scheduler_misses_source": "tx",
+        "evidence_boundary": "measured_diagnostics_not_causal_proof"
+      },
+      "revalidate_10000": false
+    },
+    {
+      "schema_version": 1,
+      "run_id": "08-gap-175us",
+      "phase": "baseline",
+      "gap_us": 175,
+      "target_packets": 1000,
+      "firmware_sha": "d1b7ec2b1130fd63fb0eb11fd900b0622766f14c",
+      "packet_count": 1566,
+      "metrics": {
+        "rssi_dbm": -48,
+        "crc_good": 1561,
+        "crc_bad": 1,
+        "missing": 5,
+        "queue_depth": 0,
+        "max_queue_depth": 1,
+        "irq_to_spi_us_p99": 6,
+        "spi_duration_us_p99": 1249,
+        "rx_processing_us_p99": 1251,
+        "spi_end_to_rearm_start_us_p99": 137,
+        "rx_rearm_us_p99": 417,
+        "irq_to_rx_ready_us_p99": 1795,
+        "trace_overwrites": 13930,
+        "scheduler_misses": 0
+      },
+      "derived": {
+        "loss_rate": 0.0031928480204342275,
+        "crc_bad_rate": 0.0006385696040868455,
+        "target_reached": true
+      },
+      "classification": {
+        "label": "spi",
+        "dominant_share": 0.6958,
+        "confidence": "low",
+        "evidence_boundary": "diagnostic_candidate_not_causal_proof"
+      },
+      "evidence": {
+        "packet_count_source": "rx_sequence_span=crc_good+missing",
+        "crc_bad_overlap_warning": "crc_bad may overlap sequence-derived missing and is not additive",
+        "scheduler_misses_source": "tx",
+        "evidence_boundary": "measured_diagnostics_not_causal_proof"
+      },
+      "revalidate_10000": false
+    },
+    {
+      "schema_version": 1,
+      "run_id": "09-gap-150us",
+      "phase": "baseline",
+      "gap_us": 150,
+      "target_packets": 1000,
+      "firmware_sha": "d1b7ec2b1130fd63fb0eb11fd900b0622766f14c",
+      "packet_count": 1569,
+      "metrics": {
+        "rssi_dbm": -53,
+        "crc_good": 1563,
+        "crc_bad": 0,
+        "missing": 6,
+        "queue_depth": 0,
+        "max_queue_depth": 1,
+        "irq_to_spi_us_p99": 6,
+        "spi_duration_us_p99": 1245,
+        "rx_processing_us_p99": 1247,
+        "spi_end_to_rearm_start_us_p99": 137,
+        "rx_rearm_us_p99": 420,
+        "irq_to_rx_ready_us_p99": 1792,
+        "trace_overwrites": 13939,
+        "scheduler_misses": 0
+      },
+      "derived": {
+        "loss_rate": 0.0038240917782026767,
+        "crc_bad_rate": 0.0,
+        "target_reached": true
+      },
+      "classification": {
+        "label": "spi",
+        "dominant_share": 0.6948,
+        "confidence": "low",
+        "evidence_boundary": "diagnostic_candidate_not_causal_proof"
+      },
+      "evidence": {
+        "packet_count_source": "rx_sequence_span=crc_good+missing",
+        "crc_bad_overlap_warning": "crc_bad may overlap sequence-derived missing and is not additive",
+        "scheduler_misses_source": "tx",
+        "evidence_boundary": "measured_diagnostics_not_causal_proof"
+      },
+      "revalidate_10000": false
+    },
+    {
+      "schema_version": 1,
+      "run_id": "10-gap-125us",
+      "phase": "baseline",
+      "gap_us": 125,
+      "target_packets": 1000,
+      "firmware_sha": "d1b7ec2b1130fd63fb0eb11fd900b0622766f14c",
+      "packet_count": 1573,
+      "metrics": {
+        "rssi_dbm": -47,
+        "crc_good": 1567,
+        "crc_bad": 1,
+        "missing": 6,
+        "queue_depth": 0,
+        "max_queue_depth": 1,
+        "irq_to_spi_us_p99": 6,
+        "spi_duration_us_p99": 1247,
+        "rx_processing_us_p99": 1249,
+        "spi_end_to_rearm_start_us_p99": 138,
+        "rx_rearm_us_p99": 421,
+        "irq_to_rx_ready_us_p99": 1794,
+        "trace_overwrites": 13984,
+        "scheduler_misses": 0
+      },
+      "derived": {
+        "loss_rate": 0.003814367450731087,
+        "crc_bad_rate": 0.0006357279084551812,
+        "target_reached": true
+      },
+      "classification": {
+        "label": "spi",
+        "dominant_share": 0.6951,
+        "confidence": "low",
+        "evidence_boundary": "diagnostic_candidate_not_causal_proof"
+      },
+      "evidence": {
+        "packet_count_source": "rx_sequence_span=crc_good+missing",
+        "crc_bad_overlap_warning": "crc_bad may overlap sequence-derived missing and is not additive",
+        "scheduler_misses_source": "tx",
+        "evidence_boundary": "measured_diagnostics_not_causal_proof"
+      },
+      "revalidate_10000": true
+    },
+    {
+      "schema_version": 1,
+      "run_id": "11-gap-0us",
+      "phase": "baseline",
+      "gap_us": 0,
+      "target_packets": 1000,
+      "firmware_sha": "d1b7ec2b1130fd63fb0eb11fd900b0622766f14c",
+      "packet_count": 1265,
+      "metrics": {
+        "rssi_dbm": -47,
+        "crc_good": 633,
+        "crc_bad": 0,
+        "missing": 632,
+        "queue_depth": 0,
+        "max_queue_depth": 1,
+        "irq_to_spi_us_p99": 6,
+        "spi_duration_us_p99": 1245,
+        "rx_processing_us_p99": 1247,
+        "spi_end_to_rearm_start_us_p99": 137,
+        "rx_rearm_us_p99": 420,
+        "irq_to_rx_ready_us_p99": 1794,
+        "trace_overwrites": 5569,
+        "scheduler_misses": 0
+      },
+      "derived": {
+        "loss_rate": 0.49960474308300395,
+        "crc_bad_rate": 0.0,
+        "target_reached": true
+      },
+      "classification": {
+        "label": "spi",
+        "dominant_share": 0.694,
+        "confidence": "low",
+        "evidence_boundary": "diagnostic_candidate_not_causal_proof"
+      },
+      "evidence": {
+        "packet_count_source": "rx_sequence_span=crc_good+missing",
+        "crc_bad_overlap_warning": "crc_bad may overlap sequence-derived missing and is not additive",
+        "scheduler_misses_source": "tx",
+        "evidence_boundary": "measured_diagnostics_not_causal_proof"
+      },
+      "revalidate_10000": true
+    }
+  ],
+  "analysis": {
+    "transition_rule": "abs(loss_delta) >= max(0.5 percentage points, 3*pooled-binomial-SE)",
+    "missing_gaps_us": [],
+    "transitions": [
+      {
+        "higher_gap_us": 125,
+        "lower_gap_us": 0,
+        "higher_loss_rate": 0.003814367450731087,
+        "lower_loss_rate": 0.49960474308300395,
+        "absolute_delta": 0.49579037563227285,
+        "material_threshold": 0.047296294309742734
+      }
+    ],
+    "revalidate_10000_gaps_us": [
+      125,
+      0
+    ],
+    "bottleneck_summary": {
+      "label": "spi",
+      "confidence": "medium",
+      "evidence_gap_us": 0,
+      "candidates": [
+        "spi"
+      ],
+      "evidence_boundary": "not_causal_proof"
+    }
+  }
+}

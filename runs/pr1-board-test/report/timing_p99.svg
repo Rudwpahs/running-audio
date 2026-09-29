@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540">
+<rect width="100%" height="100%" fill="white"/>
+<text x="480.0" y="30" text-anchor="middle" font-family="sans-serif" font-size="20">PR1 RX timing p99</text>
+<line x1="85" y1="465" x2="930" y2="465" stroke="black"/>
+<line x1="85" y1="55" x2="85" y2="465" stroke="black"/>
+<text x="480.0" y="520" text-anchor="middle" font-family="sans-serif" font-size="14">TX post-send gap (us)</text>
+<text x="20" y="270.0" transform="rotate(-90 20 270.0)" text-anchor="middle" font-family="sans-serif" font-size="14">microseconds</text>
+<polyline points="930.0,463.6 254.0,463.6 169.5,463.6 135.7,463.9 127.2,462.0 123.0,463.6 118.8,463.6 114.6,463.6 110.3,463.6 106.1,463.6 85.0,463.6" fill="none" stroke="black" stroke-width="2"/>
+<circle cx="930.0" cy="463.6" r="3" fill="black"/>
+<circle cx="254.0" cy="463.6" r="3" fill="black"/>
+<circle cx="169.5" cy="463.6" r="3" fill="black"/>
+<circle cx="135.7" cy="463.9" r="3" fill="black"/>
+<circle cx="127.2" cy="462.0" r="3" fill="black"/>
+<circle cx="123.0" cy="463.6" r="3" fill="black"/>
+<circle cx="118.8" cy="463.6" r="3" fill="black"/>
+<circle cx="114.6" cy="463.6" r="3" fill="black"/>
+<circle cx="110.3" cy="463.6" r="3" fill="black"/>
+<circle cx="106.1" cy="463.6" r="3" fill="black"/>
+<circle cx="85.0" cy="463.6" r="3" fill="black"/>
+<text x="95" y="75" font-family="sans-serif" font-size="12">IRQ to SPI p99</text>
+<polyline points="930.0,180.1 254.0,179.6 169.5,179.4 135.7,179.4 127.2,180.6 123.0,180.8 118.8,179.9 114.6,179.9 110.3,180.8 106.1,180.3 85.0,180.8" fill="none" stroke="black" stroke-width="2" stroke-dasharray="6,4"/>
+<circle cx="930.0" cy="180.1" r="3" fill="black"/>
+<circle cx="254.0" cy="179.6" r="3" fill="black"/>
+<circle cx="169.5" cy="179.4" r="3" fill="black"/>
+<circle cx="135.7" cy="179.4" r="3" fill="black"/>
+<circle cx="127.2" cy="180.6" r="3" fill="black"/>
+<circle cx="123.0" cy="180.8" r="3" fill="black"/>
+<circle cx="118.8" cy="179.9" r="3" fill="black"/>
+<circle cx="114.6" cy="179.9" r="3" fill="black"/>
+<circle cx="110.3" cy="180.8" r="3" fill="black"/>
+<circle cx="106.1" cy="180.3" r="3" fill="black"/>
+<circle cx="85.0" cy="180.8" r="3" fill="black"/>
+<text x="95" y="93" font-family="sans-serif" font-size="12">SPI duration p99</text>
+<polyline points="930.0,179.6 254.0,179.2 169.5,179.0 135.7,179.0 127.2,180.1 123.0,180.3 118.8,179.6 114.6,179.4 110.3,180.3 106.1,179.9 85.0,180.3" fill="none" stroke="black" stroke-width="2" stroke-dasharray="2,4"/>
+<circle cx="930.0" cy="179.6" r="3" fill="black"/>
+<circle cx="254.0" cy="179.2" r="3" fill="black"/>
+<circle cx="169.5" cy="179.0" r="3" fill="black"/>
+<circle cx="135.7" cy="179.0" r="3" fill="black"/>
+<circle cx="127.2" cy="180.1" r="3" fill="black"/>
+<circle cx="123.0" cy="180.3" r="3" fill="black"/>
+<circle cx="118.8" cy="179.6" r="3" fill="black"/>
+<circle cx="114.6" cy="179.4" r="3" fill="black"/>
+<circle cx="110.3" cy="180.3" r="3" fill="black"/>
+<circle cx="106.1" cy="179.9" r="3" fill="black"/>
+<circle cx="85.0" cy="180.3" r="3" fill="black"/>
+<text x="95" y="111" font-family="sans-serif" font-size="12">RX processing (overlapping) p99</text>
+<polyline points="930.0,434.0 254.0,433.7 169.5,433.5 135.7,433.5 127.2,433.7 123.0,434.0 118.8,433.5 114.6,433.7 110.3,433.7 106.1,433.5 85.0,433.7" fill="none" stroke="black" stroke-width="2" stroke-dasharray="10,4"/>
+<circle cx="930.0" cy="434.0" r="3" fill="black"/>
+<circle cx="254.0" cy="433.7" r="3" fill="black"/>
+<circle cx="169.5" cy="433.5" r="3" fill="black"/>
+<circle cx="135.7" cy="433.5" r="3" fill="black"/>
+<circle cx="127.2" cy="433.7" r="3" fill="black"/>
+<circle cx="123.0" cy="434.0" r="3" fill="black"/>
+<circle cx="118.8" cy="433.5" r="3" fill="black"/>
+<circle cx="114.6" cy="433.7" r="3" fill="black"/>
+<circle cx="110.3" cy="433.7" r="3" fill="black"/>
+<circle cx="106.1" cy="433.5" r="3" fill="black"/>
+<circle cx="85.0" cy="433.7" r="3" fill="black"/>
+<text x="95" y="129" font-family="sans-serif" font-size="12">SPI end to rearm start p99</text>
+<polyline points="930.0,368.9 254.0,370.0 169.5,369.8 135.7,369.8 127.2,368.9 123.0,368.7 118.8,369.6 114.6,369.8 110.3,369.1 106.1,368.9 85.0,369.1" fill="none" stroke="black" stroke-width="2" stroke-dasharray="8,3,2,3"/>
+<circle cx="930.0" cy="368.9" r="3" fill="black"/>
+<circle cx="254.0" cy="370.0" r="3" fill="black"/>
+<circle cx="169.5" cy="369.8" r="3" fill="black"/>
+<circle cx="135.7" cy="369.8" r="3" fill="black"/>
+<circle cx="127.2" cy="368.9" r="3" fill="black"/>
+<circle cx="123.0" cy="368.7" r="3" fill="black"/>
+<circle cx="118.8" cy="369.6" r="3" fill="black"/>
+<circle cx="114.6" cy="369.8" r="3" fill="black"/>
+<circle cx="110.3" cy="369.1" r="3" fill="black"/>
+<circle cx="106.1" cy="368.9" r="3" fill="black"/>
+<circle cx="85.0" cy="369.1" r="3" fill="black"/>
+<text x="95" y="147" font-family="sans-serif" font-size="12">RX rearm p99</text>
+<polyline points="930.0,55.5 254.0,55.2 169.5,55.5 135.7,55.0 127.2,55.5 123.0,55.0 118.8,55.7 114.6,55.2 110.3,55.9 106.1,55.5 85.0,55.5" fill="none" stroke="black" stroke-width="2" stroke-dasharray="4,2"/>
+<circle cx="930.0" cy="55.5" r="3" fill="black"/>
+<circle cx="254.0" cy="55.2" r="3" fill="black"/>
+<circle cx="169.5" cy="55.5" r="3" fill="black"/>
+<circle cx="135.7" cy="55.0" r="3" fill="black"/>
+<circle cx="127.2" cy="55.5" r="3" fill="black"/>
+<circle cx="123.0" cy="55.0" r="3" fill="black"/>
+<circle cx="118.8" cy="55.7" r="3" fill="black"/>
+<circle cx="114.6" cy="55.2" r="3" fill="black"/>
+<circle cx="110.3" cy="55.9" r="3" fill="black"/>
+<circle cx="106.1" cy="55.5" r="3" fill="black"/>
+<circle cx="85.0" cy="55.5" r="3" fill="black"/>
+<text x="95" y="165" font-family="sans-serif" font-size="12">IRQ to RX ready p99</text>
+<text x="930.0" y="487" text-anchor="middle" font-family="sans-serif" font-size="11">5000</text>
+<text x="254.0" y="487" text-anchor="middle" font-family="sans-serif" font-size="11">1000</text>
+<text x="169.5" y="487" text-anchor="middle" font-family="sans-serif" font-size="11">500</text>
+<text x="135.7" y="487" text-anchor="middle" font-family="sans-serif" font-size="11">300</text>
+<text x="127.2" y="487" text-anchor="middle" font-family="sans-serif" font-size="11">250</text>
+<text x="123.0" y="487" text-anchor="middle" font-family="sans-serif" font-size="11">225</text>
+<text x="118.8" y="487" text-anchor="middle" font-family="sans-serif" font-size="11">200</text>
+<text x="114.6" y="487" text-anchor="middle" font-family="sans-serif" font-size="11">175</text>
+<text x="110.3" y="487" text-anchor="middle" font-family="sans-serif" font-size="11">150</text>
+<text x="106.1" y="487" text-anchor="middle" font-family="sans-serif" font-size="11">125</text>
+<text x="85.0" y="487" text-anchor="middle" font-family="sans-serif" font-size="11">0</text>
+</svg>

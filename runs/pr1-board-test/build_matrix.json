@@ -1,0 +1,247 @@
+{
+  "safe": {
+    "environment": "safe",
+    "gap_us": null,
+    "config_path": null,
+    "build_dir": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\safe",
+    "build_command": [
+      "pio",
+      "run",
+      "--project-dir",
+      "C:\\Users\\USER\\Projects\\running-audio\\firmware\\t3s3_sx1280_runtime",
+      "--environment",
+      "safe"
+    ],
+    "env": {
+      "PLATFORMIO_BUILD_DIR": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\safe"
+    }
+  },
+  "rx": {
+    "environment": "rf_rx_compile",
+    "gap_us": null,
+    "config_path": null,
+    "build_dir": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\rx",
+    "build_command": [
+      "pio",
+      "run",
+      "--project-dir",
+      "C:\\Users\\USER\\Projects\\running-audio\\firmware\\t3s3_sx1280_runtime",
+      "--environment",
+      "rf_rx_compile"
+    ],
+    "env": {
+      "PLATFORMIO_BUILD_DIR": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\rx"
+    }
+  },
+  "tx": [
+    {
+      "environment": "rf_tx_compile",
+      "gap_us": 5000,
+      "config_path": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\generated\\tx-5000us.ini",
+      "build_dir": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\tx-5000us",
+      "build_command": [
+        "pio",
+        "run",
+        "--project-dir",
+        "C:\\Users\\USER\\Projects\\running-audio\\firmware\\t3s3_sx1280_runtime",
+        "--project-conf",
+        "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\generated\\tx-5000us.ini",
+        "--environment",
+        "rf_tx_compile"
+      ],
+      "env": {
+        "PLATFORMIO_BUILD_DIR": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\tx-5000us"
+      }
+    },
+    {
+      "environment": "rf_tx_compile",
+      "gap_us": 1000,
+      "config_path": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\generated\\tx-1000us.ini",
+      "build_dir": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\tx-1000us",
+      "build_command": [
+        "pio",
+        "run",
+        "--project-dir",
+        "C:\\Users\\USER\\Projects\\running-audio\\firmware\\t3s3_sx1280_runtime",
+        "--project-conf",
+        "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\generated\\tx-1000us.ini",
+        "--environment",
+        "rf_tx_compile"
+      ],
+      "env": {
+        "PLATFORMIO_BUILD_DIR": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\tx-1000us"
+      }
+    },
+    {
+      "environment": "rf_tx_compile",
+      "gap_us": 500,
+      "config_path": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\generated\\tx-500us.ini",
+      "build_dir": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\tx-500us",
+      "build_command": [
+        "pio",
+        "run",
+        "--project-dir",
+        "C:\\Users\\USER\\Projects\\running-audio\\firmware\\t3s3_sx1280_runtime",
+        "--project-conf",
+        "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\generated\\tx-500us.ini",
+        "--environment",
+        "rf_tx_compile"
+      ],
+      "env": {
+        "PLATFORMIO_BUILD_DIR": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\tx-500us"
+      }
+    },
+    {
+      "environment": "rf_tx_compile",
+      "gap_us": 300,
+      "config_path": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\generated\\tx-300us.ini",
+      "build_dir": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\tx-300us",
+      "build_command": [
+        "pio",
+        "run",
+        "--project-dir",
+        "C:\\Users\\USER\\Projects\\running-audio\\firmware\\t3s3_sx1280_runtime",
+        "--project-conf",
+        "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\generated\\tx-300us.ini",
+        "--environment",
+        "rf_tx_compile"
+      ],
+      "env": {
+        "PLATFORMIO_BUILD_DIR": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\tx-300us"
+      }
+    },
+    {
+      "environment": "rf_tx_compile",
+      "gap_us": 250,
+      "config_path": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\generated\\tx-250us.ini",
+      "build_dir": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\tx-250us",
+      "build_command": [
+        "pio",
+        "run",
+        "--project-dir",
+        "C:\\Users\\USER\\Projects\\running-audio\\firmware\\t3s3_sx1280_runtime",
+        "--project-conf",
+        "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\generated\\tx-250us.ini",
+        "--environment",
+        "rf_tx_compile"
+      ],
+      "env": {
+        "PLATFORMIO_BUILD_DIR": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\tx-250us"
+      }
+    },
+    {
+      "environment": "rf_tx_compile",
+      "gap_us": 225,
+      "config_path": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\generated\\tx-225us.ini",
+      "build_dir": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\tx-225us",
+      "build_command": [
+        "pio",
+        "run",
+        "--project-dir",
+        "C:\\Users\\USER\\Projects\\running-audio\\firmware\\t3s3_sx1280_runtime",
+        "--project-conf",
+        "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\generated\\tx-225us.ini",
+        "--environment",
+        "rf_tx_compile"
+      ],
+      "env": {
+        "PLATFORMIO_BUILD_DIR": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\tx-225us"
+      }
+    },
+    {
+      "environment": "rf_tx_compile",
+      "gap_us": 200,
+      "config_path": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\generated\\tx-200us.ini",
+      "build_dir": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\tx-200us",
+      "build_command": [
+        "pio",
+        "run",
+        "--project-dir",
+        "C:\\Users\\USER\\Projects\\running-audio\\firmware\\t3s3_sx1280_runtime",
+        "--project-conf",
+        "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\generated\\tx-200us.ini",
+        "--environment",
+        "rf_tx_compile"
+      ],
+      "env": {
+        "PLATFORMIO_BUILD_DIR": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\tx-200us"
+      }
+    },
+    {
+      "environment": "rf_tx_compile",
+      "gap_us": 175,
+      "config_path": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\generated\\tx-175us.ini",
+      "build_dir": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\tx-175us",
+      "build_command": [
+        "pio",
+        "run",
+        "--project-dir",
+        "C:\\Users\\USER\\Projects\\running-audio\\firmware\\t3s3_sx1280_runtime",
+        "--project-conf",
+        "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\generated\\tx-175us.ini",
+        "--environment",
+        "rf_tx_compile"
+      ],
+      "env": {
+        "PLATFORMIO_BUILD_DIR": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\tx-175us"
+      }
+    },
+    {
+      "environment": "rf_tx_compile",
+      "gap_us": 150,
+      "config_path": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\generated\\tx-150us.ini",
+      "build_dir": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\tx-150us",
+      "build_command": [
+        "pio",
+        "run",
+        "--project-dir",
+        "C:\\Users\\USER\\Projects\\running-audio\\firmware\\t3s3_sx1280_runtime",
+        "--project-conf",
+        "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\generated\\tx-150us.ini",
+        "--environment",
+        "rf_tx_compile"
+      ],
+      "env": {
+        "PLATFORMIO_BUILD_DIR": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\tx-150us"
+      }
+    },
+    {
+      "environment": "rf_tx_compile",
+      "gap_us": 125,
+      "config_path": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\generated\\tx-125us.ini",
+      "build_dir": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\tx-125us",
+      "build_command": [
+        "pio",
+        "run",
+        "--project-dir",
+        "C:\\Users\\USER\\Projects\\running-audio\\firmware\\t3s3_sx1280_runtime",
+        "--project-conf",
+        "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\generated\\tx-125us.ini",
+        "--environment",
+        "rf_tx_compile"
+      ],
+      "env": {
+        "PLATFORMIO_BUILD_DIR": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\tx-125us"
+      }
+    },
+    {
+      "environment": "rf_tx_compile",
+      "gap_us": 0,
+      "config_path": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\generated\\tx-0us.ini",
+      "build_dir": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\tx-0us",
+      "build_command": [
+        "pio",
+        "run",
+        "--project-dir",
+        "C:\\Users\\USER\\Projects\\running-audio\\firmware\\t3s3_sx1280_runtime",
+        "--project-conf",
+        "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\generated\\tx-0us.ini",
+        "--environment",
+        "rf_tx_compile"
+      ],
+      "env": {
+        "PLATFORMIO_BUILD_DIR": "C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\tx-0us"
+      }
+    }
+  ]
+}

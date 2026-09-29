@@ -1,0 +1,1 @@
+﻿{"gate": "gate5_distance+gate7_nlos", "distance_m": 13.6, "distance_method": "iPhone Measure app (operator)", "los": false, "obstacles": "1 wall between TX and RX (operator-reported)", "tx_location": "corridor", "rx_location": "room, on host PC"}

@@ -1,0 +1,40 @@
+{
+  "run_id": "dist-13.6m-gap-150us-10k",
+  "phase": "gate5_distance",
+  "gap_us": 150,
+  "distance_m": 13.6,
+  "target_packets": 10000,
+  "packet_count": 10312,
+  "metrics": {
+    "rssi_dbm": -88,
+    "crc_good": 10065,
+    "crc_bad": 207,
+    "missing": 247,
+    "queue_depth": 0,
+    "max_queue_depth": 1,
+    "irq_to_spi_us_p99": 11,
+    "spi_duration_us_p99": 1246,
+    "rx_processing_us_p99": 1248,
+    "spi_end_to_rearm_start_us_p99": 137,
+    "rx_rearm_us_p99": 420,
+    "irq_to_rx_ready_us_p99": 1792,
+    "trace_overwrites": 92336,
+    "scheduler_misses": null
+  },
+  "derived": {
+    "loss_rate": 0.023952676493405742,
+    "crc_bad_rate": 0.020073700543056634,
+    "target_reached": true
+  },
+  "classification": {
+    "label": "spi",
+    "dominant_share": 0.6953,
+    "confidence": "low",
+    "evidence_boundary": "diagnostic_candidate_not_causal_proof"
+  },
+  "evidence": {
+    "packet_count_source": "rx_sequence_span=crc_good+missing",
+    "scheduler_misses": "unavailable: TX untethered on power bank; TX boot validated pre-move (tx_pre_move.log)",
+    "evidence_boundary": "measured_diagnostics_not_causal_proof"
+  }
+}

@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540">
+<rect width="100%" height="100%" fill="white"/>
+<text x="480.0" y="30" text-anchor="middle" font-family="sans-serif" font-size="20">PR1 RX timing p99</text>
+<line x1="85" y1="465" x2="930" y2="465" stroke="black"/>
+<line x1="85" y1="55" x2="85" y2="465" stroke="black"/>
+<text x="480.0" y="520" text-anchor="middle" font-family="sans-serif" font-size="14">TX post-send gap (us)</text>
+<text x="20" y="270.0" transform="rotate(-90 20 270.0)" text-anchor="middle" font-family="sans-serif" font-size="14">microseconds</text>
+<polyline points="85.0,463.6" fill="none" stroke="black" stroke-width="2"/>
+<circle cx="85.0" cy="463.6" r="3" fill="black"/>
+<text x="95" y="75" font-family="sans-serif" font-size="12">IRQ to SPI p99</text>
+<polyline points="85.0,179.2" fill="none" stroke="black" stroke-width="2" stroke-dasharray="6,4"/>
+<circle cx="85.0" cy="179.2" r="3" fill="black"/>
+<text x="95" y="93" font-family="sans-serif" font-size="12">SPI duration p99</text>
+<polyline points="85.0,178.8" fill="none" stroke="black" stroke-width="2" stroke-dasharray="2,4"/>
+<circle cx="85.0" cy="178.8" r="3" fill="black"/>
+<text x="95" y="111" font-family="sans-serif" font-size="12">RX processing (overlapping) p99</text>
+<polyline points="85.0,433.7" fill="none" stroke="black" stroke-width="2" stroke-dasharray="10,4"/>
+<circle cx="85.0" cy="433.7" r="3" fill="black"/>
+<text x="95" y="129" font-family="sans-serif" font-size="12">SPI end to rearm start p99</text>
+<polyline points="85.0,369.6" fill="none" stroke="black" stroke-width="2" stroke-dasharray="8,3,2,3"/>
+<circle cx="85.0" cy="369.6" r="3" fill="black"/>
+<text x="95" y="147" font-family="sans-serif" font-size="12">RX rearm p99</text>
+<polyline points="85.0,55.0" fill="none" stroke="black" stroke-width="2" stroke-dasharray="4,2"/>
+<circle cx="85.0" cy="55.0" r="3" fill="black"/>
+<text x="95" y="165" font-family="sans-serif" font-size="12">IRQ to RX ready p99</text>
+<text x="85.0" y="487" text-anchor="middle" font-family="sans-serif" font-size="11">175</text>
+</svg>
