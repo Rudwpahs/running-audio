@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "run_id": "tune-20m-f2404-br1300-cr2-p3-10k",
+  "created_utc": "2026-09-29T13:16:31.665650Z",
+  "gap_us": 150,
+  "target_packets": 10000,
+  "phase": "revalidate",
+  "firmware_sha": "d1b7ec2b1130fd63fb0eb11fd900b0622766f14c",
+  "frozen_baseline": {
+    "frequency_mhz": 2404.0,
+    "bitrate_kbps": 1300,
+    "coding_rate": 3,
+    "output_dbm": 0,
+    "packet_bytes": 116,
+    "sx1280_spi_hz": 2000000,
+    "adaptive_layers": false
+  },
+  "files": {
+    "rx_log": "rx.log",
+    "tx_log": "tx.log"
+  },
+  "notes": "",
+  "gate": "gate5_distance_tuning",
+  "distance_m": 20.0,
+  "distance_source": "operator-reported",
+  "profile": {
+    "frequency_mhz": 2404.0,
+    "bitrate_kbps": 1300,
+    "coding_rate": 2,
+    "output_dbm": 3
+  },
+  "profile_source": "build_flags_override_of_frozen_baseline",
+  "tx_power": "usb_power_bank_untethered",
+  "ports": {
+    "rx": "COM5",
+    "tx": null
+  },
+  "build_identity": {
+    "source_head_sha": "825124011c44c5ab19978f55657804f9cd2c49ca",
+    "frozen_firmware_sha": "d1b7ec2b1130fd63fb0eb11fd900b0622766f14c",
+    "git_dirty": true,
+    "platformio_version": "unavailable: [WinError 2] \uc9c0\uc815\ub41c \ud30c\uc77c\uc744 \ucc3e\uc744 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4",
+    "platformio_ini_sha256": "6f79f96979b96bf460260b1c13cdf85e16b6d647f183232e921e72e0bde094a3",
+    "controller_file_sha256": "3fb2bc70c53f9b8518a64ef0f06acba4eea4c38c896c7022a4155db8ae026a2b"
+  }
+}
