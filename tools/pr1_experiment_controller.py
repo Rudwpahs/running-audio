@@ -252,14 +252,35 @@ def _decode_line(raw: bytes | str) -> str:
     return str(raw).rstrip("\r\n")
 
 
+SNAPSHOT_LAST_FIELD = "field=capability_mask"
+SNAPSHOT_IDLE_READS = 3
+
+
+def _read_complete_line(serial_obj, pending: bytearray) -> str | None:
+    """Return one newline-terminated line, or None when nothing complete yet.
+
+    pyserial's readline() returns a partial line on timeout; USB delivery can
+    split a line, so fragments are joined until the newline arrives.
+    """
+    raw = serial_obj.readline()
+    if not raw:
+        return None
+    pending.extend(raw.encode() if isinstance(raw, str) else raw)
+    if not pending.endswith(b"\n"):
+        return None
+    line = _decode_line(bytes(pending))
+    pending.clear()
+    return line
+
+
 def _read_until_marker(serial_obj, log_fh, marker: str, timeout_s: float) -> list[str]:
     deadline = time.monotonic() + timeout_s
     lines: list[str] = []
+    pending = bytearray()
     while time.monotonic() < deadline:
-        raw = serial_obj.readline()
-        if not raw:
+        line = _read_complete_line(serial_obj, pending)
+        if line is None:
             continue
-        line = _decode_line(raw)
         log_fh.write(line + "\n")
         log_fh.flush()
         lines.append(line)
@@ -274,16 +295,26 @@ def _request_snapshot(serial_obj, log_fh, timeout_s: float) -> list[str]:
         serial_obj.flush()
     deadline = time.monotonic() + timeout_s
     lines: list[str] = []
+    pending = bytearray()
+    idle_reads = 0
     while time.monotonic() < deadline:
-        raw = serial_obj.readline()
-        if not raw:
-            if lines:
+        line = _read_complete_line(serial_obj, pending)
+        if line is None:
+            # Stop only after the snapshot went quiet with no fragment pending.
+            idle_reads = 0 if pending else idle_reads + 1
+            if lines and not pending and idle_reads >= SNAPSHOT_IDLE_READS:
                 break
             continue
-        line = _decode_line(raw)
+        idle_reads = 0
         log_fh.write(line + "\n")
         log_fh.flush()
         lines.append(line)
+        if SNAPSHOT_LAST_FIELD in line:
+            break
+    if pending:
+        # Keep the evidence, but never parse a truncated line as telemetry.
+        log_fh.write("PR1_HOST_TRUNCATED_LINE " + _decode_line(bytes(pending)) + "\n")
+        log_fh.flush()
     if not lines:
         raise TimeoutError("telemetry snapshot produced no serial lines")
     return lines
@@ -353,8 +384,14 @@ def capture_run_from_serial(
                         f"packet target not reached after {max_polls} telemetry polls: {observed}/{target_packets}"
                     )
                 progress_lines = _request_snapshot(rx_serial, rx_fh, read_timeout_s)
-                observed = _packet_span_from_snapshot(progress_lines)
                 polls += 1
+                try:
+                    observed = _packet_span_from_snapshot(progress_lines)
+                except ValueError:
+                    # An incomplete progress snapshot only delays the stop
+                    # decision; the final snapshot is still validated strictly.
+                    sleep_fn(poll_wait_s)
+                    continue
                 if observed < target_packets:
                     sleep_fn(poll_wait_s)
 
