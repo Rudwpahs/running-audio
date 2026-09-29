@@ -14,6 +14,44 @@
 #define PR1_TX_GAP_US 5000
 #endif
 
+// Link-budget tuning overrides. Defaults are the frozen fixed-FLRC baseline.
+#ifndef PR1_FREQ_KHZ
+#define PR1_FREQ_KHZ 2404000
+#endif
+
+#ifndef PR1_FLRC_BITRATE_KBPS
+#define PR1_FLRC_BITRATE_KBPS 1300
+#endif
+
+#ifndef PR1_FLRC_CR
+#define PR1_FLRC_CR 3
+#endif
+
+#ifndef PR1_TX_OUTPUT_DBM
+#define PR1_TX_OUTPUT_DBM 0
+#endif
+
+#if (PR1_FREQ_KHZ < 2400000) || (PR1_FREQ_KHZ > 2483500)
+#error "PR1_FREQ_KHZ must be inside the 2400..2483.5 MHz ISM band"
+#endif
+
+#if (PR1_FLRC_BITRATE_KBPS != 1300) && (PR1_FLRC_BITRATE_KBPS != 1000) && \
+    (PR1_FLRC_BITRATE_KBPS != 650) && (PR1_FLRC_BITRATE_KBPS != 520) &&   \
+    (PR1_FLRC_BITRATE_KBPS != 325) && (PR1_FLRC_BITRATE_KBPS != 260)
+#error "PR1_FLRC_BITRATE_KBPS must be a RadioLib FLRC bitrate"
+#endif
+
+// RadioLib 7.7.1 FLRC coding rate argument: 2 = 1/2, 3 = 3/4, 4 = 1/1.
+#if (PR1_FLRC_CR < 2) || (PR1_FLRC_CR > 4)
+#error "PR1_FLRC_CR must be 2 (1/2), 3 (3/4) or 4 (1/1)"
+#endif
+
+// T3-S3 SX1280 PA variant: the chip drives an external PA, so the chip output
+// must stay within -18..+3 dBm (LilyGo reference limit).
+#if (PR1_TX_OUTPUT_DBM < -18) || (PR1_TX_OUTPUT_DBM > 3)
+#error "PR1_TX_OUTPUT_DBM must be -18..3 dBm on the SX1280 PA board"
+#endif
+
 #define PR1_RUNTIME_ROLE_SAFE 0
 #define PR1_RUNTIME_ROLE_TX 1
 #define PR1_RUNTIME_ROLE_RX 2
@@ -57,10 +95,10 @@ struct FixedFlrcProfile {
 };
 
 inline constexpr FixedFlrcProfile kFixedFlrcProfile{
-    2404.0F,
-    1300U,
-    3U,
-    0,
+    static_cast<float>(PR1_FREQ_KHZ) / 1000.0F,
+    static_cast<std::uint16_t>(PR1_FLRC_BITRATE_KBPS),
+    static_cast<std::uint8_t>(PR1_FLRC_CR),
+    static_cast<std::int8_t>(PR1_TX_OUTPUT_DBM),
     static_cast<std::uint32_t>(PR1_TX_GAP_US),
 };
 

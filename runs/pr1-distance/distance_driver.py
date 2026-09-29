@@ -15,7 +15,7 @@ import sys
 import time
 from pathlib import Path
 
-REPO = Path(r"C:\Users\USER\Projects\running-audio")
+REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO / "tools"))
 
 import pr1_experiment_controller as ctl  # noqa: E402
@@ -24,7 +24,7 @@ from pr1_board_sweep import (  # noqa: E402
     build_run_metadata, classify_bottleneck,
 )
 
-RX_PORT, TX_PORT = "COM3", "COM4"
+RX_PORT, TX_PORT = "COM5", "COM4"
 HERE = Path(__file__).resolve().parent
 
 

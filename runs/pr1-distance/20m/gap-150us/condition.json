@@ -1,0 +1,1 @@
+{"gate": "gate5_distance", "distance_m": 20.0, "distance_method": "operator-reported (method to be confirmed)", "los": true, "obstacles": "none (LOS, operator-reported)", "tx_location": "power bank, untethered", "rx_location": "on host laptop"}

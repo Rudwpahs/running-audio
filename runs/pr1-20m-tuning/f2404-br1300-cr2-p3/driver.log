@@ -1,0 +1,2 @@
+﻿RUN f2404-br1300-cr2-p3 packets=10267 missing=94 loss=0.916% unpolled=0.89% crc_bad=71 rssi=-76
+RUN f2404-br1300-cr2-p3 packets=10284 missing=82 loss=0.797% unpolled=0.71% crc_bad=61 rssi=-76
