@@ -367,6 +367,8 @@ def capture_run_from_serial(
     read_timeout_s: float = 1.0,
     boot_timeout_s: float = 10.0,
     max_polls: int = 240,
+    profile: dict | None = None,
+    monotonic_fn: Callable[[], float] = time.monotonic,
 ) -> dict:
     """Capture one run while continuously preserving serial evidence to disk."""
     run_dir.mkdir(parents=True, exist_ok=True)
@@ -397,9 +399,10 @@ def capture_run_from_serial(
                     raise TimeoutError(f"{name} LIVE_READY observed without a fresh PR1_RUNTIME_BOOT")
             rx_meta, _ = _parse_kv_and_telemetry(rx_boot)
             tx_meta, _ = _parse_kv_and_telemetry(tx_boot)
-            _validate_live_profile(rx_meta, role="rx", expected_gap_us=None, source="rx")
-            _validate_live_profile(tx_meta, role="tx", expected_gap_us=gap_us, source="tx")
+            _validate_live_profile(rx_meta, role="rx", expected_gap_us=None, source="rx", profile=profile)
+            _validate_live_profile(tx_meta, role="tx", expected_gap_us=gap_us, source="tx", profile=profile)
 
+            started = monotonic_fn()
             sleep_fn(wait_s)
             observed = 0
             polls = 0
@@ -418,7 +421,13 @@ def capture_run_from_serial(
                     sleep_fn(poll_wait_s)
                     continue
                 if observed < target_packets:
-                    sleep_fn(poll_wait_s)
+                    # Each snapshot print costs ~1 packet at short gaps, so
+                    # sleep until the observed rate predicts the target
+                    # instead of polling at a fixed interval.
+                    elapsed = monotonic_fn() - started
+                    rate = observed / elapsed if elapsed > 0 and observed > 0 else 0.0
+                    predicted = (target_packets - observed) / rate * 1.02 + 0.3 if rate > 0 else 0.0
+                    sleep_fn(max(poll_wait_s, predicted))
 
             # A progress telemetry request can perturb the exact timing path.
             # Allow a clean no-telemetry interval, then take one authoritative
@@ -432,7 +441,9 @@ def capture_run_from_serial(
             metadata,
             rx_path.read_text(encoding="utf-8", errors="replace").splitlines(),
             tx_path.read_text(encoding="utf-8", errors="replace").splitlines(),
+            profile=profile,
         )
+        result["evidence"]["progress_polls"] = polls
         (run_dir / "result.json").write_text(json.dumps(result, indent=2), encoding="utf-8")
         _write_state(
             run_dir,

@@ -205,7 +205,13 @@ def _require_result_metrics(metrics: dict[str, int | None]) -> None:
         raise ValueError("run telemetry missing required metrics: " + ", ".join(missing))
 
 
-def parse_run_logs(metadata: dict, rx_lines: Iterable[str], tx_lines: Iterable[str] | None = None) -> dict:
+def parse_run_logs(
+    metadata: dict,
+    rx_lines: Iterable[str],
+    tx_lines: Iterable[str] | None = None,
+    *,
+    profile: dict | None = None,
+) -> dict:
     rx_meta, rx_tel = _parse_kv_and_telemetry(rx_lines)
     tx_meta: dict[str, str] = {}
     tx_tel: dict[str, int] = {}
@@ -213,9 +219,9 @@ def parse_run_logs(metadata: dict, rx_lines: Iterable[str], tx_lines: Iterable[s
         tx_meta, tx_tel = _parse_kv_and_telemetry(tx_lines)
 
     gap_us = int(metadata["gap_us"])
-    _validate_live_profile(rx_meta, role="rx", expected_gap_us=None, source="rx")
+    _validate_live_profile(rx_meta, role="rx", expected_gap_us=None, source="rx", profile=profile)
     if tx_lines is not None:
-        _validate_live_profile(tx_meta, role="tx", expected_gap_us=gap_us, source="tx")
+        _validate_live_profile(tx_meta, role="tx", expected_gap_us=gap_us, source="tx", profile=profile)
 
     metrics: dict[str, int | None] = {}
     for raw_name, result_name in RX_FIELD_MAP.items():
