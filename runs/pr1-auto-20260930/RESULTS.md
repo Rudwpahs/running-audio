@@ -55,3 +55,20 @@ whole run | 3,756,426 | 511,798 | 13.62 % | 493,820
   comparison. The 20 m +3 dBm "gain" and today's CR 1/2 regression are both suspect for this reason.
 - Suggested quick check (operator, ~5 min): TX antenna flat → 13° → vertical → flat, 1 min each.
 - Boards are left on the baseline OLED images (RX cr3, TX cr3 150 µs), TX antenna ~13° up.
+
+## Antenna check (operator-moved, 60 s windows, no board reset, 150 µs, baseline OLED images)
+Boards on the floor, bench spacing; only the TX antenna/board was changed, RX antenna flat throughout.
+
+condition | span | missing | loss | CRC bad | RSSI
+---|---|---|---|---|---
+1. both antennas flat on floor | 20874 | 69 | 0.33 % | 53 | −51
+2. TX antenna ~13° | 20874 | 39 | 0.19 % | 16 | −54
+3. TX antenna vertical + TX board raised ~8 cm and rotated | 20873 | 12 | **0.058 %** | 1 | −43
+4. both flat on floor again (repeat of 1) | 20873 | 172 | 0.82 % | 113 | −61
+
+- Vertical TX gave the lowest loss (6–14× below flat) and the highest RSSI; flat placements were poorly
+  repeatable (0.33 vs 0.82 %, RSSI −51 vs −61). Condition 3 also changed board height/orientation, so
+  antenna angle and height are not separated. Mechanism (polarisation / near-field / surface coupling)
+  not measured.
+- Proposed standard for future runs: both antennas vertical, boards raised off the surface, cables away
+  from the antennas, placement photographed.
