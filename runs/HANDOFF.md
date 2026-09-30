@@ -1,6 +1,22 @@
-# PR1 board experiment — handoff (2026-09-29)
+# PR1 board experiment — handoff (updated 2026-09-30)
 
-Read `runs/PR1_BOARD_REPORT_20260929.md` first (Gates 0–4 results).
+Read `runs/PR1_BOARD_REPORT_20260929.md` first (Gates 0–4 results), then
+`runs/pr1-auto-20260930/RESULTS.md` (2026-09-30 unattended suite + antenna check).
+
+## 2026-09-30 status (read before measuring anything)
+- **Antenna placement dominates loss at bench/indoor RSSI.** Lifting the TX antenna off the surface cut
+  loss ~20 % → 0.04 %; vertical TX gave 0.058 % vs 0.33–0.82 % flat. Flat placement is not repeatable.
+- **Measurement standard from now on:** both antennas vertical, boards raised off the surface, USB
+  cables away from the antennas, placement photographed and noted in the run folder.
+- Needs re-measuring under that standard: 20 m LOS baseline, +3 dBm and CR 1/2 A/B (PR #51 flagged).
+- Still holds: 150 µs is the minimum-stable-gap candidate; 125 µs timing loss reproduced; 3 h run had
+  no resets, 0 scheduler misses, stable IRQ→RX-ready p99 (~1788 µs), USB stalls auto-recovered.
+- **Board images now:** baseline RF + boot-only OLED role label (branch `claude/pr1-oled-role-label`,
+  also in `claude/pr1-auto-suite-20260930`). RX = rf_rx CR 3/4, TX = rf_tx CR 3/4 gap 150 µs. The OLED
+  shows TX / RX; boot log adds `oled_role_label`, `oled_i2c_addr`.
+- Host polling is now rate-based (`progress_polls` ≈ 2 per 10k run) on `claude/pr1-auto-suite-20260930`.
+- Unattended bench driver: `runs/pr1-auto-20260930/suite.py`; quick no-reset window check:
+  `runs/pr1-auto-20260930/antenna_window.py <label> [seconds]`.
 
 ## Rules still in force
 - Frozen RF baseline `d1b7ec2b1130fd63fb0eb11fd900b0622766f14c`: no firmware/RF/driver change, no optimisation.
@@ -11,7 +27,7 @@ Read `runs/PR1_BOARD_REPORT_20260929.md` first (Gates 0–4 results).
 ```
 git clone https://github.com/Rudwpahs/running-audio.git C:\Users\USER\Projects\running-audio
 cd C:\Users\USER\Projects\running-audio
-git switch claude/pr1-board-run-20260929
+git switch claude/pr1-auto-suite-20260930   # newest: baseline data + OLED + tuning flags + suite
 python -m pip install pyserial
 python -m serial.tools.list_ports -v   # RX board MAC e8:06:90:96:83:38 (SER= field), TX b8:f8:62:d9:26:b4
 ```
