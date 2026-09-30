@@ -35,6 +35,19 @@ NLOS points (TX in corridor, RX in room, iPhone Measure):
   (CRC bad tracks missing; turnaround timing unchanged; tool label "spi" is not meaningful here).
 - 21.12 m, ~7 walls: no link (0 crc_good, 3 crc_bad in ~34 s) → run stopped, logs kept.
 
+- 20 m LOS (laptop host, RX on COM5): 10384 packets, missing 1048 (10.09%), unpolled 11.58%, CRC bad 767, RSSI -88.
+
+## 20 m tuning (leaves frozen baseline; see `runs/pr1-20m-tuning/RESULTS.md`)
+Branch `claude/pr1-20m-tuning-20260929`. Build-flag profile, defaults = frozen.
++3 dBm (PA-board max) → 2.2% (confounded by TX re-placement); +3 dBm + CR 1/2 → 0.8–0.9% at RSSI -76
+(clean same-placement comparison). Next: 650 kbps, 260 kbps, frequency.
+Both boards are back on baseline (0 dBm, CR 3/4, gap 150): RX reflashed from the laptop, TX from the
+desktop (frozen prebuild tx-150us, sha256 4f990a2ba3f5…); boot details in RESULTS.md.
+
+Laptop setup notes: `python` is the Store stub here; PlatformIO + pyserial live in
+`C:\Users\foodl\pio-venv` (use its `python.exe`). Build dirs `C:\Users\foodl\pio-build\<role>-<profile>`.
+Ports are found by MAC in `tune_driver.py`; RX showed as COM5, TX as COM6.
+
 Next points (laptop, so RX can move): LOS 20 m, 50 m, 100 m, max; then 1-wall at other distances /
 door open vs closed. Distance is operator-estimated (record method: paces ≈0.7 m, tiles, app).
 
