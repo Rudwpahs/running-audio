@@ -1,5 +1,8 @@
 #include <Arduino.h>
 
+#include <cstring>
+
+#include "pr1_oled_role_label.hpp"
 #include "pr1_runtime_config.hpp"
 #include "pr1_safe_telemetry.hpp"
 
@@ -37,6 +40,18 @@ void printBootMetadata() {
   Serial.printf("sx1280_busy=%d\n", pins.busy);
   Serial.printf("sx1280_tx_enable=%d\n", pins.tx_enable);
   Serial.printf("sx1280_rx_enable=%d\n", pins.rx_enable);
+}
+
+void showOledRoleLabel() {
+#if PR1_OLED_ROLE_LABEL
+  const char* role = pr1::runtime::runtimeRoleName();
+  const char* label = std::strcmp(role, "tx") == 0   ? "TX"
+                      : std::strcmp(role, "rx") == 0 ? "RX"
+                                                     : "SAFE";
+  const std::uint8_t address = pr1::runtime::oled::showRoleLabel(label);
+  Serial.printf("oled_role_label=%s\n", address != 0 ? label : "absent");
+  Serial.printf("oled_i2c_addr=0x%02x\n", address);
+#endif
 }
 
 void printTelemetry(const pr1::telemetry::Snapshot& snapshot) {
@@ -79,6 +94,7 @@ void setup() {
   Serial.begin(115200);
   delay(250);
   printBootMetadata();
+  showOledRoleLabel();
 
 #if PR1_RF_ENABLED
   printLiveProfile();

@@ -40,4 +40,13 @@ inline constexpr Sx1280Pins kSx1280Pins{
     21,  // RX RF-switch control
 };
 
+// On-board 0.96" SSD1306 OLED (LILYGO T3-S3 I2C bus). Used only at boot to
+// show the board role; it shares no pins with the SX1280.
+struct OledPins {
+  int sda;
+  int scl;
+};
+
+inline constexpr OledPins kOledPins{18, 17};
+
 }  // namespace pr1::board
