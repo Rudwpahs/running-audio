@@ -1,0 +1,2 @@
+- 2026-09-30T20:28:27+09:00 (~7500 s into run): operator touched the boards to check heat; reported "warm" (따뜻해). RSSI moved -53 -> -46 dBm at the next snapshot, i.e. placement changed slightly. Data after ~7500 s is not same-placement with earlier data.
+- Operator detail: before the touch BOTH antennas lay flat on the desk surface; after the touch the TX antenna is lifted about 13 degrees off the surface (RX unchanged). Next window (7560->7920 s): loss 0.045 % (56/125216), CRC bad +25, RSSI -44 (vs 16-28 % windows before).
