@@ -1,0 +1,46 @@
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0x15 (USB_UART_CHIP_RESET),boot:0x38 (SPI_FAST_FLASH_BOOT)
+Saved PC:0x420299e6
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce3808,len:0x44c
+load:0x403c9700,len:0xbd8
+load:0x403cc700,len:0x2a80
+entry 0x403c98d0
+PR1_RUNTIME_BOOT
+runtime_profile=phase1-fixed-flrc-tx
+runtime_role=tx
+board_family=LILYGO T3-S3-MVSRBoard
+board_reference_revision=V1.1 upstream reference
+radio_target=SX1280
+upstream_reference_commit=840a2e788b3192c4e9bddf0640c1ecaf703c2598
+hardware_verified=0
+protocol_version=1
+protocol_header_bytes=16
+rf_enabled=1
+sx1280_spi_hz=2000000
+sx1280_cs=7
+sx1280_rst=8
+sx1280_sclk=5
+sx1280_mosi=6
+sx1280_miso=3
+sx1280_dio1=9
+sx1280_busy=36
+sx1280_tx_enable=10
+sx1280_rx_enable=21
+oled_role_label=TX
+oled_i2c_addr=0x3c
+PR1_FIXED_FLRC_PROFILE
+frequency_mhz=2404.000
+bitrate_kbps=1300
+coding_rate=3
+output_dbm=0
+tx_gap_us=130
+packet_bytes=116
+adaptive_layers=off
+PR1_RUNTIME_LIVE_READY
+PR1T v=1 t_us=30923509 field=device_state value=2
+PR1T v=1 t_us=30923509 field=scheduler_misses value=0
+PR1T v=1 t_us=30923509 field=trace_overwrites value=31711
+PR1T v=1 t_us=30923509 field=capability_mask value=12

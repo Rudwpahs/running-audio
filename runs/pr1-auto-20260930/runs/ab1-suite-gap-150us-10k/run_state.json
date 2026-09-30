@@ -1,0 +1,9 @@
+{
+  "status": "complete",
+  "updated_utc": "2026-09-30T09:09:17.379958Z",
+  "run_id": "ab1-suite-gap-150us-10k",
+  "gap_us": 150,
+  "target_packets": 10000,
+  "packet_count": 10348,
+  "finished_utc": "2026-09-30T09:09:17.379958Z"
+}

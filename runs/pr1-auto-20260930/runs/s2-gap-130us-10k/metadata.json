@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "run_id": "s2-gap-130us-10k",
+  "created_utc": "2026-09-30T09:01:12.678018Z",
+  "gap_us": 130,
+  "target_packets": 10000,
+  "phase": "revalidate",
+  "firmware_sha": "d1b7ec2b1130fd63fb0eb11fd900b0622766f14c",
+  "frozen_baseline": {
+    "frequency_mhz": 2404.0,
+    "bitrate_kbps": 1300,
+    "coding_rate": 3,
+    "output_dbm": 0,
+    "packet_bytes": 116,
+    "sx1280_spi_hz": 2000000,
+    "adaptive_layers": false
+  },
+  "expected_profile_override": null,
+  "files": {
+    "rx_log": "rx.log",
+    "tx_log": "tx.log"
+  },
+  "notes": "step2: fine sweep 125..150 us",
+  "image": "frozen RF defaults + boot-only OLED role label",
+  "setup": "both boards on host PC, bench spacing unchanged from 2026-09-30 OLED check (RSSI ~-40)",
+  "build_identity": {
+    "source_head_sha": "9b383e2121c24da1b9f6e2d82629fcaf924d3f83",
+    "frozen_firmware_sha": "d1b7ec2b1130fd63fb0eb11fd900b0622766f14c",
+    "git_dirty": false,
+    "platformio_version": "unavailable: [WinError 2] \uc9c0\uc815\ub41c \ud30c\uc77c\uc744 \ucc3e\uc744 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4",
+    "platformio_ini_sha256": "6f79f96979b96bf460260b1c13cdf85e16b6d647f183232e921e72e0bde094a3",
+    "controller_file_sha256": "a186d7d36550731d495b2fa646e2512764b07438fdfc6b9dcd10329dc701a4c4"
+  }
+}

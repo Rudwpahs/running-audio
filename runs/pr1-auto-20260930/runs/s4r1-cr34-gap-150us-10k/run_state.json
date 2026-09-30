@@ -1,0 +1,9 @@
+{
+  "status": "complete",
+  "updated_utc": "2026-09-30T09:17:11.747980Z",
+  "run_id": "s4r1-cr34-gap-150us-10k",
+  "gap_us": 150,
+  "target_packets": 10000,
+  "packet_count": 10347,
+  "finished_utc": "2026-09-30T09:17:11.747980Z"
+}

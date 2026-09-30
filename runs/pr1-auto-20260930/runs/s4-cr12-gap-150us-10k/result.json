@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "run_id": "s4-cr12-gap-150us-10k",
+  "phase": "revalidate",
+  "gap_us": 150,
+  "target_packets": 10000,
+  "firmware_sha": "d1b7ec2b1130fd63fb0eb11fd900b0622766f14c",
+  "packet_count": 10796,
+  "metrics": {
+    "rssi_dbm": -54,
+    "crc_good": 9433,
+    "crc_bad": 1283,
+    "missing": 1363,
+    "queue_depth": 0,
+    "max_queue_depth": 1,
+    "irq_to_spi_us_p99": 11,
+    "spi_duration_us_p99": 1247,
+    "rx_processing_us_p99": 1247,
+    "spi_end_to_rearm_start_us_p99": 135,
+    "rx_rearm_us_p99": 416,
+    "irq_to_rx_ready_us_p99": 1785,
+    "trace_overwrites": 96316,
+    "scheduler_misses": 0
+  },
+  "derived": {
+    "loss_rate": 0.12625046313449426,
+    "crc_bad_rate": 0.11884031122638014,
+    "target_reached": true
+  },
+  "classification": {
+    "label": "spi",
+    "dominant_share": 0.6986,
+    "confidence": "low",
+    "evidence_boundary": "diagnostic_candidate_not_causal_proof"
+  },
+  "evidence": {
+    "packet_count_source": "rx_sequence_span=crc_good+missing",
+    "crc_bad_overlap_warning": "crc_bad may overlap sequence-derived missing and is not additive",
+    "scheduler_misses_source": "tx",
+    "evidence_boundary": "measured_diagnostics_not_causal_proof",
+    "progress_polls": 2
+  },
+  "revalidate_10000": false
+}

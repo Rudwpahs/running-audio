@@ -1,0 +1,9 @@
+{
+  "status": "complete",
+  "updated_utc": "2026-09-30T08:59:51.901172Z",
+  "run_id": "s2-gap-145us-10k",
+  "gap_us": 145,
+  "target_packets": 10000,
+  "packet_count": 10349,
+  "finished_utc": "2026-09-30T08:59:51.901172Z"
+}

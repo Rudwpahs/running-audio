@@ -1,0 +1,9 @@
+{
+  "status": "complete",
+  "updated_utc": "2026-09-30T08:37:09.517833Z",
+  "run_id": "s1-gap-150us-10k-oled",
+  "gap_us": 150,
+  "target_packets": 10000,
+  "packet_count": 10347,
+  "finished_utc": "2026-09-30T08:37:09.517833Z"
+}

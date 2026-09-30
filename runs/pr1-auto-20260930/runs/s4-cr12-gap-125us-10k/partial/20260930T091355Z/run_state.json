@@ -1,0 +1,8 @@
+{
+  "status": "error",
+  "updated_utc": "2026-09-30T09:13:04.185831Z",
+  "run_id": "s4-cr12-gap-125us-10k",
+  "gap_us": 125,
+  "target_packets": 10000,
+  "error": "tx LIVE_READY observed without a fresh PR1_RUNTIME_BOOT"
+}
