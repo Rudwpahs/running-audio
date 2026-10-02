@@ -28,6 +28,14 @@ class RadioPort {
   virtual std::int16_t rssiDbm() = 0;
   virtual std::uint32_t nowMicros() const = 0;
   virtual void setRxIrqHandler(RxIrqHandler handler, void* context) = 0;
+
+  // AFH (Gate B) hooks. Only called when PR1_ENABLE_AFH=1; the fixed-channel
+  // baseline never retunes. setFrequencyHz requires the radio in standby.
+  virtual bool standby() { return false; }
+  virtual bool setFrequencyHz(std::uint32_t frequency_hz) {
+    (void)frequency_hz;
+    return false;
+  }
 };
 
 }  // namespace pr1::runtime

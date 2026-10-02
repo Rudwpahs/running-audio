@@ -1,0 +1,22 @@
+{
+  "gate": "A",
+  "step": "safe boot",
+  "utc": "2026-10-02T16:05:48.093702Z",
+  "boards": {
+    "rx": {
+      "boot": true,
+      "role": "safe",
+      "rf_enabled": "0",
+      "spi_hz": "2000000",
+      "sha256": "db3f944b1055"
+    },
+    "tx": {
+      "boot": true,
+      "role": "safe",
+      "rf_enabled": "0",
+      "spi_hz": "2000000",
+      "sha256": "db3f944b1055"
+    }
+  },
+  "pass": true
+}

@@ -92,6 +92,14 @@ void Sx1280RadioLibPort::setRxIrqHandler(RxIrqHandler handler, void* context) {
   }
 }
 
+bool Sx1280RadioLibPort::standby() {
+  return radio_.standby() == RADIOLIB_ERR_NONE;
+}
+
+bool Sx1280RadioLibPort::setFrequencyHz(std::uint32_t frequency_hz) {
+  return radio_.setFrequency(static_cast<float>(frequency_hz) / 1.0e6F) == RADIOLIB_ERR_NONE;
+}
+
 void Sx1280RadioLibPort::onPacketReceivedStatic() {
   if (active_instance_ != nullptr) active_instance_->dispatchRxIrq();
 }

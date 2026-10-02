@@ -23,6 +23,8 @@ class Sx1280RadioLibPort final : public RadioPort {
   std::int16_t rssiDbm() override;
   std::uint32_t nowMicros() const override;
   void setRxIrqHandler(RxIrqHandler handler, void* context) override;
+  bool standby() override;
+  bool setFrequencyHz(std::uint32_t frequency_hz) override;
 
  private:
   static void onPacketReceivedStatic();

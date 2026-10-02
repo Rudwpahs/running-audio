@@ -1,0 +1,8 @@
+{
+  "status": "error",
+  "updated_utc": "2026-10-02T16:06:32.300308Z",
+  "run_id": "A-gap-150us-10000",
+  "gap_us": 150,
+  "target_packets": 10000,
+  "error": "_validate_live_profile() got an unexpected keyword argument 'profile'"
+}

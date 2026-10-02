@@ -148,16 +148,23 @@ def _expect_float(meta: dict[str, str], key: str, expected: float, source: str) 
 
 
 def _validate_live_profile(
-    meta: dict[str, str], *, role: str, expected_gap_us: int | None, source: str
+    meta: dict[str, str],
+    *,
+    role: str,
+    expected_gap_us: int | None,
+    source: str,
+    profile: dict | None = None,
 ) -> None:
+    # `profile` overrides FROZEN_BASELINE keys for explicit A/B images.
+    expected = {**FROZEN_BASELINE, **(profile or {})}
     _expect_text(meta, "runtime_role", role, source)
     _expect_int(meta, "rf_enabled", 1, source)
-    _expect_int(meta, "sx1280_spi_hz", FROZEN_BASELINE["sx1280_spi_hz"], source)
-    _expect_float(meta, "frequency_mhz", FROZEN_BASELINE["frequency_mhz"], source)
-    _expect_int(meta, "bitrate_kbps", FROZEN_BASELINE["bitrate_kbps"], source)
-    _expect_int(meta, "coding_rate", FROZEN_BASELINE["coding_rate"], source)
-    _expect_int(meta, "output_dbm", FROZEN_BASELINE["output_dbm"], source)
-    _expect_int(meta, "packet_bytes", FROZEN_BASELINE["packet_bytes"], source)
+    _expect_int(meta, "sx1280_spi_hz", expected["sx1280_spi_hz"], source)
+    _expect_float(meta, "frequency_mhz", expected["frequency_mhz"], source)
+    _expect_int(meta, "bitrate_kbps", expected["bitrate_kbps"], source)
+    _expect_int(meta, "coding_rate", expected["coding_rate"], source)
+    _expect_int(meta, "output_dbm", expected["output_dbm"], source)
+    _expect_int(meta, "packet_bytes", expected["packet_bytes"], source)
     _expect_text(meta, "adaptive_layers", "off", source)
     if expected_gap_us is not None:
         _expect_int(meta, "tx_gap_us", expected_gap_us, source)
