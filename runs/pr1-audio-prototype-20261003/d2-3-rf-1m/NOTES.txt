@@ -1,0 +1,6 @@
+# D2-3 first RF audio run, 2026-10-04, ~1 m bench placement (unchanged from the RF gates)
+# RX COM3 e8:06:90:96:83:38 audio_rx sha256 F534A9AB66CA...; TX COM4 b8:f8:62:d9:26:b4 audio_tx sha256 D95923783FB5...
+# fixed channel 2404 MHz, FLRC 1.3 Mbps CR 3/4, 0 dBm, gap 1000 us, AFH/adaptive off; clip: Ode to Joy 14.0 s x2 then silence
+# operator: heard clean, stopped after 2 plays. (An earlier run with the Twinkle clip was also heard over RF.)
+# 40 s after TX start: crc_good 10443, crc_bad 170, missing 171 (1.6 %: above the Gate A band, cause not yet separated);
+# audio: missing_blocks 53, duplicates 3742, late 0, invalid 0, resets 0, queue_dropped 0, i2s errors 0

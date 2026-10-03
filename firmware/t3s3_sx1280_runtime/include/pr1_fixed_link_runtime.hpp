@@ -96,6 +96,12 @@ class FixedLinkRuntime {
         serviceRx();
       } else if constexpr (kAfhEnabled) {
         serviceHopTimeout(now_us);
+      } else {
+        // Fixed-channel RX has no hop deadline to publish its idle window.
+        ctrl_window_open_.store(true, std::memory_order_release);
+        // An RX IRQ between the rx_pending_ check and the store must not leave the
+        // window open through the post-read path.
+        if (rx_pending_) ctrl_window_open_.store(false, std::memory_order_release);
       }
     }
   }
@@ -110,6 +116,11 @@ class FixedLinkRuntime {
   void setControlPlane(CtrlSink sink, CtrlSource source) {
     sink_ = sink;
     source_ = source;
+  }
+  using PayloadSource = bool (*)(std::uint32_t, std::uint8_t*, std::size_t);
+  using PayloadSink = void (*)(const std::uint8_t*, std::size_t);
+  void setPayloadHooks(PayloadSource source, PayloadSink sink) {
+    payload_source_ = source; payload_sink_ = sink;
   }
   bool initialized() const { return initialized_; }
 
@@ -147,6 +158,11 @@ class FixedLinkRuntime {
     std::array<std::uint8_t, pr1::kDartTargetOpusPayloadBytes> payload{};
     for (std::size_t i = 0; i < payload.size(); ++i) {
       payload[i] = static_cast<std::uint8_t>((tx_sequence_ + i) & 0xFFU);
+    }
+
+    if (payload_source_ && !payload_source_(now_us, payload.data(), payload.size())) {
+      next_tx_allowed_us_ = radio_.nowMicros() + profile_.tx_gap_us;  // no hot retry loop
+      return;
     }
 
     pr1::Header header{};
@@ -234,6 +250,7 @@ class FixedLinkRuntime {
     const std::uint32_t spi_end_us = radio_.nowMicros();
     metrics_.onSpiEnd(spi_end_us, label_sequence);
 
+    const std::uint8_t* audio_payload = nullptr;
     bool hop_decoded = false;
     std::uint16_t hop_raw = 0U;
     std::int16_t hop_rssi = 0;
@@ -251,6 +268,7 @@ class FixedLinkRuntime {
       if (decoded_ok && decoded.header.stream_id == stream_id_ &&
           decoded.header.sample_rate == pr1::kDartSampleRateHz &&
           decoded.header.payload_len == pr1::kDartTargetOpusPayloadBytes) {
+        audio_payload = decoded.payload;
         const std::uint32_t packet_done_us = radio_.nowMicros();
         const std::int16_t rssi = radio_.rssiDbm();
         // AFH: the measured span starts once acquisition has a period (see acquire()).
@@ -284,6 +302,10 @@ class FixedLinkRuntime {
     diag_rearm_ = rearm_done_us - rearm_start_us;
     metrics_.onQueueDepth(0U, rearm_done_us, label_sequence);
     if (!rearmed) initialized_ = false;
+    // Never decode or write I2S on this path. The sink copies to internal RAM only,
+    // AFTER re-arm; rx_buffer_ stays valid until the next tick.
+    if (rearmed && audio_payload && payload_sink_)
+      payload_sink_(audio_payload, pr1::kDartTargetOpusPayloadBytes);
   }
 
   void observeSequence(std::uint16_t raw_sequence) {
@@ -1022,6 +1044,8 @@ class FixedLinkRuntime {
   std::uint64_t deferred_check_logical_ = 0U;
   std::uint8_t deferred_check_channel_ = 0U;
   std::uint32_t resync_slot_ = 0U;
+  PayloadSource payload_source_ = nullptr;
+  PayloadSink payload_sink_ = nullptr;
   std::array<std::uint8_t, pr1::kRadioPayloadMaxBytes> tx_buffer_{};
   std::array<std::uint8_t, pr1::kRadioPayloadMaxBytes> rx_buffer_{};
   volatile bool rx_pending_ = false;

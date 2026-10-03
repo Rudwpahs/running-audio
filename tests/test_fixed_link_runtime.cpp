@@ -214,7 +214,42 @@ void testRxSequenceAccountingAndRearm() {
 
 }  // namespace
 
+void testFixedUsbWindowReopens() {
+  FakeRadio radio;
+  pr1::runtime::FixedLinkRuntime runtime(radio, pr1::runtime::RuntimeRole::Rx);
+  assert(runtime.begin());
+  radio.queueRx(makePacket(0)); radio.triggerRx(1000); runtime.tick(1000);
+  runtime.tick(radio.clock_us);
+  assert(runtime.controlWindowOpen());
+}
+
+FakeRadio* hook_radio = nullptr;
+unsigned delivered = 0;
+void audioSink(const std::uint8_t* p, std::size_t n) {
+  assert(hook_radio->rearm_calls >= 2);
+  assert(n == 100 && p[0] == 7); ++delivered;
+}
+bool audioSource(std::uint32_t, std::uint8_t* p, std::size_t n) {
+  std::fill(p, p+n, 42); return true;
+}
+void testPayloadHooks() {
+  FakeRadio tx;
+  pr1::runtime::FixedLinkRuntime t(tx, pr1::runtime::RuntimeRole::Tx);
+  t.setPayloadHooks(audioSource, nullptr); assert(t.begin()); t.tick(0);
+  pr1::DecodedPacket d{}; assert(pr1::decode_packet(tx.tx_packets[0].data(),116,&d));
+  assert(d.payload[0] == 42);
+  FakeRadio rx; hook_radio=&rx;
+  pr1::runtime::FixedLinkRuntime r(rx, pr1::runtime::RuntimeRole::Rx);
+  r.setPayloadHooks(nullptr, audioSink); assert(r.begin());
+  rx.queueRx(makePacket(7)); rx.triggerRx(1000); r.tick(1000); assert(delivered==1);
+  rx.queueRx({}, pr1::runtime::RadioReadResult::CrcError);
+  rx.triggerRx(2000); r.tick(2000); assert(delivered==1);
+  rx.rearm_ok=false; rx.queueRx(makePacket(7)); rx.triggerRx(3000); r.tick(3000);
+  assert(delivered==1);
+}
 int main() {
+  testPayloadHooks();
+  testFixedUsbWindowReopens();
   testTxPostTransmitGapAndCommitSemantics();
   testZeroPostTransmitGapIsValid();
   testRxSequenceAccountingAndRearm();

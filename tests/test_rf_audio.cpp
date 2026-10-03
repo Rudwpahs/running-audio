@@ -1,0 +1,61 @@
+#include <cassert>
+#include <array>
+#include <iostream>
+#include "../firmware/common/pr1_rf_audio.hpp"
+using namespace pr1::audio;
+std::array<std::uint8_t,100> block(std::uint16_t s) {
+ std::array<std::uint8_t,100> b{}; b[0]=s; b[1]=s>>8; return b;
+}
+int main() {
+ std::array<std::uint8_t,200> clip{}; clip[100+2]=123;
+ ClipSource source(clip.data(),clip.size()); std::array<std::uint8_t,100> out{};
+ assert(source.fill(0xfffffff0U,out.data(),100)); assert(out[0]==0);
+ assert(source.fill(0xfffffff0U+5874U,out.data(),100)); assert(out[0]==0);
+ assert(source.fill(0xfffffff0U+5875U,out.data(),100)); assert(out[0]==1 && out[2]==123);
+ assert(source.fill(0xfffffff0U+11750U,out.data(),100)); assert(out[0]==2 && out[2]==0);
+ {
+  // Finite repeats: after N plays the source sends silent, decodable blocks with running seq.
+  std::array<std::uint8_t,200> c2{}; c2[2]=55; c2[100+2]=66;
+  ClipSource twice(c2.data(),c2.size(),2); std::array<std::uint8_t,100> o{};
+  assert(twice.fill(0,o.data(),100) && o[2]==55);
+  assert(twice.fill(3*5875U,o.data(),100) && o[0]==3 && o[2]==66);   // second play
+  assert(twice.fill(4*5875U,o.data(),100) && o[0]==4 && o[2]==0 && o[4]==0);
+  std::array<std::int16_t,188> z{}; z.fill(7); assert(decodeBlock(o.data(),z.data()));
+  for(auto v:z) assert(v==0);
+ }
+ Jitter j; auto b=block(65534); assert(j.push(b.data())); assert(!j.push(b.data()));
+ for(unsigned i=1;i<6;i++){ b=block(65534+i); assert(j.push(b.data())); }
+ std::array<std::int16_t,188> pcm{}; assert(j.render(pcm.data()));
+ for(unsigned i=0;i<5;i++) assert(j.render(pcm.data()));
+ assert(!j.render(pcm.data())); assert(j.missing==1 && j.duplicates==1);
+ b=block(6); assert(j.push(b.data())); assert(!j.render(pcm.data()));
+ assert(j.render(pcm.data())); // skipped seq5, then seq6
+ b=block(6); b[4]=89; assert(!j.push(b.data())); assert(j.invalid==1);
+ b=block(200); assert(j.push(b.data())); assert(j.resets==1);
+ assert(!j.render(pcm.data())); // rebuffer after discontinuity
+ {
+  // RX clock faster than TX: the playout point runs ahead, every block is late.
+  // After kLateResync late blocks the buffer re-anchors and plays again (no permanent mute).
+  Jitter d; std::uint16_t s=1000;
+  for(unsigned i=0;i<6;i++){ b=block(s++); assert(d.push(b.data())); }
+  for(unsigned i=0;i<40;i++) d.render(pcm.data());          // playout runs far ahead
+  unsigned accepted=0;
+  for(unsigned i=0;i<Jitter::kLateResync+8;i++){ b=block(s++); accepted+=d.push(b.data()); }
+  assert(d.resets==1 && accepted==9);                        // re-anchored on the 32nd late block
+  for(unsigned i=0;i<6;i++){ b=block(s++); d.push(b.data()); }
+  assert(d.render(pcm.data()));
+  // TX restart: block counter back to 0 while RX expects ~1050.
+  Jitter t; s=1000;
+  for(unsigned i=0;i<8;i++){ b=block(s++); assert(t.push(b.data())); }
+  for(unsigned i=0;i<8;i++) assert(t.render(pcm.data()));
+  s=0; unsigned ok=0;
+  for(unsigned i=0;i<Jitter::kLateResync+6;i++){ b=block(s++); ok+=t.push(b.data()); }
+  assert(t.resets==1 && ok==7);
+  assert(t.render(pcm.data()));
+  // An isolated late block does not re-anchor.
+  Jitter n; s=50;
+  for(unsigned i=0;i<6;i++){ b=block(s++); n.push(b.data()); }
+  n.render(pcm.data()); b=block(50); assert(!n.push(b.data())); assert(n.late==1 && n.resets==0);
+ }
+ std::cout << "test_rf_audio: PASS\n";
+}

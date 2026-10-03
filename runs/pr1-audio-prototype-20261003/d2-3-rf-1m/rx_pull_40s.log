@@ -1,0 +1,23 @@
+PR1_RUNTIME_BOOT
+runtime_profile=phase1-fixed-flrc-rx
+runtime_role=rx
+board_family=LILYGO T3-S3-MVSRBoard
+board_reference_revision=V1.1 upstream reference
+radio_target=SX1280
+upstream_reference_commit=840a2e788b3192c4e9bddf0640c1ecaf703c2598
+hardware_veriPR1T v=1 t_us=44112091 field=device_state value=2
+PR1T v=1 t_us=44112091 field=rssi_dbm value=-42
+PR1T v=1 t_us=44112091 field=crc_good value=10443
+PR1T v=1 t_us=44112091 field=crc_bad value=170
+PR1T v=1 t_us=44112091 field=missing value=171
+PR1T v=1 t_us=44112091 field=queue_depth value=0
+PR1T v=1 t_us=44112091 field=max_queue_depth value=1
+PR1T v=1 t_us=44112091 field=irq_to_spi_us value=5
+PR1T v=1 t_us=44112091 field=spi_duration_us value=1249
+PR1T v=1 t_us=44112091 field=rx_processing_us value=1250
+PR1T v=1 t_us=44112091 field=spi_end_to_rearm_start_us value=136
+PR1T v=1 t_us=44112091 field=rx_rearm_us value=415
+PR1T v=1 t_us=44112091 field=irq_to_rx_ready_us value=1790
+PR1T v=1 t_us=44112091 field=trace_overwrites value=95389
+PR1T v=1 t_us=44112091 field=capability_mask value=12
+PR1A frames=1392328 missing_blocks=53 duplicates=3742 late=0 invalid=0 resets=0 queue_dropped=0 startup_blocks=659 write_errors=0 short_writes=0 max_decode_us=45

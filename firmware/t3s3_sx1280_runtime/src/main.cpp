@@ -12,6 +12,7 @@
 #include "hal/usb_serial_jtag_ll.h"
 #include "pr1_fixed_link_runtime.hpp"
 #include "pr1_sx1280_radiolib.hpp"
+#include "pr1_audio_runtime.hpp"
 #endif
 
 namespace {
@@ -461,7 +462,13 @@ void setup() {
 #if PR1_RF_ENABLED
   printLiveProfile();
   g_runtime.setControlPlane(&pushControlOut, &popControlIn);
+#if PR1_AUDIO_RF
+  const bool audio_ok=rf_audio::setup(g_runtime);
+  Serial.printf("PR1_AUDIO_RF init=%u sample_rate=32000 samples_per_block=188 block_us=5875 pins=40,41,39,38\n",audio_ok?1U:0U);
+  g_live_ready = audio_ok && g_runtime.begin();
+#else
   g_live_ready = g_runtime.begin();
+#endif
   Serial.println(g_live_ready ? "PR1_RUNTIME_LIVE_READY" : "PR1_RUNTIME_FAULT");
   drainSerial(300);
   g_poll_mode.store(true);
@@ -491,6 +498,9 @@ void loop() {
     for (int i = 0; i < 50 && !g_dump_ready.load(); ++i) vTaskDelay(1);
     if (command == 't' || command == 'T') {
       printTelemetry(g_runtime.metrics().snapshot());
+#if PR1_AUDIO_RF && PR1_RUNTIME_ROLE == PR1_RUNTIME_ROLE_RX
+      rf_audio::print();
+#endif
     } else if (command == 'h') {
       printHop();
     } else if (command == 'H') {

@@ -12,7 +12,7 @@ header), so a lost block never desynchronises the decoder.
 The codec is standard IMA-ADPCM (the August Pr1ImaAdpcm.h source was never committed and
 is re-implemented here; firmware decoder: firmware/t3s3_audio_bringup/include/pr1_ima_adpcm.hpp).
 
-  python tools/audio/pr1_adpcm.py make-demo <out.adpcm> [--wav out.wav]
+  python tools/audio/pr1_adpcm.py make-demo <out.adpcm> [--wav out.wav] [--melody ode|twinkle]
   python tools/audio/pr1_adpcm.py encode <in.wav> <out.adpcm>   (any rate/channels -> 32 kHz mono)
   python tools/audio/pr1_adpcm.py decode <in.adpcm> <out.wav>
 """
@@ -100,28 +100,37 @@ def decode(blob):
     return pcm
 
 
-def demo_melody():
-    """'Twinkle, Twinkle, Little Star' (traditional, public domain), soft piano-like synthesis."""
+def demo_melody(name="ode"):
+    """Public-domain demo melodies, soft piano-like synthesis (quiet on purpose).
+
+    ode     : Beethoven, 'Ode to Joy' theme (default)
+    twinkle : 'Twinkle, Twinkle, Little Star' (traditional)
+    """
     C4, D4, E4, F4, G4, A4 = 261.63, 293.66, 329.63, 349.23, 392.00, 440.00
-    line1 = [C4, C4, G4, G4, A4, A4, G4, None, F4, F4, E4, E4, D4, D4, C4, None]
-    line2 = [G4, G4, F4, F4, E4, E4, D4, None]
-    notes = line1 + line2 + line2 + line1
+    if name == "twinkle":
+        line1 = [C4, C4, G4, G4, A4, A4, G4, None, F4, F4, E4, E4, D4, D4, C4, None]
+        line2 = [G4, G4, F4, F4, E4, E4, D4, None]
+        notes = [(f, 1.0) for f in line1 + line2 + line2 + line1]
+    else:
+        a = [(E4, 1), (E4, 1), (F4, 1), (G4, 1), (G4, 1), (F4, 1), (E4, 1), (D4, 1),
+             (C4, 1), (C4, 1), (D4, 1), (E4, 1)]
+        notes = (a + [(E4, 1.5), (D4, 0.5), (D4, 2)] + a + [(D4, 1.5), (C4, 0.5), (C4, 2)])
     beat = 0.42
+    peak = 3500  # about 40 % of the first demo clip
     pcm = []
-    for f in notes:
-        n = int(beat * RATE)
+    for f, beats in notes:
+        n = int(beat * beats * RATE)
         for i in range(n):
             t = i / RATE
             if f is None:
                 pcm.append(0)
                 continue
-            env = min(1.0, t / 0.01) * math.exp(-3.2 * t)
+            env = min(1.0, t / 0.01) * math.exp(-3.2 * t / beats)
             v = (math.sin(2 * math.pi * f * t) + 0.45 * math.sin(4 * math.pi * f * t) +
                  0.2 * math.sin(6 * math.pi * f * t) + 0.25 * math.sin(math.pi * f * t))
-            pcm.append(int(round(9000 * env * v / 1.9)))
+            pcm.append(int(round(peak * env * v / 1.9)))
     pcm += [0] * int(0.6 * RATE)
     return pcm
-
 
 def read_wav_32k_mono(path):
     with wave.open(path, "rb") as w:
@@ -149,7 +158,7 @@ def write_wav(path, pcm):
 
 def main(argv):
     if len(argv) >= 2 and argv[0] == "make-demo":
-        pcm = demo_melody()
+        pcm = demo_melody(argv[argv.index("--melody") + 1] if "--melody" in argv else "ode")
         blob = encode(pcm)
         open(argv[1], "wb").write(blob)
         if "--wav" in argv:
