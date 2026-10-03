@@ -2,3 +2,4 @@
 build/
 flashed.json
 __pycache__/
+analysis/c2_replay.exe

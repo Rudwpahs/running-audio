@@ -812,6 +812,13 @@ class FixedLinkRuntime {
     const afh::ScheduleConfig& cur = scheduler_.current();
     ctrl::Out line{};
     if (desired.bits != cur.map.bits && desired.isValid()) {
+      // Gate C2 map-update cap: no map proposal (and no probe) within the interval.
+      if (PR1_MAP_MIN_INTERVAL_MS > 0 && map_prop_seen_ &&
+          now_ms - last_map_prop_ms_ < static_cast<std::uint32_t>(PR1_MAP_MIN_INTERVAL_MS)) {
+        return false;
+      }
+      last_map_prop_ms_ = now_ms;
+      map_prop_seen_ = true;
       proposal_ = {amap::ProposalType::Map, ++next_id_, static_cast<std::uint16_t>(cur.map_version + 1U),
                    desired.bits, hop_.logical + PR1_MAP_LEAD_FRAMES, 0U};
       line.type = ctrl::OutType::PropMap;
@@ -988,7 +995,9 @@ class FixedLinkRuntime {
   bool hop_deadline_valid_ = false;
   bool hop_acquired_ = false;
   // Gate C state (unused unless PR1_ENABLE_ADAPTIVE_MAP=1).
-  quality::Estimator estimator_{};
+  quality::Estimator estimator_{amap::qualityConfig()};
+  std::uint32_t last_map_prop_ms_ = 0U;   // RX: map-update cap (PR1_MAP_MIN_INTERVAL_MS)
+  bool map_prop_seen_ = false;
   amap::Telemetry amap_{};
   amap::OutcomeQueue<64> outcomes_{};
   amap::Proposal proposal_{};

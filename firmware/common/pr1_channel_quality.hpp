@@ -24,6 +24,12 @@ struct Config {
   std::uint8_t suspect_losses = 2;
   std::uint8_t exclude_losses = 4;
   std::uint8_t recover_successes = 3;
+  // Gate C2 knobs (defaults = Gate C behaviour). A SUSPECT channel is also excluded when its
+  // slow EWMA is below this: persistent moderate loss over ~2^alpha_slow_shift visits
+  // (0 = no slow-EWMA rule).
+  std::uint16_t exclude_slow_pdr_q15 = 0;
+  // Probe successes, out of the last 3 probes, needed to re-include a channel.
+  std::uint8_t reinstate_probe_successes = 2;
 
   // Protected re-exploration defaults from issue #26.
   std::uint32_t initial_probe_ms = 200;
@@ -142,7 +148,8 @@ class Estimator {
 
     const bool should_exclude =
         s.consecutive_losses >= config_.exclude_losses ||
-        s.pdr_fast_q15 < config_.exclude_pdr_q15;
+        s.pdr_fast_q15 < config_.exclude_pdr_q15 ||
+        s.pdr_slow_q15 < config_.exclude_slow_pdr_q15;
     if (should_exclude && active_count_ > config_.minimum_active_channels) {
       excludeChannel(c, now_ms);
     }
@@ -232,7 +239,7 @@ class Estimator {
     }
 
     const bool reinstate = s.probe_history_count >= 3U &&
-                           popcount3(s.probe_history_bits) >= 2U;
+                           popcount3(s.probe_history_bits) >= config_.reinstate_probe_successes;
     if (reinstate) {
       s.state = ChannelState::Active;
       if (active_count_ < afh::kChannelCount) ++active_count_;

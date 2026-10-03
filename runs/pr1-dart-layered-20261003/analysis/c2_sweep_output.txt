@@ -1,0 +1,54 @@
+﻿K0_default               loss B 0.375% -> sim 0.237% (-36.9%) act/min 21.18 rev  14 excl 218 iso8 0.716 single32 156 rein  14 min 13 floor 0.008 (1 runs) worst8 0.472
+                           recent: B 0.526% -> 0.215% (-59.2%) act/min 20.38 rev 11 excl 55 iso8 0.691 single32 38 min 23 floor 0.0
+K1_f070                  loss B 0.375% -> sim 0.335% (-10.7%) act/min  6.63 rev  10 excl  46 iso8 0.0 single32 0 rein   9 min 27 floor 0.000 (0 runs) worst8 0.783
+                           recent: B 0.526% -> 0.404% (-23.2%) act/min 16.75 rev 7 excl 35 iso8 0.0 single32 0 min 27 floor 0.0
+K2_f060                  loss B 0.375% -> sim 0.347% (-7.3%) act/min  2.59 rev   3 excl  19 iso8 0.0 single32 0 rein   4 min 30 floor 0.000 (0 runs) worst8 0.789
+                           recent: B 0.526% -> 0.443% (-15.9%) act/min  6.79 rev 2 excl 15 iso8 0.0 single32 0 min 30 floor 0.0
+K3_f070_rein3_p1600      loss B 0.375% -> sim 0.330% (-11.9%) act/min  6.05 rev   8 excl  41 iso8 0.0 single32 0 rein   6 min 29 floor 0.000 (0 runs) worst8 0.756
+                           recent: B 0.526% -> 0.389% (-26.2%) act/min 15.85 rev 6 excl 33 iso8 0.0 single32 0 min 29 floor 0.0
+K4_f070_s096             loss B 0.375% -> sim 0.300% (-20.0%) act/min 15.13 rev  36 excl  92 iso8 0.326 single32 7 rein  28 min 29 floor 0.000 (0 runs) worst8 0.75
+                           recent: B 0.526% -> 0.325% (-38.2%) act/min 19.47 rev 12 excl 38 iso8 0.368 single32 3 min 29 floor 0.0
+K5_f070_s095             loss B 0.375% -> sim 0.319% (-15.0%) act/min 13.11 rev  32 excl  78 iso8 0.205 single32 1 rein  26 min 27 floor 0.000 (0 runs) worst8 0.756
+                           recent: B 0.526% -> 0.382% (-27.5%) act/min 19.02 rev 10 excl 39 iso8 0.205 single32 0 min 27 floor 0.0
+K6_f070_s093             loss B 0.375% -> sim 0.331% (-11.7%) act/min  7.20 rev  11 excl  47 iso8 0.021 single32 0 rein  11 min 27 floor 0.000 (0 runs) worst8 0.787
+                           recent: B 0.526% -> 0.393% (-25.3%) act/min 16.75 rev 6 excl 34 iso8 0.0 single32 0 min 27 floor 0.0
+K7_f070_s095_rein3       loss B 0.375% -> sim 0.319% (-15.0%) act/min 13.11 rev  32 excl  78 iso8 0.205 single32 1 rein  26 min 27 floor 0.000 (0 runs) worst8 0.756
+                           recent: B 0.526% -> 0.382% (-27.5%) act/min 19.02 rev 10 excl 39 iso8 0.205 single32 0 min 27 floor 0.0
+K8_f070_s095_rein3_p1600 loss B 0.375% -> sim 0.319% (-15.0%) act/min 11.67 rev  35 excl  72 iso8 0.181 single32 0 rein  25 min 29 floor 0.000 (0 runs) worst8 0.764
+                           recent: B 0.526% -> 0.377% (-28.3%) act/min 17.21 rev 16 excl 36 iso8 0.194 single32 0 min 29 floor 0.0
+K9_f070_s095_rein3_p1600_cap3s loss B 0.375% -> sim 0.313% (-16.5%) act/min  9.80 rev  23 excl  71 iso8 0.211 single32 0 rein  19 min 29 floor 0.000 (0 runs) worst8 0.775
+                           recent: B 0.526% -> 0.359% (-31.8%) act/min 12.68 rev 8 excl 33 iso8 0.273 single32 0 min 29 floor 0.0
+K10_f070_s096_rein3_p1600_cap3s loss B 0.375% -> sim 0.304% (-19.0%) act/min 11.67 rev  22 excl  97 iso8 0.299 single32 4 rein  24 min 29 floor 0.000 (0 runs) worst8 0.763
+                           recent: B 0.526% -> 0.325% (-38.2%) act/min 14.04 rev 7 excl 34 iso8 0.353 single32 1 min 29 floor 0.0
+K11_f070_s095_cap3s      loss B 0.375% -> sim 0.323% (-13.8%) act/min  9.65 rev  18 excl  72 iso8 0.194 single32 0 rein  20 min 29 floor 0.000 (0 runs) worst8 0.75
+                           recent: B 0.526% -> 0.389% (-26.2%) act/min 13.58 rev 8 excl 37 iso8 0.216 single32 0 min 29 floor 0.0
+K12_f070_s0965           loss B 0.375% -> sim 0.288% (-23.0%) act/min 15.99 rev  36 excl 103 iso8 0.379 single32 19 rein  29 min 29 floor 0.000 (0 runs) worst8 0.767
+                           recent: B 0.526% -> 0.307% (-41.6%) act/min 18.57 rev 10 excl 38 iso8 0.447 single32 6 min 29 floor 0.0
+K13_f070_s0965_rein3_p1600_cap3s loss B 0.375% -> sim 0.288% (-23.0%) act/min 12.24 rev  20 excl 105 iso8 0.362 single32 17 rein  22 min 29 floor 0.000 (0 runs) worst8 0.714
+                           recent: B 0.526% -> 0.303% (-42.5%) act/min 14.49 rev 7 excl 34 iso8 0.471 single32 5 min 29 floor 0.0
+K14_sh4_f070_s093        loss B 0.375% -> sim 0.305% (-18.6%) act/min 13.97 rev  33 excl  85 iso8 0.247 single32 1 rein  28 min 29 floor 0.000 (0 runs) worst8 0.729
+                           recent: B 0.526% -> 0.346% (-34.3%) act/min 19.02 rev 12 excl 39 iso8 0.256 single32 0 min 29 floor 0.0
+K15_sh4_f070_s093_rein3_p1600_cap3s loss B 0.375% -> sim 0.303% (-19.2%) act/min 11.24 rev  25 excl  88 iso8 0.239 single32 0 rein  20 min 29 floor 0.000 (0 runs) worst8 0.761
+                           recent: B 0.526% -> 0.334% (-36.5%) act/min 14.04 rev 10 excl 35 iso8 0.257 single32 0 min 29 floor 0.0
+K16_f070_s0965_rein3_p3200_cap3s loss B 0.375% -> sim 0.278% (-25.7%) act/min 11.81 rev  12 excl 101 iso8 0.366 single32 18 rein  15 min 26 floor 0.000 (0 runs) worst8 0.713
+                           recent: B 0.526% -> 0.280% (-46.8%) act/min 13.13 rev 6 excl 31 iso8 0.452 single32 4 min 29 floor 0.0
+K17_f070_s0965_rein3_p3200_cap5s loss B 0.375% -> sim 0.288% (-23.0%) act/min  9.36 rev  11 excl  99 iso8 0.384 single32 18 rein  11 min 26 floor 0.000 (0 runs) worst8 0.697
+                           recent: B 0.526% -> 0.307% (-41.6%) act/min 10.42 rev 4 excl 36 iso8 0.389 single32 3 min 26 floor 0.0
+K18_f070_s0965_rein3_p6400_cap5s loss B 0.375% -> sim 0.286% (-23.8%) act/min  8.50 rev   4 excl  96 iso8 0.385 single32 18 rein   5 min 26 floor 0.000 (0 runs) worst8 0.688
+                           recent: B 0.526% -> 0.303% (-42.5%) act/min  9.96 rev 2 excl 35 iso8 0.4 single32 4 min 26 floor 0.0
+K19_f070_s0965_p3200_cap5s loss B 0.375% -> sim 0.288% (-23.0%) act/min  9.36 rev  11 excl  99 iso8 0.384 single32 18 rein  11 min 26 floor 0.000 (0 runs) worst8 0.697
+                           recent: B 0.526% -> 0.307% (-41.6%) act/min 10.42 rev 4 excl 36 iso8 0.389 single32 3 min 26 floor 0.0
+K20_f070_s095_rein3_p1600_cap5s loss B 0.375% -> sim 0.316% (-15.7%) act/min  7.49 rev  14 excl  69 iso8 0.232 single32 0 rein  15 min 28 floor 0.000 (0 runs) worst8 0.739
+                           recent: B 0.526% -> 0.366% (-30.5%) act/min  9.96 rev 5 excl 32 iso8 0.25 single32 0 min 28 floor 0.0
+K21_f070_s095_rein3_p3200_cap5s loss B 0.375% -> sim 0.308% (-17.9%) act/min  6.91 rev   8 excl  67 iso8 0.254 single32 0 rein  11 min 27 floor 0.000 (0 runs) worst8 0.746
+                           recent: B 0.526% -> 0.350% (-33.5%) act/min  9.06 rev 2 excl 31 iso8 0.258 single32 0 min 27 floor 0.0
+K22_f070_s095_rein3_p3200_cap3s loss B 0.375% -> sim 0.309% (-17.5%) act/min  8.64 rev  12 excl  63 iso8 0.238 single32 0 rein  16 min 29 floor 0.000 (0 runs) worst8 0.81
+                           recent: B 0.526% -> 0.352% (-33.0%) act/min 11.32 rev 4 excl 30 iso8 0.3 single32 0 min 29 floor 0.0
+FLOOR30_K0_default       loss B 0.375% -> sim 0.274% (-26.9%) act/min 17.43 rev  38 excl 153 iso8 0.778 single32 119 rein  27 min 30 floor 0.460 (12 runs) worst8 0.575
+                           recent: B 0.526% -> 0.269% (-48.9%) act/min 19.47 rev 16 excl 49 iso8 0.714 single32 35 min 30 floor 0.3277
+FLOOR30_K9_f070_s095_rein3_p1600_cap3s loss B 0.375% -> sim 0.318% (-15.2%) act/min  9.94 rev  24 excl  70 iso8 0.214 single32 0 rein  19 min 30 floor 0.041 (1 runs) worst8 0.771
+                           recent: B 0.526% -> 0.375% (-28.8%) act/min 13.13 rev 9 excl 32 iso8 0.281 single32 0 min 30 floor 0.1288
+FLOOR30_K20_f070_s095_rein3_p1600_cap5s loss B 0.375% -> sim 0.325% (-13.2%) act/min  7.35 rev  13 excl  66 iso8 0.242 single32 0 rein  15 min 30 floor 0.045 (1 runs) worst8 0.727
+                           recent: B 0.526% -> 0.395% (-24.9%) act/min  9.51 rev 4 excl 29 iso8 0.276 single32 0 min 30 floor 0.1427
+FLOOR30_K21_f070_s095_rein3_p3200_cap5s loss B 0.375% -> sim 0.319% (-14.8%) act/min  6.77 rev   8 excl  65 iso8 0.262 single32 0 rein  12 min 30 floor 0.045 (1 runs) worst8 0.754
+                           recent: B 0.526% -> 0.386% (-26.6%) act/min  8.60 rev 2 excl 29 iso8 0.276 single32 0 min 30 floor 0.1426

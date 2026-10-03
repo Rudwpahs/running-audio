@@ -52,6 +52,13 @@ TX_VARIANTS["C1"] = "-D PR1_ENABLE_ADAPTIVE_MAP=1"
 # Diagnostic (C1 cache test): B1 + rarely-run code every 600 frames on RX only.
 RX_VARIANTS["B1k"] = "-D PR1_DIAG_COLD_WORK_EVERY=600"
 TX_VARIANTS["B1k"] = ""
+# Gate C2: C1 infrastructure + the estimator configuration chosen by the offline replay
+# (analysis/c2_sweep.py candidate K21_f070_s095_rein3_p3200_cap5s).
+C2_FLAGS = ("-D PR1_ENABLE_ADAPTIVE_MAP=1\n    -D PR1_Q_EXCLUDE_PDR_Q15=22937\n    -D PR1_Q_EXCLUDE_SLOW_PDR_Q15=31129"
+            "\n    -D PR1_Q_REINSTATE_SUCCESSES=3\n    -D PR1_Q_PROBE_INITIAL_MS=3200\n    -D PR1_Q_PROBE_MAX_MS=25600"
+            "\n    -D PR1_MAP_MIN_INTERVAL_MS=5000")
+RX_VARIANTS["C2"] = C2_FLAGS
+TX_VARIANTS["C2"] = C2_FLAGS
 ADAPTIVE_GATES = ("C", "C1", "C2")
 C_PROFILE = {"adaptive_layers_text": "channel_map"}  # Bt: TX settle diag; RX uses the plain B-rx image
 PLACEMENT = ("2026-10-03 operator photo placement_20261003.jpg: RX on desk top (antenna ~vertical, iron and "
@@ -444,7 +451,8 @@ def write_summary(run_dir: Path, result: dict, hop: dict) -> None:
 def cmd_summary() -> None:
     rows = []
     for res in sorted(list(HERE.glob("gate-*/*/result.json")) + list(HERE.glob("gateC-interleave/*/result.json")) + list(HERE.glob("preC/*/result.json"))
-                 + list(HERE.glob("gateC1-interleave/*/result.json")) + list(HERE.glob("smokeC1/*/result.json")) + list(HERE.glob("gateC2-interleave/*/result.json"))):
+                 + list(HERE.glob("gateC1-interleave/*/result.json")) + list(HERE.glob("smokeC1/*/result.json")) + list(HERE.glob("gateC2-interleave/*/result.json"))
+                 + list(HERE.glob("gate-C2/*/result.json"))):
         if "partial" in res.parts: continue
         r = json.loads(res.read_text())
         if "metrics" not in r: continue

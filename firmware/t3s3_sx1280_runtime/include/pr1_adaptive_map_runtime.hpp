@@ -29,9 +29,36 @@
 #define PR1_MAP_GUARD_FRAMES 100
 #endif
 
+// Gate C2: minimum time between two map proposals (0 = Gate C/C1: no cap).
+#ifndef PR1_MAP_MIN_INTERVAL_MS
+#define PR1_MAP_MIN_INTERVAL_MS 0
+#endif
+
 namespace pr1::runtime::amap {
 
 constexpr bool kEnabled = PR1_ENABLE_ADAPTIVE_MAP != 0;
+
+// Estimator configuration. Unset macros keep the pr1_channel_quality.hpp defaults (Gate C/C1);
+// Gate C2 images set the values chosen by the offline replay (analysis/c2_sweep.py).
+inline quality::Config qualityConfig() {
+  quality::Config c{};
+#ifdef PR1_Q_EXCLUDE_PDR_Q15
+  c.exclude_pdr_q15 = PR1_Q_EXCLUDE_PDR_Q15;
+#endif
+#ifdef PR1_Q_EXCLUDE_SLOW_PDR_Q15
+  c.exclude_slow_pdr_q15 = PR1_Q_EXCLUDE_SLOW_PDR_Q15;
+#endif
+#ifdef PR1_Q_REINSTATE_SUCCESSES
+  c.reinstate_probe_successes = PR1_Q_REINSTATE_SUCCESSES;
+#endif
+#ifdef PR1_Q_PROBE_INITIAL_MS
+  c.initial_probe_ms = PR1_Q_PROBE_INITIAL_MS;
+#endif
+#ifdef PR1_Q_PROBE_MAX_MS
+  c.max_probe_ms = PR1_Q_PROBE_MAX_MS;
+#endif
+  return c;
+}
 
 enum class OutcomeKind : std::uint8_t { Ok = 0, Crc = 1, Timeout = 2 };
 

@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "run_id": "C2-gap-150us-45000",
+  "created_utc": "2026-10-03T11:41:29.931718Z",
+  "gate": "C2",
+  "gap_us": 150,
+  "target_packets": 45000,
+  "phase": "revalidate",
+  "firmware_sha": "d1b7ec2b1130fd63fb0eb11fd900b0622766f14c",
+  "frozen_baseline": {
+    "frequency_mhz": 2404.0,
+    "bitrate_kbps": 1300,
+    "coding_rate": 3,
+    "output_dbm": 0,
+    "packet_bytes": 116,
+    "sx1280_spi_hz": 2000000,
+    "adaptive_layers": false
+  },
+  "rx_variant": "-D PR1_ENABLE_ADAPTIVE_MAP=1\n    -D PR1_Q_EXCLUDE_PDR_Q15=22937\n    -D PR1_Q_EXCLUDE_SLOW_PDR_Q15=31129\n    -D PR1_Q_REINSTATE_SUCCESSES=3\n    -D PR1_Q_PROBE_INITIAL_MS=3200\n    -D PR1_Q_PROBE_MAX_MS=25600\n    -D PR1_MAP_MIN_INTERVAL_MS=5000",
+  "feature_flags": {
+    "PR1_ENABLE_AFH": 1,
+    "afh_map": "static all-40",
+    "channel_quality": 1,
+    "fec": 0,
+    "arq": 0,
+    "phy_ladder": 0,
+    "controller": 0,
+    "control_plane": "usb_host_relay, serial/parse/format on core 0",
+    "serial_core": 0
+  },
+  "images": {
+    "rx": {
+      "key": "C2:C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-dart-layered-20261003\\build\\C2-rx\\rf_rx_compile",
+      "image": "runs\\pr1-dart-layered-20261003\\build\\C2-rx\\rf_rx_compile",
+      "sha256": "18b06fb7e6267a0b67ff764eff2bebf84203069fbce217d12ba9cfb691cec351",
+      "flashed_utc": "2026-10-03T11:40:45.760624Z"
+    },
+    "tx": {
+      "key": "C2:C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-dart-layered-20261003\\build\\C2-tx-150us\\rf_tx_compile",
+      "image": "runs\\pr1-dart-layered-20261003\\build\\C2-tx-150us\\rf_tx_compile",
+      "sha256": "7263294ad9ac09f13eabb16183448fe43c99aae1b416cb408a4606cdedb5467b",
+      "flashed_utc": "2026-10-03T11:40:50.948184Z"
+    }
+  },
+  "placement": "2026-10-03 operator photo placement_20261003.jpg: RX on desk top (antenna ~vertical, iron and bottles nearby), TX on white box below (antenna vertical). Unchanged for all gates.",
+  "files": {
+    "rx_log": "rx.log",
+    "tx_log": "tx.log"
+  },
+  "build_identity": {
+    "source_head_sha": "ef75c7e429298a77d86f8b52016a82ce93213cc1",
+    "frozen_firmware_sha": "d1b7ec2b1130fd63fb0eb11fd900b0622766f14c",
+    "git_dirty": true,
+    "platformio_version": "unavailable: [WinError 2] \uc9c0\uc815\ub41c \ud30c\uc77c\uc744 \ucc3e\uc744 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4",
+    "platformio_ini_sha256": "ad8bfaddb32b75a478920feb10258555659ce7355f0e1d1a1cc225cfd7be08e3",
+    "controller_file_sha256": "61fa703d25e4ff7319b7158e30e1d6778d981263bdae22b51437d29e0263f778"
+  },
+  "notes": "issue #52 layered activation",
+  "host_polling": "none during measured window; single final snapshot"
+}

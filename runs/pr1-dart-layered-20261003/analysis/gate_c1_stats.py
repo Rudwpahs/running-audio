@@ -1,6 +1,6 @@
-"""Gate C1 statistics: interleaved B1 / C1 / C(old Gate C image), raw run logs only.
+"""Gate C1/C2 statistics: interleaved B1 / C1 / C(old Gate C image) / C2, raw run logs only.
 
-  python analysis/gate_c1_stats.py [set_dir]     (default gateC1-interleave)
+  python analysis/gate_c1_stats.py [set_dir]     (default gateC1-interleave; gateC2-interleave for C2)
 
 Per run: loss, CRC, no-IRQ frames, control events, losses 0..3 frames after a control
 event (and after a map activation), slow RX post-read events (RxSlowReady, C1 images
@@ -102,7 +102,7 @@ def analyse(d: Path) -> dict:
     q = r.get("quality", {})
     agree = q.get("map_agreement", {})
     rx_events = q.get("rx_event_counts", {})
-    is_c1 = gate in ("B1", "C1")
+    is_c1 = gate in ("B1", "C1", "C2")
     row = {
         "run": d.name, "gate": gate, "packets": r["packet_count"], "missing": m["missing"],
         "loss_pct": round(100 * m["missing"] / r["packet_count"], 4), "crc": m["crc_bad"],
@@ -126,6 +126,10 @@ def analyse(d: Path) -> dict:
         "min_active": None if not qs else qs.get("min_active_seen"),
         "final_active": None if not qs else qs.get("active"),
         "exclusions": rx_events.get("excluded") if gate != "B1" else None,
+        "reinclusions": rx_events.get("reincluded", 0) if gate != "B1" else None,
+        "probe_results": rx_events.get("probe_result", 0) if gate != "B1" else None,
+        "recovered": rx_events.get("recovered", 0) if gate != "B1" else None,
+        "events_truncated": None if not qs else qs.get("events", 0) > 160,
         "in_window_version_mismatch": agree.get("in_window_version_mismatch"),
         "post_run_version_mismatch": agree.get("version_mismatch"),
         "relay": None if not q else {k: v for k, v in q.get("relay", {}).items() if k not in ("relay_ms", "ids")},
@@ -154,7 +158,7 @@ def main():
         pooled[g]["loss_pct"] = round(100 * pooled[g]["missing"] / pooled[g]["packets"], 4)
         print(g, pooled[g])
     tests = {}
-    for a, b in (("C1", "B1"), ("C", "B1"), ("C1", "C")):
+    for a, b in (("C1", "B1"), ("C", "B1"), ("C1", "C"), ("C2", "B1"), ("C2", "C1")):
         if a in pooled and b in pooled:
             pa, pb = pooled[a], pooled[b]
             out = {}

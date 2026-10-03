@@ -289,11 +289,13 @@ void printAfhProfile() {
       Serial.printf("map_guard_frames=%u\n", static_cast<unsigned>(PR1_MAP_GUARD_FRAMES));
       Serial.printf(
           "quality_cfg=fast_shift:%u,slow_shift:%u,suspect_q15:%u,exclude_q15:%u,recover_q15:%u,"
-          "suspect_losses:%u,exclude_losses:%u,recover_successes:%u,probe_ms:%lu-%lu,min_active:%u\n",
+          "suspect_losses:%u,exclude_losses:%u,recover_successes:%u,probe_ms:%lu-%lu,min_active:%u,"
+          "exclude_slow_q15:%u,reinstate_successes:%u,map_min_interval_ms:%u\n",
           q.alpha_fast_shift, q.alpha_slow_shift, q.suspect_pdr_q15, q.exclude_pdr_q15,
           q.recover_pdr_q15, q.suspect_losses, q.exclude_losses, q.recover_successes,
           static_cast<unsigned long>(q.initial_probe_ms), static_cast<unsigned long>(q.max_probe_ms),
-          q.minimum_active_channels);
+          q.minimum_active_channels, q.exclude_slow_pdr_q15, q.reinstate_probe_successes,
+          static_cast<unsigned>(PR1_MAP_MIN_INTERVAL_MS));
     }
     Serial.print("afh_schedule_fp=");
     for (unsigned i = 0; i < 48; ++i) {

@@ -1,0 +1,140 @@
+[
+  {
+    "run": "gate-B__B-gap-150us-10000-run1",
+    "L0": 313,
+    "L1": 10685,
+    "period_us": 3004,
+    "t0_ms": 785,
+    "missing_metric": 65,
+    "packets": 10373,
+    "lost_frames": 54
+  },
+  {
+    "run": "gate-B__B-gap-150us-10000-run2",
+    "L0": 313,
+    "L1": 10688,
+    "period_us": 3000,
+    "t0_ms": 785,
+    "missing_metric": 30,
+    "packets": 10376,
+    "lost_frames": 19
+  },
+  {
+    "run": "gate-B__B-gap-150us-10000-run3",
+    "L0": 313,
+    "L1": 10685,
+    "period_us": 3005,
+    "t0_ms": 784,
+    "missing_metric": 32,
+    "packets": 10373,
+    "lost_frames": 21
+  },
+  {
+    "run": "gate-B__B-gap-150us-10000-i2",
+    "L0": 313,
+    "L1": 10688,
+    "period_us": 2997,
+    "t0_ms": 782,
+    "missing_metric": 45,
+    "packets": 10376,
+    "lost_frames": 34
+  },
+  {
+    "run": "gate-B__B-gap-150us-10000-i4",
+    "L0": 313,
+    "L1": 10685,
+    "period_us": 2997,
+    "t0_ms": 783,
+    "missing_metric": 96,
+    "packets": 10373,
+    "lost_frames": 42
+  },
+  {
+    "run": "gate-B__B-gap-150us-10000-i9",
+    "L0": 313,
+    "L1": 10665,
+    "period_us": 2998,
+    "t0_ms": 708,
+    "missing_metric": 48,
+    "packets": 10353,
+    "lost_frames": 48
+  },
+  {
+    "run": "gate-B__B-gap-150us-10000-i10",
+    "L0": 313,
+    "L1": 10692,
+    "period_us": 2994,
+    "t0_ms": 782,
+    "missing_metric": 33,
+    "packets": 10380,
+    "lost_frames": 33
+  },
+  {
+    "run": "preC__B-gap-150us-10000-preC1",
+    "L0": 346,
+    "L1": 11422,
+    "period_us": 2995,
+    "t0_ms": 882,
+    "missing_metric": 21,
+    "packets": 11077,
+    "lost_frames": 21
+  },
+  {
+    "run": "preC__B-gap-150us-10000-preC2",
+    "L0": 346,
+    "L1": 11384,
+    "period_us": 2991,
+    "t0_ms": 884,
+    "missing_metric": 17,
+    "packets": 11039,
+    "lost_frames": 17
+  },
+  {
+    "run": "gateC-interleave__B-gap-150us-10000-i1",
+    "L0": 346,
+    "L1": 11421,
+    "period_us": 2997,
+    "t0_ms": 882,
+    "missing_metric": 53,
+    "packets": 11076,
+    "lost_frames": 53
+  },
+  {
+    "run": "gateC-interleave__B-gap-150us-10000-i3",
+    "L0": 346,
+    "L1": 11421,
+    "period_us": 2991,
+    "t0_ms": 882,
+    "missing_metric": 38,
+    "packets": 11076,
+    "lost_frames": 38
+  },
+  {
+    "run": "gateC-interleave__B-gap-150us-10000-i5",
+    "L0": 346,
+    "L1": 11415,
+    "period_us": 2991,
+    "t0_ms": 881,
+    "missing_metric": 37,
+    "packets": 11070,
+    "lost_frames": 37
+  },
+  {
+    "run": "gateC1-interleave__B1-gap-150us-10000-i1",
+    "L0": 346,
+    "L1": 11392,
+    "period_us": 3000,
+    "t0_ms": 891,
+    "missing_metric": 105,
+    "packets": 11047,
+    "lost_frames": 105
+  },
+  {
+    "run": "gateC1-interleave/B1-gap-150us-10000-i4",
+    "skipped": "anomaly list truncated (183>160)"
+  },
+  {
+    "run": "gateC1-interleave/B1-gap-150us-10000-i7",
+    "skipped": "anomaly list truncated (190>160)"
+  }
+]

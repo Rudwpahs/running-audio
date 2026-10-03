@@ -1,0 +1,498 @@
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0x15 (USB_UART_CHIP_RESET),boot:0x18 (SPI_FAST_FLASH_BOOT)
+Saved PC:0x403814d9
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce3808,len:0x44c
+load:0x403c9700,len:0xbd8
+load:0x403cc700,len:0x2a80
+entry 0x403c98d0
+PR1_RUNTIME_BOOT
+runtime_profile=phase1-fixed-flrc-rx
+runtime_role=rx
+board_family=LILYGO T3-S3-MVSRBoard
+board_reference_revision=V1.1 upstream reference
+radio_target=SX1280
+upstream_reference_commit=840a2e788b3192c4e9bddf0640c1ecaf703c2598
+hardware_verified=0
+protocol_version=1
+protocol_header_bytes=16
+rf_enabled=1
+sx1280_spi_hz=2000000
+sx1280_cs=7
+sx1280_rst=8
+sx1280_sclk=5
+sx1280_mosi=6
+sx1280_miso=3
+sx1280_dio1=9
+sx1280_busy=36
+sx1280_tx_enable=10
+sx1280_rx_enable=21
+PR1_FIXED_FLRC_PROFILE
+frequency_mhz=2404.000
+bitrate_kbps=1300
+coding_rate=3
+output_dbm=0
+tx_gap_us=5000
+packet_bytes=116
+adaptive_layers=channel_map
+ctrl_plane_core=0
+afh_enabled=1
+afh_session_id=1
+afh_session_seed=0x5052314441525431
+afh_map_version=1
+afh_active_channels=40
+afh_resync_after_misses=8
+afh_rendezvous_first=20
+adaptive_map=1
+map_lead_frames=600
+map_guard_frames=100
+quality_cfg=fast_shift:2,slow_shift:5,suspect_q15:30000,exclude_q15:22937,recover_q15:30720,suspect_losses:2,exclude_losses:4,recover_successes:3,probe_ms:3200-25600,min_active:12,exclude_slow_q15:31129,reinstate_successes:3,map_min_interval_ms:5000
+afh_schedule_fp=18,21,5,3,0,6,29,20,36,25,9,24,14,28,37,17,30,10,32,26,31,7,22,35,16,1,2,12,39,13,15,11,38,19,33,23,34,4,27,8,16,19,10,17,24,21,5,14
+PR1_RUNTIME_LIVE_READY
+PR1T v=1 t_us=11474002 field=device_state value=2
+PR1T v=1 t_us=11474002 field=rssi_dbm value=-55
+PR1T v=1 t_us=11474002 field=crc_good value=3504
+PR1T v=1 t_us=11474002 field=crc_bad value=4
+PR1T v=1 t_us=11474002 field=missing value=27
+PR1T v=1 t_us=11474002 field=queue_depth value=0
+PR1T v=1 t_us=11474002 field=max_queue_depth value=1
+PR1T v=1 t_us=11474002 field=irq_to_spi_us value=5
+PR1T v=1 t_us=11474002 field=spi_duration_us value=1242
+PR1T v=1 t_us=11474002 field=rx_processing_us value=1243
+PR1T v=1 t_us=11474002 field=spi_end_to_rearm_start_us value=231
+PR1T v=1 t_us=11474002 field=rx_rearm_us value=422
+PR1T v=1 t_us=11474002 field=irq_to_rx_ready_us value=1898
+PR1T v=1 t_us=11474002 field=trace_overwrites value=31452
+PR1T v=1 t_us=11474002 field=capability_mask value=12
+PR1H t_us=11785840 session_id=1 map_version=3 locked=1 channel=14 logical=3979 retunes=3631 retune_failures=0 standby_failures=0 timeout_advances=33 resync_entries=1 locks=2 agree=3595 disagree=0 period_est_us=2985 max_consecutive_timeouts=9 retune_us_p99=71 retune_us_max=75 hop_compute_us_p99=44 hop_compute_us_max=54
+PR1HQ acq_anchors=1 acq_crc=0 acq_frames=33 acq_done_us=891518
+PR1HC ok=92,94,94,91,93,94,92,95,91,92,92,91,93,94,92,94,95,92,93,92,28,90,90,92,93,92,94,88,93,90,90,68,90,93,93,91,90,90,92,92 crc=0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,2,1,0,0,0,0,0,0
+PR1CP core=0 lines=4 parse_fail=0 in_dropped=0 out_lines=8 write_waits=28 stack_free=2948 window_waits=423523 work_us_max=38
+PR1QS map_version=3 active=38 bits=ff7fefffff pending=0 pending_v=3 pending_act=3164 min_active_seen=38 proposals=4 commits=4 commit_late=0 expired=0 activations=2 tx_rejects=0 outcomes_dropped=0 events=67 emit_dropped=0 activation_count=2 ctrl_us_p99=6 ctrl_us_max=6 ctrl_us_n=4 ctrl_us_p50=6 ctrl_us_p95=6
+PR1QA v=2 activation=1497 applied_at=1497
+PR1QA v=3 activation=3164 applied_at=3164
+PR1QC ch=0 mhz=2404 state=0 fast_q15=32767 slow_q15=32767 ok=92 crc=0 timeout=0 probe_ok=0 probe_fail=0 suspects=0 exclusions=0 reinclusions=0 last_excl_ms=0
+PR1QC ch=1 mhz=2406 state=0 fast_q15=32767 slow_q15=32767 ok=94 crc=0 timeout=0 probe_ok=0 probe_fail=0 suspects=0 exclusions=0 reinclusions=0 last_excl_ms=0
+PR1QC ch=2 mhz=2408 state=0 fast_q15=32767 slow_q15=32767 ok=94 crc=0 timeout=0 probe_ok=0 probe_fail=0 suspects=0 exclusions=0 reinclusions=0 last_excl_ms=0
+PR1QC ch=3 mhz=2410 state=0 fast_q15=32767 slow_q15=32767 ok=91 crc=0 timeout=0 probe_ok=0 probe_fail=0 suspects=0 exclusions=0 reinclusions=0 last_excl_ms=0
+PR1QC ch=4 mhz=2412 state=0 fast_q15=32767 slow_q15=32767 ok=93 crc=0 timeout=0 probe_ok=0 probe_fail=0 suspects=0 exclusions=0 reinclusions=0 last_excl_ms=0
+PR1QC ch=5 mhz=2414 state=0 fast_q15=32767 slow_q15=32767 ok=94 crc=0 timeout=0 probe_ok=0 probe_fail=0 suspects=0 exclusions=0 reinclusions=0 last_excl_ms=0
+PR1QC ch=6 mhz=2416 state=1 fast_q15=26623 slow_q15=31775 ok=92 crc=0 timeout=1 probe_ok=0 probe_fail=0 suspects=1 exclusions=0 reinclusions=0 last_excl_ms=0
+PR1QC ch=7 mhz=2418 state=0 fast_q15=32767 slow_q15=32767 ok=95 crc=0 timeout=0 probe_ok=0 probe_fail=0 suspects=0 exclusions=0 reinclusions=0 last_excl_ms=0
+PR1QC ch=8 mhz=2420 state=1 fast_q15=28159 slow_q15=31806 ok=91 crc=0 timeout=1 probe_ok=0 probe_fail=0 suspects=1 exclusions=0 reinclusions=0 last_excl_ms=0
+PR1QC ch=9 mhz=2422 state=1 fast_q15=28159 slow_q15=31806 ok=92 crc=0 timeout=1 probe_ok=0 probe_fail=0 suspects=1 exclusions=0 reinclusions=0 last_excl_ms=0
+PR1QC ch=10 mhz=2424 state=0 fast_q15=32767 slow_q15=32767 ok=92 crc=0 timeout=0 probe_ok=0 probe_fail=0 suspects=0 exclusions=0 reinclusions=0 last_excl_ms=0
+PR1QC ch=11 mhz=2426 state=0 fast_q15=32767 slow_q15=32767 ok=91 crc=0 timeout=0 probe_ok=0 probe_fail=0 suspects=0 exclusions=0 reinclusions=0 last_excl_ms=0
+PR1QC ch=12 mhz=2428 state=0 fast_q15=32767 slow_q15=32767 ok=93 crc=0 timeout=0 probe_ok=0 probe_fail=0 suspects=0 exclusions=0 reinclusions=0 last_excl_ms=0
+PR1QC ch=13 mhz=2430 state=0 fast_q15=32767 slow_q15=32767 ok=94 crc=0 timeout=0 probe_ok=0 probe_fail=0 suspects=0 exclusions=0 reinclusions=0 last_excl_ms=0
+PR1QC ch=14 mhz=2432 state=0 fast_q15=32767 slow_q15=32767 ok=92 crc=0 timeout=0 probe_ok=0 probe_fail=0 suspects=0 exclusions=0 reinclusions=0 last_excl_ms=0
+PR1QC ch=15 mhz=2434 state=0 fast_q15=32767 slow_q15=32767 ok=94 crc=0 timeout=0 probe_ok=0 probe_fail=0 suspects=0 exclusions=0 reinclusions=0 last_excl_ms=0
+PR1QC ch=16 mhz=2436 state=0 fast_q15=32767 slow_q15=32767 ok=95 crc=0 timeout=0 probe_ok=0 probe_fail=0 suspects=0 exclusions=0 reinclusions=0 last_excl_ms=0
+PR1QC ch=17 mhz=2438 state=1 fast_q15=28157 slow_q15=31713 ok=92 crc=0 timeout=2 probe_ok=0 probe_fail=0 suspects=2 exclusions=0 reinclusions=0 last_excl_ms=0
+PR1QC ch=18 mhz=2440 state=0 fast_q15=32767 slow_q15=32767 ok=93 crc=0 timeout=0 probe_ok=0 probe_fail=0 suspects=0 exclusions=0 reinclusions=0 last_excl_ms=0
+PR1QC ch=19 mhz=2442 state=1 fast_q15=26623 slow_q15=31775 ok=92 crc=0 timeout=1 probe_ok=0 probe_fail=0 suspects=1 exclusions=0 reinclusions=0 last_excl_ms=0
+PR1QC ch=20 mhz=2444 state=2 fast_q15=32630 slow_q15=31583 ok=28 crc=0 timeout=2 probe_ok=1 probe_fail=0 suspects=1 exclusions=1 reinclusions=0 last_excl_ms=2539
+PR1QC ch=21 mhz=2446 state=0 fast_q15=32767 slow_q15=32767 ok=90 crc=0 timeout=0 probe_ok=0 probe_fail=0 suspects=0 exclusions=0 reinclusions=0 last_excl_ms=0
+PR1QC ch=22 mhz=2448 state=0 fast_q15=32767 slow_q15=32767 ok=90 crc=0 timeout=0 probe_ok=0 probe_fail=0 suspects=0 exclusions=0 reinclusions=0 last_excl_ms=0
+PR1QC ch=23 mhz=2450 state=1 fast_q15=26621 slow_q15=31430 ok=92 crc=0 timeout=2 probe_ok=0 probe_fail=0 suspects=2 exclusions=0 reinclusions=0 last_excl_ms=0
+PR1QC ch=24 mhz=2452 state=0 fast_q15=32767 slow_q15=32767 ok=93 crc=0 timeout=0 probe_ok=0 probe_fail=0 suspects=0 exclusions=0 reinclusions=0 last_excl_ms=0
+PR1QC ch=25 mhz=2454 state=1 fast_q15=28159 slow_q15=31806 ok=92 crc=0 timeout=1 probe_ok=0 probe_fail=0 suspects=1 exclusions=0 reinclusions=0 last_excl_ms=0
+PR1QC ch=26 mhz=2456 state=0 fast_q15=32767 slow_q15=32767 ok=94 crc=0 timeout=0 probe_ok=0 probe_fail=0 suspects=0 exclusions=0 reinclusions=0 last_excl_ms=0
+PR1QC ch=27 mhz=2458 state=0 fast_q15=31669 slow_q15=31434 ok=88 crc=0 timeout=3 probe_ok=0 probe_fail=0 suspects=3 exclusions=0 reinclusions=0 last_excl_ms=0
+PR1QC ch=28 mhz=2460 state=1 fast_q15=26621 slow_q15=31549 ok=93 crc=0 timeout=2 probe_ok=0 probe_fail=0 suspects=2 exclusions=0 reinclusions=0 last_excl_ms=0
+PR1QC ch=29 mhz=2462 state=0 fast_q15=32758 slow_q15=32144 ok=90 crc=1 timeout=1 probe_ok=0 probe_fail=0 suspects=2 exclusions=0 reinclusions=0 last_excl_ms=0
+PR1QC ch=30 mhz=2464 state=2 fast_q15=27284 slow_q15=30343 ok=90 crc=0 timeout=3 probe_ok=0 probe_fail=0 suspects=2 exclusions=1 reinclusions=0 last_excl_ms=11243
+PR1QC ch=31 mhz=2466 state=2 fast_q15=32761 slow_q15=31619 ok=68 crc=0 timeout=4 probe_ok=1 probe_fail=0 suspects=2 exclusions=1 reinclusions=0 last_excl_ms=3636
+PR1QC ch=32 mhz=2468 state=2 fast_q15=32480 slow_q15=31296 ok=90 crc=2 timeout=2 probe_ok=0 probe_fail=0 suspects=4 exclusions=1 reinclusions=0 last_excl_ms=10537
+PR1QC ch=33 mhz=2470 state=0 fast_q15=32764 slow_q15=32427 ok=93 crc=1 timeout=1 probe_ok=0 probe_fail=0 suspects=2 exclusions=0 reinclusions=0 last_excl_ms=0
+PR1QC ch=34 mhz=2472 state=0 fast_q15=32767 slow_q15=32767 ok=93 crc=0 timeout=0 probe_ok=0 probe_fail=0 suspects=0 exclusions=0 reinclusions=0 last_excl_ms=0
+PR1QC ch=35 mhz=2474 state=0 fast_q15=32767 slow_q15=32767 ok=91 crc=0 timeout=0 probe_ok=0 probe_fail=0 suspects=0 exclusions=0 reinclusions=0 last_excl_ms=0
+PR1QC ch=36 mhz=2476 state=0 fast_q15=32719 slow_q15=32033 ok=90 crc=0 timeout=3 probe_ok=0 probe_fail=0 suspects=3 exclusions=0 reinclusions=0 last_excl_ms=0
+PR1QC ch=37 mhz=2478 state=1 fast_q15=26623 slow_q15=31775 ok=90 crc=0 timeout=1 probe_ok=0 probe_fail=0 suspects=1 exclusions=0 reinclusions=0 last_excl_ms=0
+PR1QC ch=38 mhz=2480 state=0 fast_q15=32656 slow_q15=32126 ok=92 crc=0 timeout=1 probe_ok=0 probe_fail=0 suspects=1 exclusions=0 reinclusions=0 last_excl_ms=0
+PR1QC ch=39 mhz=2482 state=0 fast_q15=32767 slow_q15=32767 ok=92 crc=0 timeout=0 probe_ok=0 probe_fail=0 suspects=0 exclusions=0 reinclusions=0 last_excl_ms=0
+PR1QE t_ms=894 kind=7 logical=347 target=0 id=0 v=1 ch=36 value=0 bits=0000000000
+PR1QE t_ms=1469 kind=11 logical=539 target=0 id=0 v=1 ch=36 value=0 bits=0000000000
+PR1QE t_ms=1999 kind=7 logical=716 target=0 id=0 v=1 ch=20 value=0 bits=0000000000
+PR1QE t_ms=2098 kind=7 logical=749 target=0 id=0 v=1 ch=27 value=0 bits=0000000000
+PR1QE t_ms=2200 kind=7 logical=783 target=0 id=0 v=1 ch=32 value=0 bits=0000000000
+PR1QE t_ms=2509 kind=7 logical=886 target=0 id=0 v=1 ch=17 value=0 bits=0000000000
+PR1QE t_ms=2539 kind=8 logical=896 target=0 id=0 v=1 ch=20 value=2 bits=0000000000
+PR1QE t_ms=2540 kind=0 logical=897 target=1497 id=1 v=2 ch=0 value=1 bits=ffffefffff
+PR1QE t_ms=2551 kind=7 logical=900 target=0 id=0 v=1 ch=36 value=0 bits=0000000000
+PR1QE t_ms=2556 kind=7 logical=902 target=0 id=0 v=1 ch=33 value=0 bits=0000000000
+PR1QE t_ms=2559 kind=1 logical=903 target=1497 id=1 v=2 ch=0 value=1 bits=ffffefffff
+PR1QE t_ms=2611 kind=7 logical=920 target=0 id=0 v=1 ch=31 value=0 bits=0000000000
+PR1QE t_ms=2658 kind=11 logical=936 target=0 id=0 v=1 ch=27 value=0 bits=0000000000
+PR1QE t_ms=2805 kind=11 logical=985 target=0 id=0 v=1 ch=32 value=0 bits=0000000000
+PR1QE t_ms=3120 kind=11 logical=1090 target=0 id=0 v=1 ch=17 value=0 bits=0000000000
+PR1QE t_ms=3168 kind=11 logical=1106 target=0 id=0 v=1 ch=33 value=0 bits=0000000000
+PR1QE t_ms=3183 kind=11 logical=1111 target=0 id=0 v=1 ch=36 value=0 bits=0000000000
+PR1QE t_ms=3222 kind=11 logical=1124 target=0 id=0 v=1 ch=31 value=0 bits=0000000000
+PR1QE t_ms=3531 kind=7 logical=1227 target=0 id=0 v=1 ch=31 value=0 bits=0000000000
+PR1QE t_ms=3636 kind=8 logical=1262 target=0 id=0 v=1 ch=31 value=2 bits=0000000000
+PR1QE t_ms=4073 kind=7 logical=1408 target=0 id=0 v=1 ch=29 value=0 bits=0000000000
+PR1QE t_ms=4339 kind=4 logical=1497 target=1497 id=0 v=2 ch=0 value=39 bits=ffffefffff
+PR1QE t_ms=4562 kind=7 logical=1571 target=0 id=0 v=2 ch=32 value=0 bits=0000000000
+PR1QE t_ms=4778 kind=11 logical=1643 target=0 id=0 v=2 ch=29 value=0 bits=0000000000
+PR1QE t_ms=5189 kind=11 logical=1780 target=0 id=0 v=2 ch=32 value=0 bits=0000000000
+PR1QE t_ms=6119 kind=7 logical=2090 target=0 id=0 v=2 ch=28 value=0 bits=0000000000
+PR1QE t_ms=6611 kind=7 logical=2254 target=0 id=0 v=2 ch=33 value=0 bits=0000000000
+PR1QE t_ms=6680 kind=11 logical=2277 target=0 id=0 v=2 ch=28 value=0 bits=0000000000
+PR1QE t_ms=7205 kind=11 logical=2452 target=0 id=0 v=2 ch=33 value=0 bits=0000000000
+PR1QE t_ms=7540 kind=0 logical=2564 target=3164 id=2 v=3 ch=0 value=1 bits=ff7fefffff
+PR1QE t_ms=7546 kind=1 logical=2566 target=3164 id=2 v=3 ch=0 value=1 bits=ff7fefffff
+PR1QE t_ms=7658 kind=7 logical=2603 target=0 id=0 v=2 ch=23 value=0 bits=0000000000
+PR1QE t_ms=8267 kind=11 logical=2806 target=0 id=0 v=2 ch=23 value=0 bits=0000000000
+PR1QE t_ms=8486 kind=7 logical=2879 target=0 id=0 v=2 ch=27 value=0 bits=0000000000
+PR1QE t_ms=8957 kind=7 logical=3036 target=0 id=0 v=2 ch=29 value=0 bits=0000000000
+PR1QE t_ms=8999 kind=11 logical=3050 target=0 id=0 v=2 ch=27 value=0 bits=0000000000
+PR1QE t_ms=9339 kind=4 logical=3164 target=3164 id=0 v=3 ch=0 value=38 bits=ff7fefffff
+PR1QE t_ms=9340 kind=0 logical=3164 target=3464 id=3 v=3 ch=20 value=2 bits=0000000000
+PR1QE t_ms=9346 kind=1 logical=3166 target=3464 id=3 v=3 ch=20 value=1 bits=0000000000
+PR1QE t_ms=9500 kind=7 logical=3217 target=0 id=0 v=3 ch=32 value=0 bits=0000000000
+PR1QE t_ms=9541 kind=11 logical=3231 target=0 id=0 v=3 ch=29 value=0 bits=0000000000
+PR1QE t_ms=9697 kind=7 logical=3283 target=0 id=0 v=3 ch=36 value=0 bits=0000000000
+PR1QE t_ms=9880 kind=7 logical=3344 target=0 id=0 v=3 ch=30 value=0 bits=0000000000
+PR1QE t_ms=9996 kind=7 logical=3383 target=0 id=0 v=3 ch=38 value=0 bits=0000000000
+PR1QE t_ms=10074 kind=11 logical=3409 target=0 id=0 v=3 ch=32 value=0 bits=0000000000
+PR1QE t_ms=10238 kind=9 logical=3464 target=3464 id=0 v=3 ch=20 value=1 bits=0000000000
+PR1QE t_ms=10240 kind=0 logical=3465 target=3765 id=4 v=3 ch=31 value=2 bits=0000000000
+PR1QE t_ms=10246 kind=1 logical=3467 target=3765 id=4 v=3 ch=31 value=1 bits=0000000000
+PR1QE t_ms=10256 kind=11 logical=3470 target=0 id=0 v=3 ch=36 value=0 bits=0000000000
+PR1QE t_ms=10391 kind=7 logical=3515 target=0 id=0 v=3 ch=32 value=0 bits=0000000000
+PR1QE t_ms=10465 kind=11 logical=3540 target=0 id=0 v=3 ch=30 value=0 bits=0000000000
+PR1QE t_ms=10537 kind=8 logical=3564 target=0 id=0 v=3 ch=32 value=2 bits=0000000000
+PR1QE t_ms=10636 kind=11 logical=3597 target=0 id=0 v=3 ch=38 value=0 bits=0000000000
+PR1QE t_ms=10827 kind=7 logical=3661 target=0 id=0 v=3 ch=27 value=0 bits=0000000000
+PR1QE t_ms=11138 kind=9 logical=3765 target=3765 id=0 v=3 ch=31 value=1 bits=0000000000
+PR1QE t_ms=11210 kind=7 logical=3789 target=0 id=0 v=3 ch=30 value=0 bits=0000000000
+PR1QE t_ms=11243 kind=8 logical=3800 target=0 id=0 v=3 ch=30 value=2 bits=0000000000
+PR1QE t_ms=11447 kind=11 logical=3868 target=0 id=0 v=3 ch=27 value=0 bits=0000000000
+PR1QE t_ms=11484 kind=7 logical=3878 target=0 id=0 v=3 ch=25 value=0 bits=0000000000
+PR1QE t_ms=11484 kind=7 logical=3879 target=0 id=0 v=3 ch=17 value=0 bits=0000000000
+PR1QE t_ms=11484 kind=7 logical=3880 target=0 id=0 v=3 ch=9 value=0 bits=0000000000
+PR1QE t_ms=11486 kind=7 logical=3881 target=0 id=0 v=3 ch=23 value=0 bits=0000000000
+PR1QE t_ms=11489 kind=7 logical=3882 target=0 id=0 v=3 ch=8 value=0 bits=0000000000
+PR1QE t_ms=11492 kind=7 logical=3883 target=0 id=0 v=3 ch=19 value=0 bits=0000000000
+PR1QE t_ms=11495 kind=7 logical=3884 target=0 id=0 v=3 ch=6 value=0 bits=0000000000
+PR1QE t_ms=11498 kind=7 logical=3885 target=0 id=0 v=3 ch=37 value=0 bits=0000000000
+PR1QE t_ms=11634 kind=7 logical=3928 target=0 id=0 v=3 ch=28 value=0 bits=0000000000
+PR1QE_END
+PR1PROP id=5 type=map v=4 old=3 bits=fe3fefffff oldbits=ff7fefffff act=4832 rx_logical=4232 active=36
+PR1HE_BEGIN total=4113 count=256
+PR1HE t_us=12494953 kind=2 logical=4216 seq=4216 ch=25 rssi=-53
+PR1HE t_us=12497952 kind=2 logical=4217 seq=4217 ch=6 rssi=-44
+PR1HE t_us=12500947 kind=2 logical=4218 seq=4218 ch=23 rssi=-49
+PR1HE t_us=12503941 kind=2 logical=4219 seq=4219 ch=2 rssi=-44
+PR1HE t_us=12506938 kind=2 logical=4220 seq=4220 ch=33 rssi=-53
+PR1HE t_us=12509932 kind=2 logical=4221 seq=4221 ch=24 rssi=-50
+PR1HE t_us=12512925 kind=2 logical=4222 seq=4222 ch=37 rssi=-53
+PR1HE t_us=12515918 kind=2 logical=4223 seq=4223 ch=14 rssi=-45
+PR1HE t_us=12518905 kind=2 logical=4224 seq=4224 ch=0 rssi=-45
+PR1HE t_us=12521901 kind=2 logical=4225 seq=4225 ch=17 rssi=-46
+PR1HE t_us=12524894 kind=2 logical=4226 seq=4226 ch=38 rssi=-54
+PR1HE t_us=12527889 kind=2 logical=4227 seq=4227 ch=27 rssi=-51
+PR1HE t_us=12530883 kind=2 logical=4228 seq=4228 ch=8 rssi=-44
+PR1HE t_us=12533876 kind=2 logical=4229 seq=4229 ch=13 rssi=-44
+PR1HE t_us=12536870 kind=2 logical=4230 seq=4230 ch=9 rssi=-45
+PR1HE t_us=12539859 kind=2 logical=4231 seq=4231 ch=5 rssi=-44
+PR1HE t_us=12542853 kind=2 logical=4232 seq=4232 ch=29 rssi=-53
+PR1HE t_us=12545848 kind=2 logical=4233 seq=4233 ch=30 rssi=-51
+PR1HE t_us=12548840 kind=2 logical=4234 seq=4234 ch=21 rssi=-48
+PR1HE t_us=12551835 kind=2 logical=4235 seq=4235 ch=35 rssi=-52
+PR1HE t_us=12554827 kind=2 logical=4236 seq=4236 ch=26 rssi=-51
+PR1HE t_us=12557816 kind=2 logical=4237 seq=4237 ch=4 rssi=-44
+PR1HE t_us=12560802 kind=2 logical=4238 seq=4238 ch=6 rssi=-44
+PR1HE t_us=12563795 kind=2 logical=4239 seq=4239 ch=3 rssi=-44
+PR1HE t_us=12566787 kind=2 logical=4240 seq=4240 ch=39 rssi=-55
+PR1HE t_us=12569781 kind=2 logical=4241 seq=4241 ch=11 rssi=-45
+PR1HE t_us=12572778 kind=2 logical=4242 seq=4242 ch=7 rssi=-44
+PR1HE t_us=12575770 kind=2 logical=4243 seq=4243 ch=10 rssi=-45
+PR1HE t_us=12578759 kind=2 logical=4244 seq=4244 ch=22 rssi=-48
+PR1HE t_us=12581754 kind=2 logical=4245 seq=4245 ch=36 rssi=-53
+PR1HE t_us=12584732 kind=2 logical=4246 seq=4246 ch=32 rssi=-49
+PR1HE t_us=12587718 kind=2 logical=4247 seq=4247 ch=34 rssi=-52
+PR1HE t_us=12590706 kind=2 logical=4248 seq=4248 ch=12 rssi=-45
+PR1HE t_us=12593686 kind=2 logical=4249 seq=4249 ch=1 rssi=-45
+PR1HE t_us=12596672 kind=2 logical=4250 seq=4250 ch=19 rssi=-47
+PR1HE t_us=12599659 kind=2 logical=4251 seq=4251 ch=28 rssi=-53
+PR1HE t_us=12602643 kind=2 logical=4252 seq=4252 ch=18 rssi=-47
+PR1HE t_us=12605631 kind=2 logical=4253 seq=4253 ch=25 rssi=-53
+PR1HE t_us=12608614 kind=2 logical=4254 seq=4254 ch=16 rssi=-47
+PR1HE t_us=12611603 kind=2 logical=4255 seq=4255 ch=15 rssi=-46
+PR1HE t_us=12614590 kind=2 logical=4256 seq=4256 ch=26 rssi=-52
+PR1HE t_us=12617579 kind=2 logical=4257 seq=4257 ch=34 rssi=-52
+PR1HE t_us=12620567 kind=2 logical=4258 seq=4258 ch=33 rssi=-53
+PR1HE t_us=12623556 kind=2 logical=4259 seq=4259 ch=5 rssi=-44
+PR1HE t_us=12626543 kind=2 logical=4260 seq=4260 ch=21 rssi=-48
+PR1HE t_us=12629527 kind=2 logical=4261 seq=4261 ch=2 rssi=-44
+PR1HE t_us=12632521 kind=2 logical=4262 seq=4262 ch=14 rssi=-45
+PR1HE t_us=12635520 kind=2 logical=4263 seq=4263 ch=32 rssi=-51
+PR1HE t_us=12638513 kind=2 logical=4264 seq=4264 ch=11 rssi=-44
+PR1HE t_us=12641502 kind=2 logical=4265 seq=4265 ch=22 rssi=-48
+PR1HE t_us=12644490 kind=2 logical=4266 seq=4266 ch=0 rssi=-45
+PR1HE t_us=12647480 kind=2 logical=4267 seq=4267 ch=23 rssi=-50
+PR1HE t_us=12650466 kind=2 logical=4268 seq=4268 ch=16 rssi=-47
+PR1HE t_us=12653463 kind=2 logical=4269 seq=4269 ch=4 rssi=-44
+PR1HE t_us=12656463 kind=2 logical=4270 seq=4270 ch=13 rssi=-45
+PR1HE t_us=12659457 kind=2 logical=4271 seq=4271 ch=37 rssi=-53
+PR1HE t_us=12662446 kind=2 logical=4272 seq=4272 ch=29 rssi=-52
+PR1HE t_us=12665441 kind=2 logical=4273 seq=4273 ch=17 rssi=-46
+PR1HE t_us=12668433 kind=2 logical=4274 seq=4274 ch=27 rssi=-53
+PR1HE t_us=12671428 kind=2 logical=4275 seq=4275 ch=1 rssi=-45
+PR1HE t_us=12674422 kind=2 logical=4276 seq=4276 ch=39 rssi=-54
+PR1HE t_us=12677420 kind=2 logical=4277 seq=4277 ch=15 rssi=-45
+PR1HE t_us=12680408 kind=2 logical=4278 seq=4278 ch=10 rssi=-45
+PR1HE t_us=12683399 kind=2 logical=4279 seq=4279 ch=36 rssi=-53
+PR1HE t_us=12686385 kind=2 logical=4280 seq=4280 ch=12 rssi=-45
+PR1HE t_us=12689383 kind=2 logical=4281 seq=4281 ch=38 rssi=-53
+PR1HE t_us=12692374 kind=2 logical=4282 seq=4282 ch=6 rssi=-44
+PR1HE t_us=12695357 kind=2 logical=4283 seq=4283 ch=18 rssi=-46
+PR1HE t_us=12698344 kind=2 logical=4284 seq=4284 ch=19 rssi=-47
+PR1HE t_us=12701328 kind=2 logical=4285 seq=4285 ch=25 rssi=-53
+PR1HE t_us=12704317 kind=2 logical=4286 seq=4286 ch=24 rssi=-53
+PR1HE t_us=12707298 kind=2 logical=4287 seq=4287 ch=9 rssi=-44
+PR1HE t_us=12710285 kind=2 logical=4288 seq=4288 ch=3 rssi=-43
+PR1HE t_us=12713274 kind=2 logical=4289 seq=4289 ch=35 rssi=-53
+PR1HE t_us=12716256 kind=2 logical=4290 seq=4290 ch=8 rssi=-47
+PR1HE t_us=12719233 kind=2 logical=4291 seq=4291 ch=28 rssi=-52
+PR1HE t_us=12722226 kind=2 logical=4292 seq=4292 ch=7 rssi=-44
+PR1HE t_us=12725216 kind=2 logical=4293 seq=4293 ch=30 rssi=-53
+PR1HE t_us=12728216 kind=2 logical=4294 seq=4294 ch=27 rssi=-52
+PR1HE t_us=12731217 kind=2 logical=4295 seq=4295 ch=28 rssi=-52
+PR1HE t_us=12734215 kind=2 logical=4296 seq=4296 ch=1 rssi=-45
+PR1HE t_us=12737216 kind=2 logical=4297 seq=4297 ch=15 rssi=-46
+PR1HE t_us=12740216 kind=2 logical=4298 seq=4298 ch=25 rssi=-53
+PR1HE t_us=12743217 kind=2 logical=4299 seq=4299 ch=38 rssi=-53
+PR1HE t_us=12746215 kind=2 logical=4300 seq=4300 ch=6 rssi=-44
+PR1HE t_us=12749216 kind=2 logical=4301 seq=4301 ch=11 rssi=-44
+PR1HE t_us=12752216 kind=2 logical=4302 seq=4302 ch=24 rssi=-51
+PR1HE t_us=12755217 kind=2 logical=4303 seq=4303 ch=37 rssi=-54
+PR1HE t_us=12758217 kind=2 logical=4304 seq=4304 ch=3 rssi=-44
+PR1HE t_us=12761217 kind=2 logical=4305 seq=4305 ch=34 rssi=-52
+PR1HE t_us=12764216 kind=2 logical=4306 seq=4306 ch=13 rssi=-44
+PR1HE t_us=12767216 kind=2 logical=4307 seq=4307 ch=19 rssi=-47
+PR1HE t_us=12770217 kind=2 logical=4308 seq=4308 ch=2 rssi=-44
+PR1HE t_us=12773217 kind=2 logical=4309 seq=4309 ch=39 rssi=-54
+PR1HE t_us=12776217 kind=2 logical=4310 seq=4310 ch=23 rssi=-50
+PR1HE t_us=12779216 kind=2 logical=4311 seq=4311 ch=4 rssi=-44
+PR1HE t_us=12782215 kind=2 logical=4312 seq=4312 ch=0 rssi=-45
+PR1HE t_us=12785216 kind=2 logical=4313 seq=4313 ch=12 rssi=-45
+PR1HE t_us=12788217 kind=2 logical=4314 seq=4314 ch=32 rssi=-51
+PR1HE t_us=12791216 kind=2 logical=4315 seq=4315 ch=10 rssi=-44
+PR1HE t_us=12794216 kind=2 logical=4316 seq=4316 ch=30 rssi=-53
+PR1HE t_us=12797216 kind=2 logical=4317 seq=4317 ch=22 rssi=-48
+PR1HE t_us=12800216 kind=2 logical=4318 seq=4318 ch=21 rssi=-48
+PR1HE t_us=12803216 kind=2 logical=4319 seq=4319 ch=17 rssi=-47
+PR1HE t_us=12806217 kind=2 logical=4320 seq=4320 ch=29 rssi=-53
+PR1HE t_us=12809217 kind=2 logical=4321 seq=4321 ch=14 rssi=-45
+PR1HE t_us=12812217 kind=2 logical=4322 seq=4322 ch=5 rssi=-45
+PR1HE t_us=12815216 kind=2 logical=4323 seq=4323 ch=7 rssi=-47
+PR1HE t_us=12818216 kind=2 logical=4324 seq=4324 ch=8 rssi=-44
+PR1HE t_us=12821218 kind=2 logical=4325 seq=4325 ch=33 rssi=-52
+PR1HE t_us=12824217 kind=2 logical=4326 seq=4326 ch=36 rssi=-53
+PR1HE t_us=12827216 kind=2 logical=4327 seq=4327 ch=16 rssi=-47
+PR1HE t_us=12830216 kind=2 logical=4328 seq=4328 ch=18 rssi=-47
+PR1HE t_us=12833216 kind=2 logical=4329 seq=4329 ch=9 rssi=-44
+PR1HE t_us=12836217 kind=2 logical=4330 seq=4330 ch=35 rssi=-52
+PR1HE t_us=12839217 kind=2 logical=4331 seq=4331 ch=26 rssi=-49
+PR1HE t_us=12842217 kind=2 logical=4332 seq=4332 ch=35 rssi=-53
+PR1HE t_us=12845216 kind=2 logical=4333 seq=4333 ch=12 rssi=-44
+PR1HE t_us=12848217 kind=2 logical=4334 seq=4334 ch=18 rssi=-47
+PR1HE t_us=12851216 kind=2 logical=4335 seq=4335 ch=0 rssi=-44
+PR1HE t_us=12854218 kind=2 logical=4336 seq=4336 ch=2 rssi=-44
+PR1HE t_us=12857217 kind=2 logical=4337 seq=4337 ch=7 rssi=-45
+PR1HE t_us=12860218 kind=2 logical=4338 seq=4338 ch=37 rssi=-54
+PR1HE t_us=12863217 kind=2 logical=4339 seq=4339 ch=6 rssi=-44
+PR1HE t_us=12866217 kind=2 logical=4340 seq=4340 ch=11 rssi=-45
+PR1HE t_us=12869217 kind=2 logical=4341 seq=4341 ch=22 rssi=-48
+PR1HE t_us=12872219 kind=2 logical=4342 seq=4342 ch=14 rssi=-45
+PR1HE t_us=12875217 kind=2 logical=4343 seq=4343 ch=25 rssi=-52
+PR1HE t_us=12878217 kind=2 logical=4344 seq=4344 ch=4 rssi=-44
+PR1HE t_us=12881217 kind=2 logical=4345 seq=4345 ch=34 rssi=-53
+PR1HE t_us=12884218 kind=2 logical=4346 seq=4346 ch=29 rssi=-53
+PR1HE t_us=12887217 kind=2 logical=4347 seq=4347 ch=19 rssi=-47
+PR1HE t_us=12890217 kind=2 logical=4348 seq=4348 ch=15 rssi=-46
+PR1HE t_us=12893217 kind=2 logical=4349 seq=4349 ch=5 rssi=-45
+PR1HE t_us=12896218 kind=2 logical=4350 seq=4350 ch=38 rssi=-53
+PR1HE t_us=12899218 kind=2 logical=4351 seq=4351 ch=27 rssi=-52
+PR1HE t_us=12902217 kind=2 logical=4352 seq=4352 ch=21 rssi=-48
+PR1HE t_us=12905217 kind=2 logical=4353 seq=4353 ch=30 rssi=-51
+PR1HE t_us=12908218 kind=2 logical=4354 seq=4354 ch=23 rssi=-49
+PR1HE t_us=12911219 kind=2 logical=4355 seq=4355 ch=13 rssi=-45
+PR1HE t_us=12914218 kind=2 logical=4356 seq=4356 ch=39 rssi=-54
+PR1HE t_us=12917218 kind=2 logical=4357 seq=4357 ch=26 rssi=-52
+PR1HE t_us=12920217 kind=2 logical=4358 seq=4358 ch=8 rssi=-44
+PR1HE t_us=12923217 kind=2 logical=4359 seq=4359 ch=9 rssi=-45
+PR1HE t_us=12926218 kind=2 logical=4360 seq=4360 ch=36 rssi=-53
+PR1HE t_us=12929218 kind=2 logical=4361 seq=4361 ch=28 rssi=-52
+PR1HE t_us=12932218 kind=2 logical=4362 seq=4362 ch=33 rssi=-53
+PR1HE t_us=12935218 kind=2 logical=4363 seq=4363 ch=24 rssi=-51
+PR1HE t_us=12938218 kind=2 logical=4364 seq=4364 ch=10 rssi=-44
+PR1HE t_us=12941218 kind=2 logical=4365 seq=4365 ch=17 rssi=-47
+PR1HE t_us=12944217 kind=2 logical=4366 seq=4366 ch=1 rssi=-45
+PR1HE t_us=12947218 kind=2 logical=4367 seq=4367 ch=16 rssi=-47
+PR1HE t_us=12950217 kind=2 logical=4368 seq=4368 ch=3 rssi=-44
+PR1HE t_us=12953218 kind=2 logical=4369 seq=4369 ch=32 rssi=-53
+PR1HE t_us=12956217 kind=2 logical=4370 seq=4370 ch=13 rssi=-45
+PR1HE t_us=12959218 kind=2 logical=4371 seq=4371 ch=16 rssi=-46
+PR1HE t_us=12962219 kind=2 logical=4372 seq=4372 ch=33 rssi=-53
+PR1HE t_us=12965218 kind=2 logical=4373 seq=4373 ch=11 rssi=-45
+PR1HE t_us=12968217 kind=2 logical=4374 seq=4374 ch=9 rssi=-45
+PR1HE t_us=12971218 kind=2 logical=4375 seq=4375 ch=34 rssi=-53
+PR1HE t_us=12974218 kind=2 logical=4376 seq=4376 ch=30 rssi=-53
+PR1HE t_us=12977219 kind=2 logical=4377 seq=4377 ch=3 rssi=-44
+PR1HE t_us=12980218 kind=2 logical=4378 seq=4378 ch=5 rssi=-44
+PR1HE t_us=12983218 kind=2 logical=4379 seq=4379 ch=22 rssi=-48
+PR1HE t_us=12986218 kind=2 logical=4380 seq=4380 ch=19 rssi=-47
+PR1HE t_us=12989219 kind=2 logical=4381 seq=4381 ch=35 rssi=-53
+PR1HE t_us=12992217 kind=2 logical=4382 seq=4382 ch=6 rssi=-47
+PR1HE t_us=12995219 kind=2 logical=4383 seq=4383 ch=26 rssi=-52
+PR1HE t_us=12998219 kind=2 logical=4384 seq=4384 ch=39 rssi=-54
+PR1HE t_us=13001220 kind=2 logical=4385 seq=4385 ch=2 rssi=-44
+PR1HE t_us=13004218 kind=2 logical=4386 seq=4386 ch=23 rssi=-53
+PR1HE t_us=13007218 kind=2 logical=4387 seq=4387 ch=25 rssi=-53
+PR1HE t_us=13010219 kind=2 logical=4388 seq=4388 ch=38 rssi=-54
+PR1HE t_us=13013217 kind=2 logical=4389 seq=4389 ch=7 rssi=-44
+PR1HE t_us=13016218 kind=2 logical=4390 seq=4390 ch=21 rssi=-48
+PR1HE t_us=13019218 kind=2 logical=4391 seq=4391 ch=37 rssi=-52
+PR1HE t_us=13022217 kind=2 logical=4392 seq=4392 ch=10 rssi=-45
+PR1HE t_us=13025218 kind=2 logical=4393 seq=4393 ch=4 rssi=-44
+PR1HE t_us=13028218 kind=2 logical=4394 seq=4394 ch=1 rssi=-45
+PR1HE t_us=13031217 kind=2 logical=4395 seq=4395 ch=0 rssi=-45
+PR1HE t_us=13034207 kind=2 logical=4396 seq=4396 ch=36 rssi=-53
+PR1HE t_us=13037201 kind=2 logical=4397 seq=4397 ch=24 rssi=-51
+PR1HE t_us=13040193 kind=2 logical=4398 seq=4398 ch=12 rssi=-45
+PR1HE t_us=13043182 kind=2 logical=4399 seq=4399 ch=29 rssi=-53
+PR1HE t_us=13046172 kind=2 logical=4400 seq=4400 ch=17 rssi=-47
+PR1HE t_us=13049164 kind=2 logical=4401 seq=4401 ch=8 rssi=-45
+PR1HE t_us=13052154 kind=2 logical=4402 seq=4402 ch=27 rssi=-53
+PR1HE t_us=13055148 kind=2 logical=4403 seq=4403 ch=14 rssi=-45
+PR1HE t_us=13058136 kind=2 logical=4404 seq=4404 ch=28 rssi=-53
+PR1HE t_us=13061131 kind=2 logical=4405 seq=4405 ch=18 rssi=-47
+PR1HE t_us=13064120 kind=2 logical=4406 seq=4406 ch=32 rssi=-53
+PR1HE t_us=13067112 kind=2 logical=4407 seq=4407 ch=15 rssi=-46
+PR1HE t_us=13070101 kind=2 logical=4408 seq=4408 ch=23 rssi=-53
+PR1HE t_us=13073089 kind=2 logical=4409 seq=4409 ch=17 rssi=-46
+PR1HE t_us=13076085 kind=2 logical=4410 seq=4410 ch=25 rssi=-51
+PR1HE t_us=13079079 kind=2 logical=4411 seq=4411 ch=38 rssi=-53
+PR1HE t_us=13082073 kind=2 logical=4412 seq=4412 ch=2 rssi=-44
+PR1HE t_us=13085072 kind=2 logical=4413 seq=4413 ch=26 rssi=-52
+PR1HE t_us=13088065 kind=2 logical=4414 seq=4414 ch=4 rssi=-44
+PR1HE t_us=13091054 kind=2 logical=4415 seq=4415 ch=32 rssi=-53
+PR1HE t_us=13094043 kind=2 logical=4416 seq=4416 ch=37 rssi=-53
+PR1HE t_us=13097037 kind=2 logical=4417 seq=4417 ch=30 rssi=-52
+PR1HE t_us=13100031 kind=2 logical=4418 seq=4418 ch=35 rssi=-53
+PR1HE t_us=13103024 kind=2 logical=4419 seq=4419 ch=12 rssi=-45
+PR1HE t_us=13106013 kind=2 logical=4420 seq=4420 ch=36 rssi=-53
+PR1HE t_us=13109006 kind=2 logical=4421 seq=4421 ch=6 rssi=-44
+PR1HE t_us=13111996 kind=2 logical=4422 seq=4422 ch=34 rssi=-53
+PR1HE t_us=13114989 kind=2 logical=4423 seq=4423 ch=0 rssi=-45
+PR1HE t_us=13117985 kind=2 logical=4424 seq=4424 ch=3 rssi=-45
+PR1HE t_us=13120977 kind=2 logical=4425 seq=4425 ch=21 rssi=-48
+PR1HE t_us=13123967 kind=2 logical=4426 seq=4426 ch=15 rssi=-45
+PR1HE t_us=13126958 kind=2 logical=4427 seq=4427 ch=22 rssi=-48
+PR1HE t_us=13129958 kind=2 logical=4428 seq=4428 ch=33 rssi=-51
+PR1HE t_us=13132950 kind=2 logical=4429 seq=4429 ch=29 rssi=-52
+PR1HE t_us=13135941 kind=2 logical=4430 seq=4430 ch=5 rssi=-44
+PR1HE t_us=13138937 kind=2 logical=4431 seq=4431 ch=24 rssi=-50
+PR1HE t_us=13141929 kind=2 logical=4432 seq=4432 ch=8 rssi=-44
+PR1HE t_us=13144922 kind=2 logical=4433 seq=4433 ch=11 rssi=-44
+PR1HE t_us=13147911 kind=2 logical=4434 seq=4434 ch=18 rssi=-47
+PR1HE t_us=13151275 kind=5 logical=4435 seq=1 ch=28 rssi=0
+PR1HE t_us=13153899 kind=2 logical=4436 seq=4436 ch=16 rssi=-46
+PR1HE t_us=13156895 kind=3 logical=4437 seq=0 ch=27 rssi=0
+PR1HE t_us=13159888 kind=2 logical=4438 seq=4438 ch=13 rssi=-44
+PR1HE t_us=13162881 kind=2 logical=4439 seq=4439 ch=1 rssi=-45
+PR1HE t_us=13165875 kind=2 logical=4440 seq=4440 ch=14 rssi=-46
+PR1HE t_us=13168863 kind=2 logical=4441 seq=4441 ch=7 rssi=-44
+PR1HE t_us=13171852 kind=2 logical=4442 seq=4442 ch=9 rssi=-44
+PR1HE t_us=13174846 kind=2 logical=4443 seq=4443 ch=39 rssi=-55
+PR1HE t_us=13177832 kind=2 logical=4444 seq=4444 ch=10 rssi=-44
+PR1HE t_us=13180820 kind=2 logical=4445 seq=4445 ch=19 rssi=-47
+PR1HE t_us=13183808 kind=2 logical=4446 seq=4446 ch=10 rssi=-45
+PR1HE t_us=13186795 kind=2 logical=4447 seq=4447 ch=13 rssi=-45
+PR1HE t_us=13189788 kind=2 logical=4448 seq=4448 ch=22 rssi=-49
+PR1HE t_us=13192787 kind=2 logical=4449 seq=4449 ch=39 rssi=-55
+PR1HE t_us=13195776 kind=2 logical=4450 seq=4450 ch=17 rssi=-46
+PR1HE t_us=13198764 kind=2 logical=4451 seq=4451 ch=5 rssi=-44
+PR1HE t_us=13201746 kind=2 logical=4452 seq=4452 ch=19 rssi=-48
+PR1HE t_us=13204728 kind=2 logical=4453 seq=4453 ch=2 rssi=-44
+PR1HE t_us=13207718 kind=2 logical=4454 seq=4454 ch=32 rssi=-53
+PR1HE t_us=13210705 kind=2 logical=4455 seq=4455 ch=30 rssi=-53
+PR1HE t_us=13213684 kind=2 logical=4456 seq=4456 ch=4 rssi=-47
+PR1HE t_us=13216674 kind=2 logical=4457 seq=4457 ch=16 rssi=-46
+PR1HE t_us=13219657 kind=2 logical=4458 seq=4458 ch=15 rssi=-46
+PR1HE t_us=13222642 kind=2 logical=4459 seq=4459 ch=27 rssi=-51
+PR1HE t_us=13225625 kind=2 logical=4460 seq=4460 ch=37 rssi=-53
+PR1HE t_us=13228614 kind=2 logical=4461 seq=4461 ch=29 rssi=-53
+PR1HE t_us=13231600 kind=2 logical=4462 seq=4462 ch=7 rssi=-44
+PR1HE t_us=13234959 kind=5 logical=4463 seq=1 ch=9 rssi=0
+PR1HE t_us=13237945 kind=5 logical=4464 seq=1 ch=35 rssi=0
+PR1HE t_us=13240932 kind=5 logical=4465 seq=1 ch=6 rssi=0
+PR1HE t_us=13243917 kind=5 logical=4466 seq=1 ch=28 rssi=0
+PR1HE t_us=13246903 kind=5 logical=4467 seq=1 ch=24 rssi=0
+PR1HE t_us=13249890 kind=5 logical=4468 seq=1 ch=11 rssi=0
+PR1HE t_us=13252875 kind=5 logical=4469 seq=1 ch=3 rssi=0
+PR1HE t_us=13255862 kind=5 logical=4470 seq=1 ch=36 rssi=0
+PR1HE t_us=13258848 kind=6 logical=4472 seq=0 ch=20 rssi=0
+PR1HA_BEGIN total=55 kept=55
+PR1HA t_us=792836 kind=4 logical=313 seq=313 ch=20 rssi=-47
+PR1HA t_us=891518 kind=7 logical=346 seq=346 ch=20 rssi=-47
+PR1HA t_us=894882 kind=5 logical=347 seq=1 ch=36 rssi=0
+PR1HA t_us=1999748 kind=5 logical=716 seq=1 ch=20 rssi=0
+PR1HA t_us=2098759 kind=5 logical=749 seq=1 ch=27 rssi=0
+PR1HA t_us=2200385 kind=3 logical=783 seq=0 ch=32 rssi=0
+PR1HA t_us=2509722 kind=5 logical=886 seq=1 ch=17 rssi=0
+PR1HA t_us=2539613 kind=5 logical=896 seq=1 ch=20 rssi=0
+PR1HA t_us=2551553 kind=5 logical=900 seq=1 ch=36 rssi=0
+PR1HA t_us=2556295 kind=3 logical=902 seq=0 ch=33 rssi=0
+PR1HA t_us=2611404 kind=5 logical=920 seq=1 ch=31 rssi=0
+PR1HA t_us=3531473 kind=5 logical=1227 seq=1 ch=31 rssi=0
+PR1HA t_us=4073767 kind=3 logical=1408 seq=0 ch=29 rssi=0
+PR1HA t_us=4562465 kind=3 logical=1571 seq=0 ch=32 rssi=0
+PR1HA t_us=5168841 kind=5 logical=1773 seq=1 ch=31 rssi=0
+PR1HA t_us=6119842 kind=5 logical=2090 seq=1 ch=28 rssi=0
+PR1HA t_us=6194845 kind=5 logical=2115 seq=1 ch=31 rssi=0
+PR1HA t_us=6611848 kind=5 logical=2254 seq=1 ch=33 rssi=0
+PR1HA t_us=7658774 kind=5 logical=2603 seq=1 ch=23 rssi=0
+PR1HA t_us=8486783 kind=5 logical=2879 seq=1 ch=27 rssi=0
+PR1HA t_us=8957787 kind=5 logical=3036 seq=1 ch=29 rssi=0
+PR1HA t_us=9500294 kind=5 logical=3217 seq=1 ch=32 rssi=0
+PR1HA t_us=9697626 kind=5 logical=3283 seq=1 ch=36 rssi=0
+PR1HA t_us=9880115 kind=5 logical=3344 seq=1 ch=30 rssi=0
+PR1HA t_us=9996686 kind=5 logical=3383 seq=1 ch=38 rssi=0
+PR1HA t_us=10391323 kind=5 logical=3515 seq=1 ch=32 rssi=0
+PR1HA t_us=10827865 kind=5 logical=3661 seq=1 ch=27 rssi=0
+PR1HA t_us=11210572 kind=5 logical=3789 seq=1 ch=30 rssi=0
+PR1HA t_us=11414580 kind=5 logical=3857 seq=1 ch=30 rssi=0
+PR1HA t_us=11484860 kind=12 logical=3878 seq=10642 ch=25 rssi=0
+PR1HA t_us=8647 kind=13 logical=1297 seq=264 ch=0 rssi=434
+PR1HA t_us=11484857 kind=5 logical=3878 seq=3 ch=25 rssi=0
+PR1HA t_us=11486585 kind=5 logical=3881 seq=1 ch=23 rssi=0
+PR1HA t_us=11489585 kind=5 logical=3882 seq=1 ch=8 rssi=0
+PR1HA t_us=11492585 kind=5 logical=3883 seq=1 ch=19 rssi=0
+PR1HA t_us=11495585 kind=5 logical=3884 seq=1 ch=6 rssi=0
+PR1HA t_us=11498586 kind=5 logical=3885 seq=1 ch=37 rssi=0
+PR1HA t_us=11501586 kind=6 logical=3887 seq=0 ch=36 rssi=0
+PR1HA t_us=11514212 kind=7 logical=3888 seq=3888 ch=36 rssi=-52
+PR1HA t_us=11634214 kind=5 logical=3928 seq=1 ch=28 rssi=0
+PR1HA t_us=11843889 kind=12 logical=3980 seq=57677 ch=23 rssi=0
+PR1HA t_us=55658 kind=13 logical=1302 seq=282 ch=0 rssi=435
+PR1HA t_us=11843886 kind=6 logical=3999 seq=0 ch=4 rssi=0
+PR1HA t_us=11846017 kind=7 logical=3999 seq=3999 ch=4 rssi=-45
+PR1HA t_us=13151275 kind=5 logical=4435 seq=1 ch=28 rssi=0
+PR1HA t_us=13156895 kind=3 logical=4437 seq=0 ch=27 rssi=0
+PR1HA t_us=13234959 kind=5 logical=4463 seq=1 ch=9 rssi=0
+PR1HA t_us=13237945 kind=5 logical=4464 seq=1 ch=35 rssi=0
+PR1HA t_us=13240932 kind=5 logical=4465 seq=1 ch=6 rssi=0
+PR1HA t_us=13243917 kind=5 logical=4466 seq=1 ch=28 rssi=0
+PR1HA t_us=13246903 kind=5 logical=4467 seq=1 ch=24 rssi=0
+PR1HA t_us=13249890 kind=5 logical=4468 seq=1 ch=11 rssi=0
+PR1HA t_us=13252875 kind=5 logical=4469 seq=1 ch=3 rssi=0
+PR1HA t_us=13255862 kind=5 logical=4470 seq=1 ch=36 rssi=0
+PR1HA t_us=13258848 kind=6 logical=4472 seq=0 ch=20 rssi=0
+PR1HE_END
