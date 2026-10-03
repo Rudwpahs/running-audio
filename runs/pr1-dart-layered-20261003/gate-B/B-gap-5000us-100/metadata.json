@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "run_id": "B-gap-5000us-100",
-  "created_utc": "2026-10-03T00:14:10.431352Z",
+  "created_utc": "2026-10-03T00:16:51.480233Z",
   "gate": "B",
   "gap_us": 5000,
   "target_packets": 100,
@@ -29,14 +29,14 @@
     "rx": {
       "key": "B:C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-dart-layered-20261003\\build\\B-rx\\rf_rx_compile",
       "image": "runs\\pr1-dart-layered-20261003\\build\\B-rx\\rf_rx_compile",
-      "sha256": "0e9f34b07f914d8b27454c18b4613636850d8410eba8011c9c77d6391edb3dce",
-      "flashed_utc": "2026-10-03T00:14:05.649824Z"
+      "sha256": "e96de1f35afd654225fbaa9da39a0cc266b03c6cf069a0dded5df6a283b983af",
+      "flashed_utc": "2026-10-03T00:16:46.649192Z"
     },
     "tx": {
       "key": "B:C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-dart-layered-20261003\\build\\B-tx-5000us\\rf_tx_compile",
       "image": "runs\\pr1-dart-layered-20261003\\build\\B-tx-5000us\\rf_tx_compile",
-      "sha256": "19c5cb75515c2f6b1b96afa0785aa3e54590b390a3acf6c932a1b583e1e5e5d8",
-      "flashed_utc": "2026-10-03T00:14:10.431352Z"
+      "sha256": "b494d646d10190e3d50846e019258d8ec1e20e8eb8f5422507c3776ee0562725",
+      "flashed_utc": "2026-10-03T00:16:51.480233Z"
     }
   },
   "placement": "2026-10-03 operator photo placement_20261003.jpg: RX on desk top (antenna ~vertical, iron and bottles nearby), TX on white box below (antenna vertical). Unchanged for all gates.",
@@ -45,7 +45,7 @@
     "tx_log": "tx.log"
   },
   "build_identity": {
-    "source_head_sha": "543c4c1031cd6596bf24ee68d424a6b189777ca7",
+    "source_head_sha": "593c16c0c94cf80a83820474bbccb2b616d577ba",
     "frozen_firmware_sha": "d1b7ec2b1130fd63fb0eb11fd900b0622766f14c",
     "git_dirty": true,
     "platformio_version": "unavailable: [WinError 2] \uc9c0\uc815\ub41c \ud30c\uc77c\uc744 \ucc3e\uc744 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4",

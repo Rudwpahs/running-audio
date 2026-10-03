@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "run_id": "B-gap-5000us-1000",
-  "created_utc": "2026-10-03T00:16:58.225569Z",
-  "gate": "B",
-  "gap_us": 5000,
+  "run_id": "A-gap-1000us-1000",
+  "created_utc": "2026-10-03T00:18:20.196532Z",
+  "gate": "A",
+  "gap_us": 1000,
   "target_packets": 1000,
   "phase": "revalidate",
   "firmware_sha": "d1b7ec2b1130fd63fb0eb11fd900b0622766f14c",
@@ -17,8 +17,8 @@
     "adaptive_layers": false
   },
   "feature_flags": {
-    "PR1_ENABLE_AFH": 1,
-    "afh_map": "static all-40",
+    "PR1_ENABLE_AFH": 0,
+    "afh_map": null,
     "channel_quality": 0,
     "fec": 0,
     "arq": 0,
@@ -27,16 +27,16 @@
   },
   "images": {
     "rx": {
-      "key": "B:C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-dart-layered-20261003\\build\\B-rx\\rf_rx_compile",
-      "image": "runs\\pr1-dart-layered-20261003\\build\\B-rx\\rf_rx_compile",
-      "sha256": "e96de1f35afd654225fbaa9da39a0cc266b03c6cf069a0dded5df6a283b983af",
-      "flashed_utc": "2026-10-03T00:16:46.649192Z"
+      "key": "A:C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\rx\\rf_rx_compile",
+      "image": "runs\\pr1-board-test\\build\\rx\\rf_rx_compile",
+      "sha256": "3cfbf7c62f787298a8743fda41e71a6715c81c5f6c846c36da43a5b4fedd71a3",
+      "flashed_utc": "2026-10-03T00:18:15.423784Z"
     },
     "tx": {
-      "key": "B:C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-dart-layered-20261003\\build\\B-tx-5000us\\rf_tx_compile",
-      "image": "runs\\pr1-dart-layered-20261003\\build\\B-tx-5000us\\rf_tx_compile",
-      "sha256": "b494d646d10190e3d50846e019258d8ec1e20e8eb8f5422507c3776ee0562725",
-      "flashed_utc": "2026-10-03T00:16:51.480233Z"
+      "key": "A:C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\tx-1000us\\rf_tx_compile",
+      "image": "runs\\pr1-board-test\\build\\tx-1000us\\rf_tx_compile",
+      "sha256": "1775b373911f0e43de53097745672aeb7b314cf717195298417509b0991d853e",
+      "flashed_utc": "2026-10-03T00:18:20.195525Z"
     }
   },
   "placement": "2026-10-03 operator photo placement_20261003.jpg: RX on desk top (antenna ~vertical, iron and bottles nearby), TX on white box below (antenna vertical). Unchanged for all gates.",

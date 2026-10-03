@@ -212,7 +212,13 @@ class FixedLinkRuntime {
 
   bool retune(std::uint8_t channel) {
     const std::uint32_t start_us = radio_.nowMicros();
+#if PR1_AFH_DIAG_SAME_FREQ
+    // Diagnostic only: run the full hop path (schedule + SetRfFrequency) but always
+    // program channel 0, separating "retune action" from "frequency diversity".
+    const bool ok = radio_.setFrequencyHz(afh::frequencyHz(0U));
+#else
     const bool ok = radio_.setFrequencyHz(afh::frequencyHz(channel));
+#endif
     hop_.retune_us.observe(radio_.nowMicros() - start_us);
     ++hop_.retunes;
     if (!ok) {
@@ -239,8 +245,10 @@ class FixedLinkRuntime {
   // Must stay well below the on-air idle time so the retune lands before the
   // next preamble (P - airtime ~1.9 ms at 150 us gap).
   static std::uint32_t lossMargin(std::uint32_t period) {
+    constexpr std::uint32_t kMin = PR1_AFH_LOSS_MARGIN_MIN_US;
+    constexpr std::uint32_t kMax = PR1_AFH_LOSS_MARGIN_MAX_US;
     const std::uint32_t m = period / 8U;
-    return m < 150U ? 150U : (m > 400U ? 400U : m);
+    return m < kMin ? kMin : (m > kMax ? kMax : m);
   }
 
   // Deadline for the expected frame hop_.logical, on the grid anchored at the last

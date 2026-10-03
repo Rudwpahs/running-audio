@@ -33,6 +33,19 @@
 #define PR1_AFH_INITIAL_TIMEOUT_US 20000
 #endif
 
+// Diagnostic: hop logically but always program 2404 MHz (see retune()).
+#ifndef PR1_AFH_DIAG_SAME_FREQ
+#define PR1_AFH_DIAG_SAME_FREQ 0
+#endif
+
+// RX: margin after the predicted RX-done before a frame is declared lost.
+#ifndef PR1_AFH_LOSS_MARGIN_MIN_US
+#define PR1_AFH_LOSS_MARGIN_MIN_US 150
+#endif
+#ifndef PR1_AFH_LOSS_MARGIN_MAX_US
+#define PR1_AFH_LOSS_MARGIN_MAX_US 400
+#endif
+
 namespace pr1::runtime::afhrt {
 
 inline afh::ScheduleConfig staticScheduleConfig() {

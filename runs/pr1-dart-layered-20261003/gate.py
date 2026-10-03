@@ -32,7 +32,12 @@ PY = str(USERP / ".platformio/penv/Scripts/python.exe")
 BOOT_APP0 = USERP / ".platformio/packages/framework-arduinoespressif32/tools/partitions/boot_app0.bin"
 MAC = {"rx": "E8:06:90:96:83:38", "tx": "B8:F8:62:D9:26:B4"}
 FROZEN_BUILD = REPO / "runs" / "pr1-board-test" / "build"
-GAPS_B = [5000, 1000, 150]
+GAPS_B = [5000, 1000, 300, 150]
+# Diagnostic RX variants (Gate B only; TX images are shared with gate "B").
+RX_VARIANTS = {"Bm": "-D PR1_AFH_LOSS_MARGIN_MIN_US=1000\n    -D PR1_AFH_LOSS_MARGIN_MAX_US=1000",
+               "Bs": "-D PR1_AFH_DIAG_SAME_FREQ=1"}
+# Variants that also need their own TX image (same flags on TX).
+TX_VARIANTS = {"Bs": "-D PR1_AFH_DIAG_SAME_FREQ=1"}
 PLACEMENT = ("2026-10-03 operator photo placement_20261003.jpg: RX on desk top (antenna ~vertical, iron and "
              "bottles nearby), TX on white box below (antenna vertical). Unchanged for all gates.")
 
@@ -41,25 +46,38 @@ def image_dir(gate: str, role: str, gap: int | None) -> Path:
     env = "rf_tx_compile" if role == "tx" else "rf_rx_compile"
     if gate == "A":
         return FROZEN_BUILD / ("rx" if role == "rx" else f"tx-{gap}us") / env
+    if role == "rx" and gate in RX_VARIANTS:
+        return HERE / "build" / f"{gate}-rx" / env
+    if role == "tx" and gate in TX_VARIANTS:
+        return HERE / "build" / f"{gate}-tx-{gap}us" / env
     return HERE / "build" / (f"B-{role}" + (f"-{gap}us" if role == "tx" else "")) / env
 
 
-def render_ini(role: str, gap: int | None) -> Path:
+def image_name(role: str, gap: int | None, variant: str) -> str:
+    if role == "rx":
+        return f"{variant}-rx"
+    return f"{variant if variant in TX_VARIANTS else 'B'}-tx-{gap}us"
+
+
+def render_ini(role: str, gap: int | None, variant: str = "B") -> Path:
     text = (PROJECT / "platformio.ini").read_text(encoding="utf-8")
     if role == "tx":
-        text = text.replace("-D PR1_TX_GAP_US=5000", f"-D PR1_TX_GAP_US={gap}\n    -D PR1_ENABLE_AFH=1", 1)
+        extra = ("\n    " + TX_VARIANTS[variant]) if variant in TX_VARIANTS else ""
+        text = text.replace("-D PR1_TX_GAP_US=5000", f"-D PR1_TX_GAP_US={gap}\n    -D PR1_ENABLE_AFH=1" + extra, 1)
     else:
-        text = text.replace("-D PR1_RUNTIME_ROLE=2", "-D PR1_RUNTIME_ROLE=2\n    -D PR1_ENABLE_AFH=1", 1)
-    path = HERE / "generated" / (f"B-{role}" + (f"-{gap}us" if role == "tx" else "") + ".ini")
+        extra = ("\n    " + RX_VARIANTS[variant]) if variant in RX_VARIANTS else ""
+        text = text.replace("-D PR1_RUNTIME_ROLE=2", "-D PR1_RUNTIME_ROLE=2\n    -D PR1_ENABLE_AFH=1" + extra, 1)
+    name = image_name(role, gap, variant)
+    path = HERE / "generated" / (name + ".ini")
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text, encoding="utf-8")
     return path
 
 
 def build_one(item) -> tuple[str, int]:
-    role, gap = item
-    ini = render_ini(role, gap)
-    out = image_dir("B", role, gap)
+    role, gap, variant = item
+    ini = render_ini(role, gap, variant)
+    out = image_dir(variant, role, gap)
     env = dict(os.environ, PLATFORMIO_BUILD_DIR=str(out.parent))
     log = out.parent.parent / f"{out.parent.name}.log"
     log.parent.mkdir(parents=True, exist_ok=True)
@@ -70,7 +88,11 @@ def build_one(item) -> tuple[str, int]:
 
 
 def cmd_build() -> None:
-    items = [("rx", None)] + [("tx", g) for g in GAPS_B]
+    only = sys.argv[2:]  # optional subset, e.g. "B-tx-300us Bm-rx"
+    items = ([("rx", None, "B")] + [("rx", None, v) for v in RX_VARIANTS] + [("tx", g, "B") for g in GAPS_B]
+             + [("tx", 150, v) for v in TX_VARIANTS])
+    if only:
+        items = [i for i in items if image_name(i[0], i[1], i[2]) in only]
     with ThreadPoolExecutor(max_workers=2) as pool:
         for name, rc in pool.map(build_one, items):
             print(f"BUILD {name} rc={rc}", flush=True)
@@ -163,7 +185,8 @@ def cmd_run(gate: str, gap: int, target: int) -> None:
         "schema_version": 1, "run_id": run_id, "created_utc": ctl._utc_now(), "gate": gate, "gap_us": gap,
         "target_packets": target, "phase": "revalidate", "firmware_sha": ctl.FROZEN_FIRMWARE_SHA,
         "frozen_baseline": dict(FROZEN_BASELINE),
-        "feature_flags": {"PR1_ENABLE_AFH": 1 if gate == "B" else 0, "afh_map": "static all-40" if gate == "B" else None,
+        "rx_variant": RX_VARIANTS.get(gate),
+        "feature_flags": {"PR1_ENABLE_AFH": 1 if gate != "A" else 0, "afh_map": "static all-40" if gate != "A" else None,
                           "channel_quality": 0, "fec": 0, "arq": 0, "phy_ladder": 0, "controller": 0},
         "images": {"rx": rx_img, "tx": tx_img}, "placement": PLACEMENT,
         "files": {"rx_log": "rx.log", "tx_log": "tx.log"},
@@ -180,7 +203,7 @@ def cmd_run(gate: str, gap: int, target: int) -> None:
         ctl._drain_stale_input(rx); ctl._pulse_reset(rx)
         result = ctl.capture_run_from_serial(meta, run_dir, rx, tx, initial_wait_s=0.7 * target * period_s,
                                              settle_s=0.5, max_polls=100)
-        if gate == "B":
+        if gate != "A":
             with (run_dir / "rx.log").open("a", encoding="utf-8") as rfh, (run_dir / "tx.log").open("a", encoding="utf-8") as tfh:
                 hop["rx"] = parse_hop(pull(rx, rfh, b"h", None))
                 hop["tx"] = parse_hop(pull(tx, tfh, b"h", None))
@@ -202,7 +225,7 @@ def cmd_run(gate: str, gap: int, target: int) -> None:
             f"loss={100 * result['derived']['loss_rate']:.3f}% crc_bad={m['crc_bad']} rssi={m['rssi_dbm']} "
             f"sched_miss={m['scheduler_misses']} ready_p99={m['irq_to_rx_ready_us_p99']} "
             f"spi_to_rearm_p99={m['spi_end_to_rearm_start_us_p99']} polls={result['evidence']['progress_polls']}")
-    if gate == "B":
+    if gate != "A":
         r, t = hop["rx"], hop["tx"]
         line += (f" | fp_match={hop['schedule_fp_match']} agree={r.get('agree')} disagree={r.get('disagree')} "
                  f"timeouts={r.get('timeout_advances')} resync={r.get('resync_entries')} locks={r.get('locks')} "
