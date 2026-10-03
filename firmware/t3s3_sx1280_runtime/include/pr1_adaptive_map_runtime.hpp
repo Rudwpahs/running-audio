@@ -11,6 +11,7 @@
 
 #include "../../common/pr1_afh.hpp"
 #include "../../common/pr1_channel_quality.hpp"
+#include "../../common/pr1_instrumentation.hpp"
 
 #ifndef PR1_ENABLE_ADAPTIVE_MAP
 #define PR1_ENABLE_ADAPTIVE_MAP 0
@@ -113,6 +114,7 @@ struct Telemetry {
   std::uint32_t tx_rejects = 0;
   std::uint8_t min_active_seen = afh::kChannelCount;
   std::uint32_t emit_dropped = 0;
+  instrumentation::DurationWindow<64> ctrl_us{};  // control-line handling time
 
   // Separate small activation log so TX/RX agreement can be checked even if the
   // (RX-heavy) event list overflows.

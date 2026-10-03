@@ -424,12 +424,12 @@ def write_summary(run_dir: Path, result: dict, hop: dict) -> None:
 
 def cmd_summary() -> None:
     rows = []
-    for res in sorted(HERE.glob("gate-*/*/result.json")):
+    for res in sorted(list(HERE.glob("gate-*/*/result.json")) + list(HERE.glob("gateC-interleave/*/result.json")) + list(HERE.glob("preC/*/result.json"))):
         if "partial" in res.parts: continue
         r = json.loads(res.read_text())
         if "metrics" not in r: continue
         m = r["metrics"]; h = r.get("hop", {})
-        rows.append({"gate": res.parent.parent.name.replace("gate-", ""), "dir": res.parent.name, "run_id": r["run_id"], "gap_us": r["gap_us"],
+        rows.append({"gate": r["run_id"].split("-")[0], "set": res.parent.parent.name, "dir": res.parent.name, "run_id": r["run_id"], "gap_us": r["gap_us"],
                      "packets": r["packet_count"], "missing": m["missing"], "loss_pct": round(100 * r["derived"]["loss_rate"], 4),
                      "crc_good": m["crc_good"], "crc_bad": m["crc_bad"], "rssi_dbm": m["rssi_dbm"],
                      "queue_depth": m["queue_depth"], "max_queue_depth": m["max_queue_depth"],

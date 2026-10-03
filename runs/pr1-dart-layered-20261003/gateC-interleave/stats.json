@@ -1,0 +1,97 @@
+{
+  "runs": [
+    {
+      "run": "B-gap-150us-10000-i1",
+      "gate": "B",
+      "packets": 11076,
+      "missing": 53,
+      "crc": 31,
+      "timeout_frames": 22,
+      "jump_frames": 0,
+      "ctrl_events": 0,
+      "lost_near_ctrl": 0,
+      "irq_to_ready_p99": 1891,
+      "sched_miss": 0
+    },
+    {
+      "run": "C-gap-150us-10000-i2",
+      "gate": "C",
+      "packets": 11146,
+      "missing": 61,
+      "crc": 6,
+      "timeout_frames": 55,
+      "jump_frames": 0,
+      "ctrl_events": 75,
+      "lost_near_ctrl": 45,
+      "irq_to_ready_p99": 1972,
+      "sched_miss": 1
+    },
+    {
+      "run": "B-gap-150us-10000-i3",
+      "gate": "B",
+      "packets": 11076,
+      "missing": 38,
+      "crc": 21,
+      "timeout_frames": 17,
+      "jump_frames": 0,
+      "ctrl_events": 0,
+      "lost_near_ctrl": 0,
+      "irq_to_ready_p99": 1895,
+      "sched_miss": 0
+    },
+    {
+      "run": "C-gap-150us-10000-i4",
+      "gate": "C",
+      "packets": 11149,
+      "missing": 59,
+      "crc": 14,
+      "timeout_frames": 45,
+      "jump_frames": 0,
+      "ctrl_events": 69,
+      "lost_near_ctrl": 39,
+      "irq_to_ready_p99": 1984,
+      "sched_miss": 1
+    },
+    {
+      "run": "B-gap-150us-10000-i5",
+      "gate": "B",
+      "packets": 11070,
+      "missing": 37,
+      "crc": 15,
+      "timeout_frames": 22,
+      "jump_frames": 0,
+      "ctrl_events": 0,
+      "lost_near_ctrl": 0,
+      "irq_to_ready_p99": 1894,
+      "sched_miss": 0
+    },
+    {
+      "run": "C-gap-150us-10000-i6",
+      "gate": "C",
+      "packets": 11141,
+      "missing": 63,
+      "crc": 7,
+      "timeout_frames": 56,
+      "jump_frames": 0,
+      "ctrl_events": 79,
+      "lost_near_ctrl": 43,
+      "irq_to_ready_p99": 1882,
+      "sched_miss": 1
+    }
+  ],
+  "pooled": {
+    "B": [
+      128,
+      33222
+    ],
+    "C": [
+      183,
+      33436
+    ],
+    "z_C_minus_B": 3.0693318465141375,
+    "ci95_pp": [
+      0.05862542333231503,
+      0.2654294045397571
+    ]
+  }
+}

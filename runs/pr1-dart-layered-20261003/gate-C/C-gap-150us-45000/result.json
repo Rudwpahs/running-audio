@@ -1,0 +1,5909 @@
+{
+  "schema_version": 1,
+  "run_id": "C-gap-150us-45000",
+  "phase": "revalidate",
+  "gap_us": 150,
+  "target_packets": 45000,
+  "firmware_sha": "d1b7ec2b1130fd63fb0eb11fd900b0622766f14c",
+  "packet_count": 49267,
+  "metrics": {
+    "rssi_dbm": -49,
+    "crc_good": 48862,
+    "crc_bad": 108,
+    "missing": 405,
+    "queue_depth": 0,
+    "max_queue_depth": 1,
+    "irq_to_spi_us_p99": 6,
+    "spi_duration_us_p99": 1250,
+    "rx_processing_us_p99": 1252,
+    "spi_end_to_rearm_start_us_p99": 227,
+    "rx_rearm_us_p99": 420,
+    "irq_to_rx_ready_us_p99": 1885,
+    "trace_overwrites": 440634,
+    "scheduler_misses": 1
+  },
+  "derived": {
+    "loss_rate": 0.008220512716422757,
+    "crc_bad_rate": 0.002192136724379402,
+    "target_reached": true
+  },
+  "classification": {
+    "label": "spi",
+    "dominant_share": 0.6631,
+    "confidence": "low",
+    "evidence_boundary": "diagnostic_candidate_not_causal_proof"
+  },
+  "evidence": {
+    "packet_count_source": "rx_sequence_span=crc_good+missing",
+    "crc_bad_overlap_warning": "crc_bad may overlap sequence-derived missing and is not additive",
+    "scheduler_misses_source": "tx",
+    "evidence_boundary": "measured_diagnostics_not_causal_proof",
+    "progress_polls": 0
+  },
+  "revalidate_10000": false,
+  "hop": {
+    "rx": {
+      "t_us": 147588930,
+      "session_id": 1,
+      "map_version": 45,
+      "locked": 1,
+      "channel": 34,
+      "logical": 49638,
+      "retunes": 49293,
+      "retune_failures": 0,
+      "standby_failures": 0,
+      "timeout_advances": 298,
+      "resync_entries": 0,
+      "locks": 1,
+      "agree": 48886,
+      "disagree": 0,
+      "period_est_us": 2978,
+      "max_consecutive_timeouts": 2,
+      "retune_us_p99": 72,
+      "retune_us_max": 97,
+      "hop_compute_us_p99": 32,
+      "hop_compute_us_max": 64,
+      "acq_anchors": 1,
+      "acq_crc": 0,
+      "acq_frames": 33,
+      "acq_done_us": 886675,
+      "channel_ok": [
+        2266,
+        2851,
+        1733,
+        2045,
+        3770,
+        3771,
+        471,
+        225,
+        987,
+        3016,
+        2389,
+        1996,
+        116,
+        69,
+        113,
+        180,
+        145,
+        2531,
+        1529,
+        1155,
+        2651,
+        742,
+        298,
+        2137,
+        295,
+        91,
+        148,
+        397,
+        1044,
+        920,
+        805,
+        710,
+        233,
+        474,
+        1347,
+        3137,
+        1564,
+        214,
+        66,
+        255
+      ],
+      "channel_crc": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0,
+        1,
+        6,
+        0,
+        0,
+        0,
+        0,
+        0,
+        26,
+        1,
+        0,
+        0,
+        17,
+        11,
+        6,
+        4,
+        3,
+        3,
+        20,
+        5,
+        3,
+        0,
+        0,
+        0
+      ],
+      "boot_schedule_fp": "18,21,5,3,0,6,29,20,36,25,9,24,14,28,37,17,30,10,32,26,31,7,22,35,16,1,2,12,39,13,15,11,38,19,33,23,34,4,27,8,16,19,10,17,24,21,5,14",
+      "boot_session_seed": "0x5052314441525431",
+      "boot_session_id": "1",
+      "boot_map_version": "1"
+    },
+    "tx": {
+      "t_us": 149284454,
+      "session_id": 1,
+      "map_version": 46,
+      "locked": 0,
+      "channel": 31,
+      "logical": 49956,
+      "retunes": 49956,
+      "retune_failures": 0,
+      "standby_failures": 0,
+      "timeout_advances": 0,
+      "resync_entries": 0,
+      "locks": 0,
+      "agree": 0,
+      "disagree": 0,
+      "period_est_us": 0,
+      "max_consecutive_timeouts": 0,
+      "retune_us_p99": 72,
+      "retune_us_max": 115,
+      "hop_compute_us_p99": 30,
+      "hop_compute_us_max": 71,
+      "acq_anchors": 0,
+      "acq_crc": 0,
+      "acq_frames": 0,
+      "acq_done_us": 0,
+      "channel_ok": [
+        2285,
+        2906,
+        1747,
+        2065,
+        3820,
+        3815,
+        505,
+        260,
+        1003,
+        3039,
+        2405,
+        2020,
+        125,
+        79,
+        123,
+        190,
+        154,
+        2552,
+        1579,
+        1169,
+        2668,
+        754,
+        308,
+        2163,
+        331,
+        101,
+        157,
+        413,
+        1111,
+        985,
+        864,
+        764,
+        247,
+        515,
+        1408,
+        3164,
+        1597,
+        224,
+        76,
+        265
+      ],
+      "channel_crc": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "boot_schedule_fp": "18,21,5,3,0,6,29,20,36,25,9,24,14,28,37,17,30,10,32,26,31,7,22,35,16,1,2,12,39,13,15,11,38,19,33,23,34,4,27,8,16,19,10,17,24,21,5,14",
+      "boot_session_seed": "0x5052314441525431",
+      "boot_session_id": "1",
+      "boot_map_version": "1"
+    },
+    "schedule_fp_match": true
+  },
+  "quality": {
+    "rx": {
+      "channels": [
+        {
+          "ch": 0,
+          "mhz": 2404,
+          "state": 2,
+          "fast_q15": 32764,
+          "slow_q15": 32701,
+          "ok": 2266,
+          "crc": 0,
+          "timeout": 10,
+          "probe_ok": 0,
+          "probe_fail": 0,
+          "suspects": 10,
+          "exclusions": 1,
+          "reinclusions": 0,
+          "last_excl_ms": 88764
+        },
+        {
+          "ch": 1,
+          "mhz": 2406,
+          "state": 0,
+          "fast_q15": 32764,
+          "slow_q15": 32736,
+          "ok": 2851,
+          "crc": 0,
+          "timeout": 20,
+          "probe_ok": 3,
+          "probe_fail": 0,
+          "suspects": 19,
+          "exclusions": 1,
+          "reinclusions": 1,
+          "last_excl_ms": 1048
+        },
+        {
+          "ch": 2,
+          "mhz": 2408,
+          "state": 2,
+          "fast_q15": 32764,
+          "slow_q15": 32705,
+          "ok": 1733,
+          "crc": 0,
+          "timeout": 5,
+          "probe_ok": 1,
+          "probe_fail": 0,
+          "suspects": 5,
+          "exclusions": 1,
+          "reinclusions": 0,
+          "last_excl_ms": 69096
+        },
+        {
+          "ch": 3,
+          "mhz": 2410,
+          "state": 2,
+          "fast_q15": 32764,
+          "slow_q15": 32680,
+          "ok": 2045,
+          "crc": 0,
+          "timeout": 11,
+          "probe_ok": 3,
+          "probe_fail": 0,
+          "suspects": 11,
+          "exclusions": 2,
+          "reinclusions": 1,
+          "last_excl_ms": 139667
+        },
+        {
+          "ch": 4,
+          "mhz": 2412,
+          "state": 0,
+          "fast_q15": 32764,
+          "slow_q15": 32736,
+          "ok": 3770,
+          "crc": 0,
+          "timeout": 15,
+          "probe_ok": 0,
+          "probe_fail": 0,
+          "suspects": 14,
+          "exclusions": 0,
+          "reinclusions": 0,
+          "last_excl_ms": 0
+        },
+        {
+          "ch": 5,
+          "mhz": 2414,
+          "state": 0,
+          "fast_q15": 32764,
+          "slow_q15": 32736,
+          "ok": 3771,
+          "crc": 0,
+          "timeout": 10,
+          "probe_ok": 0,
+          "probe_fail": 0,
+          "suspects": 10,
+          "exclusions": 0,
+          "reinclusions": 0,
+          "last_excl_ms": 0
+        },
+        {
+          "ch": 6,
+          "mhz": 2416,
+          "state": 0,
+          "fast_q15": 32764,
+          "slow_q15": 32736,
+          "ok": 470,
+          "crc": 0,
+          "timeout": 1,
+          "probe_ok": 3,
+          "probe_fail": 0,
+          "suspects": 1,
+          "exclusions": 1,
+          "reinclusions": 1,
+          "last_excl_ms": 17210
+        },
+        {
+          "ch": 7,
+          "mhz": 2418,
+          "state": 0,
+          "fast_q15": 32764,
+          "slow_q15": 32720,
+          "ok": 225,
+          "crc": 0,
+          "timeout": 1,
+          "probe_ok": 3,
+          "probe_fail": 0,
+          "suspects": 1,
+          "exclusions": 1,
+          "reinclusions": 1,
+          "last_excl_ms": 11819
+        },
+        {
+          "ch": 8,
+          "mhz": 2420,
+          "state": 2,
+          "fast_q15": 32764,
+          "slow_q15": 32203,
+          "ok": 987,
+          "crc": 0,
+          "timeout": 7,
+          "probe_ok": 1,
+          "probe_fail": 0,
+          "suspects": 5,
+          "exclusions": 1,
+          "reinclusions": 0,
+          "last_excl_ms": 42238
+        },
+        {
+          "ch": 9,
+          "mhz": 2422,
+          "state": 2,
+          "fast_q15": 32764,
+          "slow_q15": 32701,
+          "ok": 3016,
+          "crc": 0,
+          "timeout": 14,
+          "probe_ok": 0,
+          "probe_fail": 0,
+          "suspects": 14,
+          "exclusions": 1,
+          "reinclusions": 0,
+          "last_excl_ms": 116448
+        },
+        {
+          "ch": 10,
+          "mhz": 2424,
+          "state": 2,
+          "fast_q15": 32764,
+          "slow_q15": 32701,
+          "ok": 2389,
+          "crc": 0,
+          "timeout": 7,
+          "probe_ok": 0,
+          "probe_fail": 0,
+          "suspects": 7,
+          "exclusions": 1,
+          "reinclusions": 0,
+          "last_excl_ms": 93263
+        },
+        {
+          "ch": 11,
+          "mhz": 2426,
+          "state": 2,
+          "fast_q15": 32764,
+          "slow_q15": 32680,
+          "ok": 1996,
+          "crc": 0,
+          "timeout": 15,
+          "probe_ok": 0,
+          "probe_fail": 0,
+          "suspects": 15,
+          "exclusions": 1,
+          "reinclusions": 0,
+          "last_excl_ms": 78925
+        },
+        {
+          "ch": 12,
+          "mhz": 2428,
+          "state": 2,
+          "fast_q15": 32764,
+          "slow_q15": 32388,
+          "ok": 116,
+          "crc": 1,
+          "timeout": 0,
+          "probe_ok": 2,
+          "probe_fail": 0,
+          "suspects": 1,
+          "exclusions": 1,
+          "reinclusions": 0,
+          "last_excl_ms": 9696
+        },
+        {
+          "ch": 13,
+          "mhz": 2430,
+          "state": 2,
+          "fast_q15": 32760,
+          "slow_q15": 31988,
+          "ok": 69,
+          "crc": 1,
+          "timeout": 1,
+          "probe_ok": 2,
+          "probe_fail": 0,
+          "suspects": 1,
+          "exclusions": 1,
+          "reinclusions": 0,
+          "last_excl_ms": 4697
+        },
+        {
+          "ch": 14,
+          "mhz": 2432,
+          "state": 2,
+          "fast_q15": 32764,
+          "slow_q15": 32533,
+          "ok": 113,
+          "crc": 0,
+          "timeout": 1,
+          "probe_ok": 2,
+          "probe_fail": 0,
+          "suspects": 1,
+          "exclusions": 1,
+          "reinclusions": 0,
+          "last_excl_ms": 8252
+        },
+        {
+          "ch": 15,
+          "mhz": 2434,
+          "state": 2,
+          "fast_q15": 32764,
+          "slow_q15": 32290,
+          "ok": 180,
+          "crc": 0,
+          "timeout": 2,
+          "probe_ok": 2,
+          "probe_fail": 0,
+          "suspects": 1,
+          "exclusions": 1,
+          "reinclusions": 0,
+          "last_excl_ms": 11843
+        },
+        {
+          "ch": 16,
+          "mhz": 2436,
+          "state": 2,
+          "fast_q15": 32764,
+          "slow_q15": 32577,
+          "ok": 145,
+          "crc": 0,
+          "timeout": 1,
+          "probe_ok": 2,
+          "probe_fail": 0,
+          "suspects": 1,
+          "exclusions": 1,
+          "reinclusions": 0,
+          "last_excl_ms": 10075
+        },
+        {
+          "ch": 17,
+          "mhz": 2438,
+          "state": 2,
+          "fast_q15": 32764,
+          "slow_q15": 32703,
+          "ok": 2531,
+          "crc": 1,
+          "timeout": 11,
+          "probe_ok": 0,
+          "probe_fail": 0,
+          "suspects": 12,
+          "exclusions": 1,
+          "reinclusions": 0,
+          "last_excl_ms": 98576
+        },
+        {
+          "ch": 18,
+          "mhz": 2440,
+          "state": 0,
+          "fast_q15": 32764,
+          "slow_q15": 32442,
+          "ok": 1529,
+          "crc": 6,
+          "timeout": 9,
+          "probe_ok": 3,
+          "probe_fail": 0,
+          "suspects": 13,
+          "exclusions": 1,
+          "reinclusions": 1,
+          "last_excl_ms": 9111
+        },
+        {
+          "ch": 19,
+          "mhz": 2442,
+          "state": 2,
+          "fast_q15": 32764,
+          "slow_q15": 32705,
+          "ok": 1155,
+          "crc": 0,
+          "timeout": 5,
+          "probe_ok": 3,
+          "probe_fail": 0,
+          "suspects": 5,
+          "exclusions": 2,
+          "reinclusions": 1,
+          "last_excl_ms": 126237
+        },
+        {
+          "ch": 20,
+          "mhz": 2444,
+          "state": 2,
+          "fast_q15": 32764,
+          "slow_q15": 32434,
+          "ok": 2651,
+          "crc": 0,
+          "timeout": 9,
+          "probe_ok": 0,
+          "probe_fail": 0,
+          "suspects": 8,
+          "exclusions": 1,
+          "reinclusions": 0,
+          "last_excl_ms": 103057
+        },
+        {
+          "ch": 21,
+          "mhz": 2446,
+          "state": 2,
+          "fast_q15": 32764,
+          "slow_q15": 32701,
+          "ok": 742,
+          "crc": 0,
+          "timeout": 3,
+          "probe_ok": 3,
+          "probe_fail": 0,
+          "suspects": 3,
+          "exclusions": 2,
+          "reinclusions": 1,
+          "last_excl_ms": 107514
+        },
+        {
+          "ch": 22,
+          "mhz": 2448,
+          "state": 2,
+          "fast_q15": 32764,
+          "slow_q15": 32681,
+          "ok": 298,
+          "crc": 0,
+          "timeout": 1,
+          "probe_ok": 2,
+          "probe_fail": 0,
+          "suspects": 1,
+          "exclusions": 1,
+          "reinclusions": 0,
+          "last_excl_ms": 17216
+        },
+        {
+          "ch": 23,
+          "mhz": 2450,
+          "state": 2,
+          "fast_q15": 32764,
+          "slow_q15": 32703,
+          "ok": 2137,
+          "crc": 0,
+          "timeout": 18,
+          "probe_ok": 0,
+          "probe_fail": 0,
+          "suspects": 17,
+          "exclusions": 1,
+          "reinclusions": 0,
+          "last_excl_ms": 84280
+        },
+        {
+          "ch": 24,
+          "mhz": 2452,
+          "state": 2,
+          "fast_q15": 29280,
+          "slow_q15": 29930,
+          "ok": 295,
+          "crc": 26,
+          "timeout": 1,
+          "probe_ok": 3,
+          "probe_fail": 0,
+          "suspects": 8,
+          "exclusions": 2,
+          "reinclusions": 1,
+          "last_excl_ms": 111965
+        },
+        {
+          "ch": 25,
+          "mhz": 2454,
+          "state": 2,
+          "fast_q15": 32764,
+          "slow_q15": 32351,
+          "ok": 91,
+          "crc": 1,
+          "timeout": 0,
+          "probe_ok": 2,
+          "probe_fail": 0,
+          "suspects": 1,
+          "exclusions": 1,
+          "reinclusions": 0,
+          "last_excl_ms": 7705
+        },
+        {
+          "ch": 26,
+          "mhz": 2456,
+          "state": 2,
+          "fast_q15": 32764,
+          "slow_q15": 32587,
+          "ok": 148,
+          "crc": 0,
+          "timeout": 1,
+          "probe_ok": 2,
+          "probe_fail": 0,
+          "suspects": 1,
+          "exclusions": 1,
+          "reinclusions": 0,
+          "last_excl_ms": 10105
+        },
+        {
+          "ch": 27,
+          "mhz": 2458,
+          "state": 2,
+          "fast_q15": 32764,
+          "slow_q15": 32672,
+          "ok": 397,
+          "crc": 0,
+          "timeout": 4,
+          "probe_ok": 3,
+          "probe_fail": 0,
+          "suspects": 4,
+          "exclusions": 2,
+          "reinclusions": 1,
+          "last_excl_ms": 144168
+        },
+        {
+          "ch": 28,
+          "mhz": 2460,
+          "state": 0,
+          "fast_q15": 32758,
+          "slow_q15": 31694,
+          "ok": 1044,
+          "crc": 17,
+          "timeout": 15,
+          "probe_ok": 3,
+          "probe_fail": 0,
+          "suspects": 27,
+          "exclusions": 1,
+          "reinclusions": 1,
+          "last_excl_ms": 1380
+        },
+        {
+          "ch": 29,
+          "mhz": 2462,
+          "state": 0,
+          "fast_q15": 31307,
+          "slow_q15": 31813,
+          "ok": 920,
+          "crc": 11,
+          "timeout": 20,
+          "probe_ok": 3,
+          "probe_fail": 0,
+          "suspects": 26,
+          "exclusions": 1,
+          "reinclusions": 1,
+          "last_excl_ms": 2672
+        },
+        {
+          "ch": 30,
+          "mhz": 2464,
+          "state": 0,
+          "fast_q15": 31580,
+          "slow_q15": 30703,
+          "ok": 805,
+          "crc": 6,
+          "timeout": 18,
+          "probe_ok": 3,
+          "probe_fail": 0,
+          "suspects": 16,
+          "exclusions": 1,
+          "reinclusions": 1,
+          "last_excl_ms": 1066
+        },
+        {
+          "ch": 31,
+          "mhz": 2466,
+          "state": 1,
+          "fast_q15": 24643,
+          "slow_q15": 30292,
+          "ok": 710,
+          "crc": 4,
+          "timeout": 14,
+          "probe_ok": 3,
+          "probe_fail": 0,
+          "suspects": 16,
+          "exclusions": 1,
+          "reinclusions": 1,
+          "last_excl_ms": 4610
+        },
+        {
+          "ch": 32,
+          "mhz": 2468,
+          "state": 2,
+          "fast_q15": 32764,
+          "slow_q15": 32449,
+          "ok": 233,
+          "crc": 3,
+          "timeout": 2,
+          "probe_ok": 3,
+          "probe_fail": 0,
+          "suspects": 3,
+          "exclusions": 2,
+          "reinclusions": 1,
+          "last_excl_ms": 130720
+        },
+        {
+          "ch": 33,
+          "mhz": 2470,
+          "state": 0,
+          "fast_q15": 32764,
+          "slow_q15": 32715,
+          "ok": 474,
+          "crc": 3,
+          "timeout": 3,
+          "probe_ok": 3,
+          "probe_fail": 0,
+          "suspects": 5,
+          "exclusions": 1,
+          "reinclusions": 1,
+          "last_excl_ms": 4694
+        },
+        {
+          "ch": 34,
+          "mhz": 2472,
+          "state": 0,
+          "fast_q15": 32764,
+          "slow_q15": 32685,
+          "ok": 1347,
+          "crc": 20,
+          "timeout": 5,
+          "probe_ok": 2,
+          "probe_fail": 1,
+          "suspects": 20,
+          "exclusions": 1,
+          "reinclusions": 1,
+          "last_excl_ms": 7224
+        },
+        {
+          "ch": 35,
+          "mhz": 2474,
+          "state": 2,
+          "fast_q15": 32764,
+          "slow_q15": 32701,
+          "ok": 3137,
+          "crc": 5,
+          "timeout": 13,
+          "probe_ok": 0,
+          "probe_fail": 0,
+          "suspects": 17,
+          "exclusions": 1,
+          "reinclusions": 0,
+          "last_excl_ms": 120923
+        },
+        {
+          "ch": 36,
+          "mhz": 2476,
+          "state": 2,
+          "fast_q15": 32764,
+          "slow_q15": 32627,
+          "ok": 1564,
+          "crc": 3,
+          "timeout": 22,
+          "probe_ok": 3,
+          "probe_fail": 0,
+          "suspects": 21,
+          "exclusions": 2,
+          "reinclusions": 1,
+          "last_excl_ms": 135210
+        },
+        {
+          "ch": 37,
+          "mhz": 2478,
+          "state": 2,
+          "fast_q15": 32764,
+          "slow_q15": 32649,
+          "ok": 214,
+          "crc": 0,
+          "timeout": 1,
+          "probe_ok": 2,
+          "probe_fail": 0,
+          "suspects": 1,
+          "exclusions": 1,
+          "reinclusions": 0,
+          "last_excl_ms": 13616
+        },
+        {
+          "ch": 38,
+          "mhz": 2480,
+          "state": 2,
+          "fast_q15": 32764,
+          "slow_q15": 32388,
+          "ok": 66,
+          "crc": 0,
+          "timeout": 1,
+          "probe_ok": 2,
+          "probe_fail": 0,
+          "suspects": 1,
+          "exclusions": 1,
+          "reinclusions": 0,
+          "last_excl_ms": 5103
+        },
+        {
+          "ch": 39,
+          "mhz": 2482,
+          "state": 2,
+          "fast_q15": 32764,
+          "slow_q15": 32670,
+          "ok": 255,
+          "crc": 0,
+          "timeout": 1,
+          "probe_ok": 2,
+          "probe_fail": 0,
+          "suspects": 1,
+          "exclusions": 1,
+          "reinclusions": 0,
+          "last_excl_ms": 15397
+        }
+      ],
+      "events": [
+        {
+          "t_ms": 889,
+          "kind": 7,
+          "logical": 347,
+          "target": 0,
+          "id": 0,
+          "v": 1,
+          "ch": 36,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 979,
+          "kind": 8,
+          "logical": 377,
+          "target": 0,
+          "id": 0,
+          "v": 1,
+          "ch": 36,
+          "value": 2,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 981,
+          "kind": 0,
+          "logical": 378,
+          "target": 978,
+          "id": 1,
+          "v": 2,
+          "ch": 0,
+          "value": 1,
+          "bits": "efffffffff"
+        },
+        {
+          "t_ms": 990,
+          "kind": 1,
+          "logical": 381,
+          "target": 978,
+          "id": 1,
+          "v": 2,
+          "ch": 0,
+          "value": 1,
+          "bits": "efffffffff"
+        },
+        {
+          "t_ms": 995,
+          "kind": 7,
+          "logical": 382,
+          "target": 0,
+          "id": 0,
+          "v": 1,
+          "ch": 1,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 1012,
+          "kind": 7,
+          "logical": 388,
+          "target": 0,
+          "id": 0,
+          "v": 1,
+          "ch": 30,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 1048,
+          "kind": 8,
+          "logical": 400,
+          "target": 0,
+          "id": 0,
+          "v": 1,
+          "ch": 1,
+          "value": 2,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 1066,
+          "kind": 8,
+          "logical": 406,
+          "target": 0,
+          "id": 0,
+          "v": 1,
+          "ch": 30,
+          "value": 2,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 1225,
+          "kind": 7,
+          "logical": 459,
+          "target": 0,
+          "id": 0,
+          "v": 1,
+          "ch": 28,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 1380,
+          "kind": 8,
+          "logical": 511,
+          "target": 0,
+          "id": 0,
+          "v": 1,
+          "ch": 28,
+          "value": 2,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 1937,
+          "kind": 7,
+          "logical": 697,
+          "target": 0,
+          "id": 0,
+          "v": 1,
+          "ch": 24,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 2027,
+          "kind": 8,
+          "logical": 727,
+          "target": 0,
+          "id": 0,
+          "v": 1,
+          "ch": 24,
+          "value": 2,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 2579,
+          "kind": 7,
+          "logical": 911,
+          "target": 0,
+          "id": 0,
+          "v": 1,
+          "ch": 29,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 2672,
+          "kind": 8,
+          "logical": 942,
+          "target": 0,
+          "id": 0,
+          "v": 1,
+          "ch": 29,
+          "value": 2,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 2778,
+          "kind": 4,
+          "logical": 978,
+          "target": 978,
+          "id": 0,
+          "v": 2,
+          "ch": 0,
+          "value": 39,
+          "bits": "efffffffff"
+        },
+        {
+          "t_ms": 2778,
+          "kind": 0,
+          "logical": 978,
+          "target": 1578,
+          "id": 2,
+          "v": 3,
+          "ch": 0,
+          "value": 1,
+          "bits": "ef8efffffd"
+        },
+        {
+          "t_ms": 2787,
+          "kind": 1,
+          "logical": 981,
+          "target": 1578,
+          "id": 2,
+          "v": 3,
+          "ch": 0,
+          "value": 1,
+          "bits": "ef8efffffd"
+        },
+        {
+          "t_ms": 4456,
+          "kind": 7,
+          "logical": 1539,
+          "target": 0,
+          "id": 0,
+          "v": 2,
+          "ch": 31,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 4572,
+          "kind": 4,
+          "logical": 1578,
+          "target": 1578,
+          "id": 0,
+          "v": 3,
+          "ch": 0,
+          "value": 34,
+          "bits": "ef8efffffd"
+        },
+        {
+          "t_ms": 4573,
+          "kind": 0,
+          "logical": 1578,
+          "target": 1878,
+          "id": 3,
+          "v": 3,
+          "ch": 1,
+          "value": 2,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 4577,
+          "kind": 7,
+          "logical": 1579,
+          "target": 0,
+          "id": 0,
+          "v": 3,
+          "ch": 13,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 4588,
+          "kind": 1,
+          "logical": 1583,
+          "target": 1878,
+          "id": 3,
+          "v": 3,
+          "ch": 1,
+          "value": 1,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 4592,
+          "kind": 7,
+          "logical": 1584,
+          "target": 0,
+          "id": 0,
+          "v": 3,
+          "ch": 21,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 4610,
+          "kind": 8,
+          "logical": 1590,
+          "target": 0,
+          "id": 0,
+          "v": 3,
+          "ch": 31,
+          "value": 2,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 4612,
+          "kind": 0,
+          "logical": 1591,
+          "target": 2191,
+          "id": 4,
+          "v": 4,
+          "ch": 0,
+          "value": 1,
+          "bits": "ef0efffffd"
+        },
+        {
+          "t_ms": 4621,
+          "kind": 1,
+          "logical": 1594,
+          "target": 2191,
+          "id": 4,
+          "v": 4,
+          "ch": 0,
+          "value": 1,
+          "bits": "ef0efffffd"
+        },
+        {
+          "t_ms": 4625,
+          "kind": 7,
+          "logical": 1595,
+          "target": 0,
+          "id": 0,
+          "v": 3,
+          "ch": 33,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 4649,
+          "kind": 8,
+          "logical": 1603,
+          "target": 0,
+          "id": 0,
+          "v": 3,
+          "ch": 21,
+          "value": 2,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 4694,
+          "kind": 8,
+          "logical": 1618,
+          "target": 0,
+          "id": 0,
+          "v": 3,
+          "ch": 33,
+          "value": 2,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 4697,
+          "kind": 8,
+          "logical": 1619,
+          "target": 0,
+          "id": 0,
+          "v": 3,
+          "ch": 13,
+          "value": 2,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 4791,
+          "kind": 7,
+          "logical": 1651,
+          "target": 0,
+          "id": 0,
+          "v": 3,
+          "ch": 32,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 4879,
+          "kind": 8,
+          "logical": 1680,
+          "target": 0,
+          "id": 0,
+          "v": 3,
+          "ch": 32,
+          "value": 2,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 4948,
+          "kind": 7,
+          "logical": 1703,
+          "target": 0,
+          "id": 0,
+          "v": 3,
+          "ch": 38,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 5103,
+          "kind": 8,
+          "logical": 1755,
+          "target": 0,
+          "id": 0,
+          "v": 3,
+          "ch": 38,
+          "value": 2,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 5470,
+          "kind": 9,
+          "logical": 1878,
+          "target": 1878,
+          "id": 0,
+          "v": 3,
+          "ch": 1,
+          "value": 1,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 6404,
+          "kind": 4,
+          "logical": 2191,
+          "target": 2191,
+          "id": 0,
+          "v": 4,
+          "ch": 0,
+          "value": 33,
+          "bits": "ef0efffffd"
+        },
+        {
+          "t_ms": 6404,
+          "kind": 0,
+          "logical": 2191,
+          "target": 2791,
+          "id": 5,
+          "v": 5,
+          "ch": 0,
+          "value": 1,
+          "bits": "ac0edfdffd"
+        },
+        {
+          "t_ms": 6409,
+          "kind": 7,
+          "logical": 2192,
+          "target": 0,
+          "id": 0,
+          "v": 4,
+          "ch": 3,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 6416,
+          "kind": 1,
+          "logical": 2195,
+          "target": 2791,
+          "id": 5,
+          "v": 5,
+          "ch": 0,
+          "value": 1,
+          "bits": "ac0edfdffd"
+        },
+        {
+          "t_ms": 6421,
+          "kind": 7,
+          "logical": 2196,
+          "target": 0,
+          "id": 0,
+          "v": 4,
+          "ch": 19,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 6492,
+          "kind": 8,
+          "logical": 2220,
+          "target": 0,
+          "id": 0,
+          "v": 4,
+          "ch": 19,
+          "value": 2,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 6495,
+          "kind": 8,
+          "logical": 2221,
+          "target": 0,
+          "id": 0,
+          "v": 4,
+          "ch": 3,
+          "value": 2,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 7099,
+          "kind": 7,
+          "logical": 2423,
+          "target": 0,
+          "id": 0,
+          "v": 4,
+          "ch": 34,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 7224,
+          "kind": 8,
+          "logical": 2465,
+          "target": 0,
+          "id": 0,
+          "v": 4,
+          "ch": 34,
+          "value": 2,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 7603,
+          "kind": 7,
+          "logical": 2592,
+          "target": 0,
+          "id": 0,
+          "v": 4,
+          "ch": 25,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 7705,
+          "kind": 8,
+          "logical": 2626,
+          "target": 0,
+          "id": 0,
+          "v": 4,
+          "ch": 25,
+          "value": 2,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 8196,
+          "kind": 4,
+          "logical": 2791,
+          "target": 2791,
+          "id": 0,
+          "v": 5,
+          "ch": 0,
+          "value": 28,
+          "bits": "ac0edfdffd"
+        },
+        {
+          "t_ms": 8197,
+          "kind": 0,
+          "logical": 2791,
+          "target": 3391,
+          "id": 6,
+          "v": 6,
+          "ch": 0,
+          "value": 1,
+          "bits": "a80cd7dff5"
+        },
+        {
+          "t_ms": 8201,
+          "kind": 7,
+          "logical": 2792,
+          "target": 0,
+          "id": 0,
+          "v": 5,
+          "ch": 14,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 8212,
+          "kind": 1,
+          "logical": 2796,
+          "target": 3391,
+          "id": 6,
+          "v": 6,
+          "ch": 0,
+          "value": 1,
+          "bits": "a80cd7dff5"
+        },
+        {
+          "t_ms": 8216,
+          "kind": 7,
+          "logical": 2797,
+          "target": 0,
+          "id": 0,
+          "v": 5,
+          "ch": 27,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 8252,
+          "kind": 8,
+          "logical": 2809,
+          "target": 0,
+          "id": 0,
+          "v": 5,
+          "ch": 14,
+          "value": 2,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 8276,
+          "kind": 8,
+          "logical": 2817,
+          "target": 0,
+          "id": 0,
+          "v": 5,
+          "ch": 27,
+          "value": 2,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 8986,
+          "kind": 7,
+          "logical": 3055,
+          "target": 0,
+          "id": 0,
+          "v": 5,
+          "ch": 18,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 9111,
+          "kind": 8,
+          "logical": 3097,
+          "target": 0,
+          "id": 0,
+          "v": 5,
+          "ch": 18,
+          "value": 2,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 9630,
+          "kind": 7,
+          "logical": 3271,
+          "target": 0,
+          "id": 0,
+          "v": 5,
+          "ch": 12,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 9696,
+          "kind": 8,
+          "logical": 3293,
+          "target": 0,
+          "id": 0,
+          "v": 5,
+          "ch": 12,
+          "value": 2,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 9987,
+          "kind": 4,
+          "logical": 3391,
+          "target": 3391,
+          "id": 0,
+          "v": 6,
+          "ch": 0,
+          "value": 24,
+          "bits": "a80cd7dff5"
+        },
+        {
+          "t_ms": 9987,
+          "kind": 0,
+          "logical": 3391,
+          "target": 3991,
+          "id": 7,
+          "v": 7,
+          "ch": 0,
+          "value": 1,
+          "bits": "a804d38ff5"
+        },
+        {
+          "t_ms": 9992,
+          "kind": 7,
+          "logical": 3392,
+          "target": 0,
+          "id": 0,
+          "v": 6,
+          "ch": 16,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 9999,
+          "kind": 1,
+          "logical": 3395,
+          "target": 3991,
+          "id": 7,
+          "v": 7,
+          "ch": 0,
+          "value": 1,
+          "bits": "a804d38ff5"
+        },
+        {
+          "t_ms": 10004,
+          "kind": 7,
+          "logical": 3396,
+          "target": 0,
+          "id": 0,
+          "v": 6,
+          "ch": 26,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 10075,
+          "kind": 8,
+          "logical": 3420,
+          "target": 0,
+          "id": 0,
+          "v": 6,
+          "ch": 16,
+          "value": 2,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 10105,
+          "kind": 8,
+          "logical": 3430,
+          "target": 0,
+          "id": 0,
+          "v": 6,
+          "ch": 26,
+          "value": 2,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 11776,
+          "kind": 4,
+          "logical": 3991,
+          "target": 3991,
+          "id": 0,
+          "v": 7,
+          "ch": 0,
+          "value": 20,
+          "bits": "a804d38ff5"
+        },
+        {
+          "t_ms": 11776,
+          "kind": 0,
+          "logical": 3991,
+          "target": 4591,
+          "id": 8,
+          "v": 8,
+          "ch": 0,
+          "value": 1,
+          "bits": "a800d28ff5"
+        },
+        {
+          "t_ms": 11781,
+          "kind": 7,
+          "logical": 3992,
+          "target": 0,
+          "id": 0,
+          "v": 7,
+          "ch": 15,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 11794,
+          "kind": 1,
+          "logical": 3997,
+          "target": 4591,
+          "id": 8,
+          "v": 8,
+          "ch": 0,
+          "value": 1,
+          "bits": "a800d28ff5"
+        },
+        {
+          "t_ms": 11799,
+          "kind": 7,
+          "logical": 3998,
+          "target": 0,
+          "id": 0,
+          "v": 7,
+          "ch": 7,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 11819,
+          "kind": 8,
+          "logical": 4005,
+          "target": 0,
+          "id": 0,
+          "v": 7,
+          "ch": 7,
+          "value": 2,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 11843,
+          "kind": 8,
+          "logical": 4013,
+          "target": 0,
+          "id": 0,
+          "v": 7,
+          "ch": 15,
+          "value": 2,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 13564,
+          "kind": 4,
+          "logical": 4591,
+          "target": 4591,
+          "id": 0,
+          "v": 8,
+          "ch": 0,
+          "value": 18,
+          "bits": "a800d28ff5"
+        },
+        {
+          "t_ms": 13564,
+          "kind": 0,
+          "logical": 4591,
+          "target": 5191,
+          "id": 9,
+          "v": 9,
+          "ch": 0,
+          "value": 1,
+          "bits": "a800d20f75"
+        },
+        {
+          "t_ms": 13588,
+          "kind": 1,
+          "logical": 4599,
+          "target": 5191,
+          "id": 9,
+          "v": 9,
+          "ch": 0,
+          "value": 1,
+          "bits": "a800d20f75"
+        },
+        {
+          "t_ms": 13593,
+          "kind": 7,
+          "logical": 4600,
+          "target": 0,
+          "id": 0,
+          "v": 8,
+          "ch": 37,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 13616,
+          "kind": 8,
+          "logical": 4608,
+          "target": 0,
+          "id": 0,
+          "v": 8,
+          "ch": 37,
+          "value": 2,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 15351,
+          "kind": 4,
+          "logical": 5191,
+          "target": 5191,
+          "id": 0,
+          "v": 9,
+          "ch": 0,
+          "value": 16,
+          "bits": "a800d20f75"
+        },
+        {
+          "t_ms": 15351,
+          "kind": 0,
+          "logical": 5191,
+          "target": 5791,
+          "id": 10,
+          "v": 10,
+          "ch": 0,
+          "value": 1,
+          "bits": "8800d20f75"
+        },
+        {
+          "t_ms": 15360,
+          "kind": 1,
+          "logical": 5194,
+          "target": 5791,
+          "id": 10,
+          "v": 10,
+          "ch": 0,
+          "value": 1,
+          "bits": "8800d20f75"
+        },
+        {
+          "t_ms": 15365,
+          "kind": 7,
+          "logical": 5195,
+          "target": 0,
+          "id": 0,
+          "v": 9,
+          "ch": 39,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 15397,
+          "kind": 8,
+          "logical": 5206,
+          "target": 0,
+          "id": 0,
+          "v": 9,
+          "ch": 39,
+          "value": 2,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 17137,
+          "kind": 4,
+          "logical": 5791,
+          "target": 5791,
+          "id": 0,
+          "v": 10,
+          "ch": 0,
+          "value": 15,
+          "bits": "8800d20f75"
+        },
+        {
+          "t_ms": 17137,
+          "kind": 0,
+          "logical": 5791,
+          "target": 6391,
+          "id": 11,
+          "v": 11,
+          "ch": 0,
+          "value": 1,
+          "bits": "0800d20f75"
+        },
+        {
+          "t_ms": 17142,
+          "kind": 7,
+          "logical": 5792,
+          "target": 0,
+          "id": 0,
+          "v": 10,
+          "ch": 22,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 17158,
+          "kind": 1,
+          "logical": 5798,
+          "target": 6391,
+          "id": 11,
+          "v": 11,
+          "ch": 0,
+          "value": 1,
+          "bits": "0800d20f75"
+        },
+        {
+          "t_ms": 17163,
+          "kind": 7,
+          "logical": 5799,
+          "target": 0,
+          "id": 0,
+          "v": 10,
+          "ch": 6,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 17210,
+          "kind": 8,
+          "logical": 5815,
+          "target": 0,
+          "id": 0,
+          "v": 10,
+          "ch": 6,
+          "value": 2,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 17216,
+          "kind": 8,
+          "logical": 5817,
+          "target": 0,
+          "id": 0,
+          "v": 10,
+          "ch": 22,
+          "value": 2,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 18923,
+          "kind": 4,
+          "logical": 6391,
+          "target": 6391,
+          "id": 0,
+          "v": 11,
+          "ch": 0,
+          "value": 14,
+          "bits": "0800d20f75"
+        },
+        {
+          "t_ms": 18923,
+          "kind": 0,
+          "logical": 6391,
+          "target": 6991,
+          "id": 12,
+          "v": 12,
+          "ch": 0,
+          "value": 1,
+          "bits": "0800920f35"
+        },
+        {
+          "t_ms": 18933,
+          "kind": 1,
+          "logical": 6394,
+          "target": 6991,
+          "id": 12,
+          "v": 12,
+          "ch": 0,
+          "value": 1,
+          "bits": "0800920f35"
+        },
+        {
+          "t_ms": 18937,
+          "kind": 7,
+          "logical": 6395,
+          "target": 0,
+          "id": 0,
+          "v": 11,
+          "ch": 4,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 19133,
+          "kind": 11,
+          "logical": 6461,
+          "target": 0,
+          "id": 0,
+          "v": 11,
+          "ch": 4,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 20709,
+          "kind": 4,
+          "logical": 6991,
+          "target": 6991,
+          "id": 0,
+          "v": 12,
+          "ch": 0,
+          "value": 12,
+          "bits": "0800920f35"
+        },
+        {
+          "t_ms": 20709,
+          "kind": 0,
+          "logical": 6991,
+          "target": 7291,
+          "id": 13,
+          "v": 12,
+          "ch": 1,
+          "value": 2,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 20714,
+          "kind": 7,
+          "logical": 6992,
+          "target": 0,
+          "id": 0,
+          "v": 12,
+          "ch": 0,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 20724,
+          "kind": 1,
+          "logical": 6996,
+          "target": 7291,
+          "id": 13,
+          "v": 12,
+          "ch": 1,
+          "value": 1,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 20729,
+          "kind": 7,
+          "logical": 6997,
+          "target": 0,
+          "id": 0,
+          "v": 12,
+          "ch": 11,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 20889,
+          "kind": 11,
+          "logical": 7051,
+          "target": 0,
+          "id": 0,
+          "v": 12,
+          "ch": 0,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 20931,
+          "kind": 11,
+          "logical": 7065,
+          "target": 0,
+          "id": 0,
+          "v": 12,
+          "ch": 11,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 20979,
+          "kind": 7,
+          "logical": 7081,
+          "target": 0,
+          "id": 0,
+          "v": 12,
+          "ch": 4,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 21184,
+          "kind": 11,
+          "logical": 7150,
+          "target": 0,
+          "id": 0,
+          "v": 12,
+          "ch": 4,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 21603,
+          "kind": 9,
+          "logical": 7291,
+          "target": 7291,
+          "id": 0,
+          "v": 12,
+          "ch": 1,
+          "value": 1,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 21605,
+          "kind": 0,
+          "logical": 7292,
+          "target": 7592,
+          "id": 14,
+          "v": 12,
+          "ch": 3,
+          "value": 2,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 21609,
+          "kind": 7,
+          "logical": 7293,
+          "target": 0,
+          "id": 0,
+          "v": 12,
+          "ch": 35,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 21611,
+          "kind": 1,
+          "logical": 7294,
+          "target": 7592,
+          "id": 14,
+          "v": 12,
+          "ch": 3,
+          "value": 1,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 21615,
+          "kind": 7,
+          "logical": 7295,
+          "target": 0,
+          "id": 0,
+          "v": 12,
+          "ch": 9,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 21773,
+          "kind": 11,
+          "logical": 7348,
+          "target": 0,
+          "id": 0,
+          "v": 12,
+          "ch": 35,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 21779,
+          "kind": 11,
+          "logical": 7350,
+          "target": 0,
+          "id": 0,
+          "v": 12,
+          "ch": 9,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 22498,
+          "kind": 9,
+          "logical": 7592,
+          "target": 7592,
+          "id": 0,
+          "v": 12,
+          "ch": 3,
+          "value": 1,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 22500,
+          "kind": 0,
+          "logical": 7593,
+          "target": 7893,
+          "id": 15,
+          "v": 12,
+          "ch": 36,
+          "value": 2,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 22503,
+          "kind": 1,
+          "logical": 7594,
+          "target": 7893,
+          "id": 15,
+          "v": 12,
+          "ch": 36,
+          "value": 1,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 22508,
+          "kind": 7,
+          "logical": 7595,
+          "target": 0,
+          "id": 0,
+          "v": 12,
+          "ch": 9,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 22674,
+          "kind": 11,
+          "logical": 7651,
+          "target": 0,
+          "id": 0,
+          "v": 12,
+          "ch": 9,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 23394,
+          "kind": 9,
+          "logical": 7893,
+          "target": 7893,
+          "id": 0,
+          "v": 12,
+          "ch": 36,
+          "value": 1,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 23396,
+          "kind": 0,
+          "logical": 7894,
+          "target": 8194,
+          "id": 16,
+          "v": 12,
+          "ch": 24,
+          "value": 2,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 23400,
+          "kind": 7,
+          "logical": 7895,
+          "target": 0,
+          "id": 0,
+          "v": 12,
+          "ch": 8,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 23411,
+          "kind": 1,
+          "logical": 7899,
+          "target": 8194,
+          "id": 16,
+          "v": 12,
+          "ch": 24,
+          "value": 1,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 23415,
+          "kind": 7,
+          "logical": 7900,
+          "target": 0,
+          "id": 0,
+          "v": 12,
+          "ch": 20,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 23561,
+          "kind": 11,
+          "logical": 7949,
+          "target": 0,
+          "id": 0,
+          "v": 12,
+          "ch": 8,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 23611,
+          "kind": 11,
+          "logical": 7966,
+          "target": 0,
+          "id": 0,
+          "v": 12,
+          "ch": 20,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 24289,
+          "kind": 9,
+          "logical": 8194,
+          "target": 8194,
+          "id": 0,
+          "v": 12,
+          "ch": 24,
+          "value": 1,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 24291,
+          "kind": 0,
+          "logical": 8195,
+          "target": 8495,
+          "id": 17,
+          "v": 12,
+          "ch": 21,
+          "value": 2,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 24294,
+          "kind": 1,
+          "logical": 8196,
+          "target": 8495,
+          "id": 17,
+          "v": 12,
+          "ch": 21,
+          "value": 1,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 24299,
+          "kind": 7,
+          "logical": 8197,
+          "target": 0,
+          "id": 0,
+          "v": 12,
+          "ch": 4,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 24474,
+          "kind": 11,
+          "logical": 8256,
+          "target": 0,
+          "id": 0,
+          "v": 12,
+          "ch": 4,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 25185,
+          "kind": 9,
+          "logical": 8495,
+          "target": 8495,
+          "id": 0,
+          "v": 12,
+          "ch": 21,
+          "value": 1,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 25187,
+          "kind": 0,
+          "logical": 8496,
+          "target": 8796,
+          "id": 18,
+          "v": 12,
+          "ch": 19,
+          "value": 2,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 25191,
+          "kind": 7,
+          "logical": 8497,
+          "target": 0,
+          "id": 0,
+          "v": 12,
+          "ch": 9,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 25192,
+          "kind": 1,
+          "logical": 8498,
+          "target": 8796,
+          "id": 18,
+          "v": 12,
+          "ch": 19,
+          "value": 1,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 25197,
+          "kind": 7,
+          "logical": 8499,
+          "target": 0,
+          "id": 0,
+          "v": 12,
+          "ch": 4,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 25375,
+          "kind": 11,
+          "logical": 8559,
+          "target": 0,
+          "id": 0,
+          "v": 12,
+          "ch": 9,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 25378,
+          "kind": 11,
+          "logical": 8560,
+          "target": 0,
+          "id": 0,
+          "v": 12,
+          "ch": 4,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 26080,
+          "kind": 9,
+          "logical": 8796,
+          "target": 8796,
+          "id": 0,
+          "v": 12,
+          "ch": 19,
+          "value": 1,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 26082,
+          "kind": 0,
+          "logical": 8797,
+          "target": 9097,
+          "id": 19,
+          "v": 12,
+          "ch": 28,
+          "value": 2,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 26085,
+          "kind": 1,
+          "logical": 8798,
+          "target": 9097,
+          "id": 19,
+          "v": 12,
+          "ch": 28,
+          "value": 1,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 26090,
+          "kind": 7,
+          "logical": 8799,
+          "target": 0,
+          "id": 0,
+          "v": 12,
+          "ch": 11,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 26227,
+          "kind": 7,
+          "logical": 8845,
+          "target": 0,
+          "id": 0,
+          "v": 12,
+          "ch": 17,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 26268,
+          "kind": 11,
+          "logical": 8859,
+          "target": 0,
+          "id": 0,
+          "v": 12,
+          "ch": 11,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 26429,
+          "kind": 11,
+          "logical": 8913,
+          "target": 0,
+          "id": 0,
+          "v": 12,
+          "ch": 17,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 26976,
+          "kind": 9,
+          "logical": 9097,
+          "target": 9097,
+          "id": 0,
+          "v": 12,
+          "ch": 28,
+          "value": 1,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 26978,
+          "kind": 0,
+          "logical": 9098,
+          "target": 9398,
+          "id": 20,
+          "v": 12,
+          "ch": 30,
+          "value": 2,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 26982,
+          "kind": 7,
+          "logical": 9099,
+          "target": 0,
+          "id": 0,
+          "v": 12,
+          "ch": 4,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 26990,
+          "kind": 1,
+          "logical": 9102,
+          "target": 9398,
+          "id": 20,
+          "v": 12,
+          "ch": 30,
+          "value": 1,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 26994,
+          "kind": 7,
+          "logical": 9103,
+          "target": 0,
+          "id": 0,
+          "v": 12,
+          "ch": 11,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 27075,
+          "kind": 7,
+          "logical": 9130,
+          "target": 0,
+          "id": 0,
+          "v": 12,
+          "ch": 23,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 27155,
+          "kind": 11,
+          "logical": 9157,
+          "target": 0,
+          "id": 0,
+          "v": 12,
+          "ch": 4,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 27181,
+          "kind": 11,
+          "logical": 9166,
+          "target": 0,
+          "id": 0,
+          "v": 12,
+          "ch": 11,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 27229,
+          "kind": 11,
+          "logical": 9182,
+          "target": 0,
+          "id": 0,
+          "v": 12,
+          "ch": 23,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 27871,
+          "kind": 9,
+          "logical": 9398,
+          "target": 9398,
+          "id": 0,
+          "v": 12,
+          "ch": 30,
+          "value": 1,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 27873,
+          "kind": 0,
+          "logical": 9399,
+          "target": 9699,
+          "id": 21,
+          "v": 12,
+          "ch": 34,
+          "value": 2,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 27876,
+          "kind": 1,
+          "logical": 9400,
+          "target": 9699,
+          "id": 21,
+          "v": 12,
+          "ch": 34,
+          "value": 1,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 27881,
+          "kind": 7,
+          "logical": 9401,
+          "target": 0,
+          "id": 0,
+          "v": 12,
+          "ch": 35,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 28047,
+          "kind": 11,
+          "logical": 9457,
+          "target": 0,
+          "id": 0,
+          "v": 12,
+          "ch": 35,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 28296,
+          "kind": 7,
+          "logical": 9541,
+          "target": 0,
+          "id": 0,
+          "v": 12,
+          "ch": 17,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 28502,
+          "kind": 11,
+          "logical": 9610,
+          "target": 0,
+          "id": 0,
+          "v": 12,
+          "ch": 17,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 28767,
+          "kind": 9,
+          "logical": 9699,
+          "target": 9699,
+          "id": 0,
+          "v": 12,
+          "ch": 34,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 28769,
+          "kind": 0,
+          "logical": 9700,
+          "target": 10000,
+          "id": 22,
+          "v": 12,
+          "ch": 29,
+          "value": 2,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 28773,
+          "kind": 7,
+          "logical": 9701,
+          "target": 0,
+          "id": 0,
+          "v": 12,
+          "ch": 10,
+          "value": 0,
+          "bits": "0000000000"
+        },
+        {
+          "t_ms": 28774,
+          "kind": 1,
+          "logical": 9702,
+          "target": 10000,
+          "id": 22,
+          "v": 12,
+          "ch": 29,
+          "value": 1,
+          "bits": "0000000000"
+        }
+      ],
+      "activations": [
+        {
+          "v": 2,
+          "activation": 978,
+          "applied_at": 978
+        },
+        {
+          "v": 3,
+          "activation": 1578,
+          "applied_at": 1578
+        },
+        {
+          "v": 4,
+          "activation": 2191,
+          "applied_at": 2191
+        },
+        {
+          "v": 5,
+          "activation": 2791,
+          "applied_at": 2791
+        },
+        {
+          "v": 6,
+          "activation": 3391,
+          "applied_at": 3391
+        },
+        {
+          "v": 7,
+          "activation": 3991,
+          "applied_at": 3991
+        },
+        {
+          "v": 8,
+          "activation": 4591,
+          "applied_at": 4591
+        },
+        {
+          "v": 9,
+          "activation": 5191,
+          "applied_at": 5191
+        },
+        {
+          "v": 10,
+          "activation": 5791,
+          "applied_at": 5791
+        },
+        {
+          "v": 11,
+          "activation": 6391,
+          "applied_at": 6391
+        },
+        {
+          "v": 12,
+          "activation": 6991,
+          "applied_at": 6991
+        },
+        {
+          "v": 13,
+          "activation": 14815,
+          "applied_at": 14815
+        },
+        {
+          "v": 14,
+          "activation": 15415,
+          "applied_at": 15415
+        },
+        {
+          "v": 15,
+          "activation": 23841,
+          "applied_at": 23841
+        },
+        {
+          "v": 16,
+          "activation": 24441,
+          "applied_at": 24441
+        },
+        {
+          "v": 17,
+          "activation": 27148,
+          "applied_at": 27148
+        },
+        {
+          "v": 18,
+          "activation": 27748,
+          "applied_at": 27748
+        },
+        {
+          "v": 19,
+          "activation": 28950,
+          "applied_at": 28950
+        },
+        {
+          "v": 20,
+          "activation": 29550,
+          "applied_at": 29550
+        },
+        {
+          "v": 21,
+          "activation": 30451,
+          "applied_at": 30451
+        },
+        {
+          "v": 22,
+          "activation": 31051,
+          "applied_at": 31051
+        },
+        {
+          "v": 23,
+          "activation": 31952,
+          "applied_at": 31952
+        },
+        {
+          "v": 24,
+          "activation": 32552,
+          "applied_at": 32552
+        },
+        {
+          "v": 25,
+          "activation": 33754,
+          "applied_at": 33754
+        },
+        {
+          "v": 26,
+          "activation": 34354,
+          "applied_at": 34354
+        },
+        {
+          "v": 27,
+          "activation": 35255,
+          "applied_at": 35255
+        },
+        {
+          "v": 28,
+          "activation": 35855,
+          "applied_at": 35855
+        },
+        {
+          "v": 29,
+          "activation": 36756,
+          "applied_at": 36756
+        },
+        {
+          "v": 30,
+          "activation": 37356,
+          "applied_at": 37356
+        },
+        {
+          "v": 31,
+          "activation": 38257,
+          "applied_at": 38257
+        },
+        {
+          "v": 32,
+          "activation": 38857,
+          "applied_at": 38857
+        },
+        {
+          "v": 33,
+          "activation": 39758,
+          "applied_at": 39758
+        }
+      ],
+      "summary": {
+        "map_version": 45,
+        "active": 13,
+        "bits": "06f80400f2",
+        "pending": 1,
+        "pending_v": 46,
+        "pending_act": 49665,
+        "min_active_seen": 12,
+        "proposals": 120,
+        "commits": 120,
+        "commit_late": 0,
+        "expired": 0,
+        "activations": 44,
+        "tx_rejects": 0,
+        "outcomes_dropped": 0,
+        "events": 1063,
+        "emit_dropped": 0,
+        "activation_count": 44,
+        "ctrl_us_p99": 190,
+        "ctrl_us_max": 190
+      }
+    },
+    "tx_summary": {
+      "map_version": 46,
+      "active": 12,
+      "bits": "06f00400f2",
+      "pending": 0,
+      "pending_v": 46,
+      "pending_act": 49665,
+      "min_active_seen": 12,
+      "proposals": 0,
+      "commits": 120,
+      "commit_late": 0,
+      "expired": 0,
+      "activations": 45,
+      "tx_rejects": 0,
+      "outcomes_dropped": 0,
+      "events": 165,
+      "emit_dropped": 0,
+      "activation_count": 45,
+      "ctrl_us_p99": 163,
+      "ctrl_us_max": 265
+    },
+    "tx_events": [
+      {
+        "t_ms": 1751,
+        "kind": 5,
+        "logical": 384,
+        "target": 978,
+        "id": 1,
+        "v": 2,
+        "ch": 0,
+        "value": 1,
+        "bits": "efffffffff"
+      },
+      {
+        "t_ms": 3529,
+        "kind": 4,
+        "logical": 978,
+        "target": 978,
+        "id": 0,
+        "v": 2,
+        "ch": 0,
+        "value": 39,
+        "bits": "efffffffff"
+      },
+      {
+        "t_ms": 3559,
+        "kind": 5,
+        "logical": 988,
+        "target": 1578,
+        "id": 2,
+        "v": 3,
+        "ch": 0,
+        "value": 1,
+        "bits": "ef8efffffd"
+      },
+      {
+        "t_ms": 5324,
+        "kind": 4,
+        "logical": 1578,
+        "target": 1578,
+        "id": 0,
+        "v": 3,
+        "ch": 0,
+        "value": 34,
+        "bits": "ef8efffffd"
+      },
+      {
+        "t_ms": 5354,
+        "kind": 5,
+        "logical": 1588,
+        "target": 1878,
+        "id": 3,
+        "v": 3,
+        "ch": 1,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 5384,
+        "kind": 5,
+        "logical": 1598,
+        "target": 2191,
+        "id": 4,
+        "v": 4,
+        "ch": 0,
+        "value": 1,
+        "bits": "ef0efffffd"
+      },
+      {
+        "t_ms": 7155,
+        "kind": 4,
+        "logical": 2191,
+        "target": 2191,
+        "id": 0,
+        "v": 4,
+        "ch": 0,
+        "value": 33,
+        "bits": "ef0efffffd"
+      },
+      {
+        "t_ms": 7179,
+        "kind": 5,
+        "logical": 2199,
+        "target": 2791,
+        "id": 5,
+        "v": 5,
+        "ch": 0,
+        "value": 1,
+        "bits": "ac0edfdffd"
+      },
+      {
+        "t_ms": 8948,
+        "kind": 4,
+        "logical": 2791,
+        "target": 2791,
+        "id": 0,
+        "v": 5,
+        "ch": 0,
+        "value": 28,
+        "bits": "ac0edfdffd"
+      },
+      {
+        "t_ms": 8972,
+        "kind": 5,
+        "logical": 2799,
+        "target": 3391,
+        "id": 6,
+        "v": 6,
+        "ch": 0,
+        "value": 1,
+        "bits": "a80cd7dff5"
+      },
+      {
+        "t_ms": 10738,
+        "kind": 4,
+        "logical": 3391,
+        "target": 3391,
+        "id": 0,
+        "v": 6,
+        "ch": 0,
+        "value": 24,
+        "bits": "a80cd7dff5"
+      },
+      {
+        "t_ms": 10762,
+        "kind": 5,
+        "logical": 3399,
+        "target": 3991,
+        "id": 7,
+        "v": 7,
+        "ch": 0,
+        "value": 1,
+        "bits": "a804d38ff5"
+      },
+      {
+        "t_ms": 12527,
+        "kind": 4,
+        "logical": 3991,
+        "target": 3991,
+        "id": 0,
+        "v": 7,
+        "ch": 0,
+        "value": 20,
+        "bits": "a804d38ff5"
+      },
+      {
+        "t_ms": 12557,
+        "kind": 5,
+        "logical": 4001,
+        "target": 4591,
+        "id": 8,
+        "v": 8,
+        "ch": 0,
+        "value": 1,
+        "bits": "a800d28ff5"
+      },
+      {
+        "t_ms": 14315,
+        "kind": 4,
+        "logical": 4591,
+        "target": 4591,
+        "id": 0,
+        "v": 8,
+        "ch": 0,
+        "value": 18,
+        "bits": "a800d28ff5"
+      },
+      {
+        "t_ms": 14351,
+        "kind": 5,
+        "logical": 4603,
+        "target": 5191,
+        "id": 9,
+        "v": 9,
+        "ch": 0,
+        "value": 1,
+        "bits": "a800d20f75"
+      },
+      {
+        "t_ms": 16102,
+        "kind": 4,
+        "logical": 5191,
+        "target": 5191,
+        "id": 0,
+        "v": 9,
+        "ch": 0,
+        "value": 16,
+        "bits": "a800d20f75"
+      },
+      {
+        "t_ms": 16126,
+        "kind": 5,
+        "logical": 5199,
+        "target": 5791,
+        "id": 10,
+        "v": 10,
+        "ch": 0,
+        "value": 1,
+        "bits": "8800d20f75"
+      },
+      {
+        "t_ms": 17888,
+        "kind": 4,
+        "logical": 5791,
+        "target": 5791,
+        "id": 0,
+        "v": 10,
+        "ch": 0,
+        "value": 15,
+        "bits": "8800d20f75"
+      },
+      {
+        "t_ms": 17918,
+        "kind": 5,
+        "logical": 5801,
+        "target": 6391,
+        "id": 11,
+        "v": 11,
+        "ch": 0,
+        "value": 1,
+        "bits": "0800d20f75"
+      },
+      {
+        "t_ms": 19675,
+        "kind": 4,
+        "logical": 6391,
+        "target": 6391,
+        "id": 0,
+        "v": 11,
+        "ch": 0,
+        "value": 14,
+        "bits": "0800d20f75"
+      },
+      {
+        "t_ms": 19698,
+        "kind": 5,
+        "logical": 6399,
+        "target": 6991,
+        "id": 12,
+        "v": 12,
+        "ch": 0,
+        "value": 1,
+        "bits": "0800920f35"
+      },
+      {
+        "t_ms": 21460,
+        "kind": 4,
+        "logical": 6991,
+        "target": 6991,
+        "id": 0,
+        "v": 12,
+        "ch": 0,
+        "value": 12,
+        "bits": "0800920f35"
+      },
+      {
+        "t_ms": 21490,
+        "kind": 5,
+        "logical": 7001,
+        "target": 7291,
+        "id": 13,
+        "v": 12,
+        "ch": 1,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 22386,
+        "kind": 5,
+        "logical": 7302,
+        "target": 7592,
+        "id": 14,
+        "v": 12,
+        "ch": 3,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 23266,
+        "kind": 5,
+        "logical": 7598,
+        "target": 7893,
+        "id": 15,
+        "v": 12,
+        "ch": 36,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 24177,
+        "kind": 5,
+        "logical": 7904,
+        "target": 8194,
+        "id": 16,
+        "v": 12,
+        "ch": 24,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 25069,
+        "kind": 5,
+        "logical": 8204,
+        "target": 8495,
+        "id": 17,
+        "v": 12,
+        "ch": 21,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 25965,
+        "kind": 5,
+        "logical": 8505,
+        "target": 8796,
+        "id": 18,
+        "v": 12,
+        "ch": 19,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 26845,
+        "kind": 5,
+        "logical": 8801,
+        "target": 9097,
+        "id": 19,
+        "v": 12,
+        "ch": 28,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 27759,
+        "kind": 5,
+        "logical": 9108,
+        "target": 9398,
+        "id": 20,
+        "v": 12,
+        "ch": 30,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 28651,
+        "kind": 5,
+        "logical": 9408,
+        "target": 9699,
+        "id": 21,
+        "v": 12,
+        "ch": 34,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 29547,
+        "kind": 5,
+        "logical": 9709,
+        "target": 10000,
+        "id": 22,
+        "v": 12,
+        "ch": 29,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 30445,
+        "kind": 5,
+        "logical": 10011,
+        "target": 10301,
+        "id": 23,
+        "v": 12,
+        "ch": 18,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 31328,
+        "kind": 5,
+        "logical": 10308,
+        "target": 10602,
+        "id": 24,
+        "v": 12,
+        "ch": 31,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 32239,
+        "kind": 5,
+        "logical": 10614,
+        "target": 10903,
+        "id": 25,
+        "v": 12,
+        "ch": 12,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 33122,
+        "kind": 5,
+        "logical": 10911,
+        "target": 11204,
+        "id": 26,
+        "v": 12,
+        "ch": 13,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 34030,
+        "kind": 5,
+        "logical": 11216,
+        "target": 11505,
+        "id": 27,
+        "v": 12,
+        "ch": 33,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 34910,
+        "kind": 5,
+        "logical": 11512,
+        "target": 11806,
+        "id": 28,
+        "v": 12,
+        "ch": 16,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 35818,
+        "kind": 5,
+        "logical": 11817,
+        "target": 12107,
+        "id": 29,
+        "v": 12,
+        "ch": 32,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 36698,
+        "kind": 5,
+        "logical": 12113,
+        "target": 12408,
+        "id": 30,
+        "v": 12,
+        "ch": 38,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 37606,
+        "kind": 5,
+        "logical": 12418,
+        "target": 12709,
+        "id": 31,
+        "v": 12,
+        "ch": 7,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 38501,
+        "kind": 5,
+        "logical": 12719,
+        "target": 13010,
+        "id": 32,
+        "v": 12,
+        "ch": 25,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 39385,
+        "kind": 5,
+        "logical": 13016,
+        "target": 13311,
+        "id": 33,
+        "v": 12,
+        "ch": 14,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 40292,
+        "kind": 5,
+        "logical": 13321,
+        "target": 13612,
+        "id": 34,
+        "v": 12,
+        "ch": 27,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 41178,
+        "kind": 5,
+        "logical": 13619,
+        "target": 13913,
+        "id": 35,
+        "v": 12,
+        "ch": 26,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 42089,
+        "kind": 5,
+        "logical": 13925,
+        "target": 14214,
+        "id": 36,
+        "v": 12,
+        "ch": 1,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 42969,
+        "kind": 5,
+        "logical": 14221,
+        "target": 14815,
+        "id": 37,
+        "v": 13,
+        "ch": 0,
+        "value": 1,
+        "bits": "0800920f37"
+      },
+      {
+        "t_ms": 44736,
+        "kind": 4,
+        "logical": 14815,
+        "target": 14815,
+        "id": 0,
+        "v": 13,
+        "ch": 0,
+        "value": 13,
+        "bits": "0800920f37"
+      },
+      {
+        "t_ms": 44763,
+        "kind": 5,
+        "logical": 14824,
+        "target": 15415,
+        "id": 38,
+        "v": 14,
+        "ch": 0,
+        "value": 1,
+        "bits": "0800920e37"
+      },
+      {
+        "t_ms": 46522,
+        "kind": 4,
+        "logical": 15415,
+        "target": 15415,
+        "id": 0,
+        "v": 14,
+        "ch": 0,
+        "value": 12,
+        "bits": "0800920e37"
+      },
+      {
+        "t_ms": 46551,
+        "kind": 5,
+        "logical": 15425,
+        "target": 15715,
+        "id": 39,
+        "v": 14,
+        "ch": 15,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 47429,
+        "kind": 5,
+        "logical": 15720,
+        "target": 16016,
+        "id": 40,
+        "v": 14,
+        "ch": 6,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 48339,
+        "kind": 5,
+        "logical": 16026,
+        "target": 16317,
+        "id": 41,
+        "v": 14,
+        "ch": 22,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 49235,
+        "kind": 5,
+        "logical": 16327,
+        "target": 16618,
+        "id": 42,
+        "v": 14,
+        "ch": 3,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 50130,
+        "kind": 5,
+        "logical": 16628,
+        "target": 16919,
+        "id": 43,
+        "v": 14,
+        "ch": 37,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 51026,
+        "kind": 5,
+        "logical": 16929,
+        "target": 17220,
+        "id": 44,
+        "v": 14,
+        "ch": 39,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 51909,
+        "kind": 5,
+        "logical": 17226,
+        "target": 17521,
+        "id": 45,
+        "v": 14,
+        "ch": 36,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 52825,
+        "kind": 5,
+        "logical": 17534,
+        "target": 17822,
+        "id": 46,
+        "v": 14,
+        "ch": 21,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 53703,
+        "kind": 5,
+        "logical": 17829,
+        "target": 18123,
+        "id": 47,
+        "v": 14,
+        "ch": 24,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 54610,
+        "kind": 5,
+        "logical": 18134,
+        "target": 18424,
+        "id": 48,
+        "v": 14,
+        "ch": 19,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 55494,
+        "kind": 5,
+        "logical": 18431,
+        "target": 18725,
+        "id": 49,
+        "v": 14,
+        "ch": 18,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 56401,
+        "kind": 5,
+        "logical": 18736,
+        "target": 19026,
+        "id": 50,
+        "v": 14,
+        "ch": 34,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 57297,
+        "kind": 5,
+        "logical": 19037,
+        "target": 19327,
+        "id": 51,
+        "v": 14,
+        "ch": 28,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 58177,
+        "kind": 5,
+        "logical": 19333,
+        "target": 19628,
+        "id": 52,
+        "v": 14,
+        "ch": 12,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 59088,
+        "kind": 5,
+        "logical": 19639,
+        "target": 19929,
+        "id": 53,
+        "v": 14,
+        "ch": 30,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 59977,
+        "kind": 5,
+        "logical": 19938,
+        "target": 20230,
+        "id": 54,
+        "v": 14,
+        "ch": 29,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 60876,
+        "kind": 5,
+        "logical": 20240,
+        "target": 20531,
+        "id": 55,
+        "v": 14,
+        "ch": 16,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 61759,
+        "kind": 5,
+        "logical": 20537,
+        "target": 20832,
+        "id": 56,
+        "v": 14,
+        "ch": 31,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 62672,
+        "kind": 5,
+        "logical": 20844,
+        "target": 21133,
+        "id": 57,
+        "v": 14,
+        "ch": 13,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 63553,
+        "kind": 5,
+        "logical": 21140,
+        "target": 21434,
+        "id": 58,
+        "v": 14,
+        "ch": 33,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 64463,
+        "kind": 5,
+        "logical": 21446,
+        "target": 21735,
+        "id": 59,
+        "v": 14,
+        "ch": 32,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 65344,
+        "kind": 5,
+        "logical": 21742,
+        "target": 22036,
+        "id": 60,
+        "v": 14,
+        "ch": 38,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 66257,
+        "kind": 5,
+        "logical": 22049,
+        "target": 22337,
+        "id": 61,
+        "v": 14,
+        "ch": 8,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 67135,
+        "kind": 5,
+        "logical": 22344,
+        "target": 22638,
+        "id": 62,
+        "v": 14,
+        "ch": 7,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 68045,
+        "kind": 5,
+        "logical": 22650,
+        "target": 22939,
+        "id": 63,
+        "v": 14,
+        "ch": 25,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 68926,
+        "kind": 5,
+        "logical": 22946,
+        "target": 23240,
+        "id": 64,
+        "v": 14,
+        "ch": 3,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 69836,
+        "kind": 5,
+        "logical": 23252,
+        "target": 23841,
+        "id": 65,
+        "v": 15,
+        "ch": 0,
+        "value": 1,
+        "bits": "0800920e3f"
+      },
+      {
+        "t_ms": 71588,
+        "kind": 4,
+        "logical": 23841,
+        "target": 23841,
+        "id": 0,
+        "v": 15,
+        "ch": 0,
+        "value": 13,
+        "bits": "0800920e3f"
+      },
+      {
+        "t_ms": 71621,
+        "kind": 5,
+        "logical": 23852,
+        "target": 24441,
+        "id": 66,
+        "v": 16,
+        "ch": 0,
+        "value": 1,
+        "bits": "0800920e3b"
+      },
+      {
+        "t_ms": 73374,
+        "kind": 4,
+        "logical": 24441,
+        "target": 24441,
+        "id": 0,
+        "v": 16,
+        "ch": 0,
+        "value": 12,
+        "bits": "0800920e3b"
+      },
+      {
+        "t_ms": 73397,
+        "kind": 5,
+        "logical": 24449,
+        "target": 24741,
+        "id": 67,
+        "v": 16,
+        "ch": 14,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 74290,
+        "kind": 5,
+        "logical": 24749,
+        "target": 25042,
+        "id": 68,
+        "v": 16,
+        "ch": 27,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 75189,
+        "kind": 5,
+        "logical": 25051,
+        "target": 25343,
+        "id": 69,
+        "v": 16,
+        "ch": 26,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 76081,
+        "kind": 5,
+        "logical": 25351,
+        "target": 25644,
+        "id": 70,
+        "v": 16,
+        "ch": 6,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 76979,
+        "kind": 5,
+        "logical": 25653,
+        "target": 25945,
+        "id": 71,
+        "v": 16,
+        "ch": 22,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 77875,
+        "kind": 5,
+        "logical": 25954,
+        "target": 26246,
+        "id": 72,
+        "v": 16,
+        "ch": 15,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 78770,
+        "kind": 5,
+        "logical": 26255,
+        "target": 26547,
+        "id": 73,
+        "v": 16,
+        "ch": 36,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 79678,
+        "kind": 5,
+        "logical": 26560,
+        "target": 27148,
+        "id": 74,
+        "v": 17,
+        "ch": 0,
+        "value": 1,
+        "bits": "1800920e3b"
+      },
+      {
+        "t_ms": 81427,
+        "kind": 4,
+        "logical": 27148,
+        "target": 27148,
+        "id": 0,
+        "v": 17,
+        "ch": 0,
+        "value": 13,
+        "bits": "1800920e3b"
+      },
+      {
+        "t_ms": 81454,
+        "kind": 5,
+        "logical": 27157,
+        "target": 27748,
+        "id": 75,
+        "v": 18,
+        "ch": 0,
+        "value": 1,
+        "bits": "180092063b"
+      },
+      {
+        "t_ms": 83212,
+        "kind": 4,
+        "logical": 27748,
+        "target": 27748,
+        "id": 0,
+        "v": 18,
+        "ch": 0,
+        "value": 12,
+        "bits": "180092063b"
+      },
+      {
+        "t_ms": 83242,
+        "kind": 5,
+        "logical": 27758,
+        "target": 28048,
+        "id": 76,
+        "v": 18,
+        "ch": 37,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 84122,
+        "kind": 5,
+        "logical": 28054,
+        "target": 28349,
+        "id": 77,
+        "v": 18,
+        "ch": 21,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 85033,
+        "kind": 5,
+        "logical": 28360,
+        "target": 28950,
+        "id": 78,
+        "v": 19,
+        "ch": 0,
+        "value": 1,
+        "bits": "1800b2063b"
+      },
+      {
+        "t_ms": 86788,
+        "kind": 4,
+        "logical": 28950,
+        "target": 28950,
+        "id": 0,
+        "v": 19,
+        "ch": 0,
+        "value": 13,
+        "bits": "1800b2063b"
+      },
+      {
+        "t_ms": 86809,
+        "kind": 5,
+        "logical": 28957,
+        "target": 29550,
+        "id": 79,
+        "v": 20,
+        "ch": 0,
+        "value": 1,
+        "bits": "180032063b"
+      },
+      {
+        "t_ms": 88573,
+        "kind": 4,
+        "logical": 29550,
+        "target": 29550,
+        "id": 0,
+        "v": 20,
+        "ch": 0,
+        "value": 12,
+        "bits": "180032063b"
+      },
+      {
+        "t_ms": 88600,
+        "kind": 5,
+        "logical": 29559,
+        "target": 29850,
+        "id": 80,
+        "v": 20,
+        "ch": 19,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 89493,
+        "kind": 5,
+        "logical": 29859,
+        "target": 30451,
+        "id": 81,
+        "v": 21,
+        "ch": 0,
+        "value": 1,
+        "bits": "18003a063b"
+      },
+      {
+        "t_ms": 91253,
+        "kind": 4,
+        "logical": 30451,
+        "target": 30451,
+        "id": 0,
+        "v": 21,
+        "ch": 0,
+        "value": 13,
+        "bits": "18003a063b"
+      },
+      {
+        "t_ms": 91280,
+        "kind": 5,
+        "logical": 30460,
+        "target": 31051,
+        "id": 82,
+        "v": 22,
+        "ch": 0,
+        "value": 1,
+        "bits": "18003a063a"
+      },
+      {
+        "t_ms": 93039,
+        "kind": 4,
+        "logical": 31051,
+        "target": 31051,
+        "id": 0,
+        "v": 22,
+        "ch": 0,
+        "value": 12,
+        "bits": "18003a063a"
+      },
+      {
+        "t_ms": 93063,
+        "kind": 5,
+        "logical": 31059,
+        "target": 31351,
+        "id": 83,
+        "v": 22,
+        "ch": 18,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 93964,
+        "kind": 5,
+        "logical": 31362,
+        "target": 31952,
+        "id": 84,
+        "v": 23,
+        "ch": 0,
+        "value": 1,
+        "bits": "18003e063a"
+      },
+      {
+        "t_ms": 95719,
+        "kind": 4,
+        "logical": 31952,
+        "target": 31952,
+        "id": 0,
+        "v": 23,
+        "ch": 0,
+        "value": 13,
+        "bits": "18003e063a"
+      },
+      {
+        "t_ms": 95749,
+        "kind": 5,
+        "logical": 31962,
+        "target": 32552,
+        "id": 85,
+        "v": 24,
+        "ch": 0,
+        "value": 1,
+        "bits": "18003e023a"
+      },
+      {
+        "t_ms": 97504,
+        "kind": 4,
+        "logical": 32552,
+        "target": 32552,
+        "id": 0,
+        "v": 24,
+        "ch": 0,
+        "value": 12,
+        "bits": "18003e023a"
+      },
+      {
+        "t_ms": 97528,
+        "kind": 5,
+        "logical": 32560,
+        "target": 32852,
+        "id": 86,
+        "v": 24,
+        "ch": 39,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 98421,
+        "kind": 5,
+        "logical": 32860,
+        "target": 33153,
+        "id": 87,
+        "v": 24,
+        "ch": 34,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 99328,
+        "kind": 5,
+        "logical": 33165,
+        "target": 33754,
+        "id": 88,
+        "v": 25,
+        "ch": 0,
+        "value": 1,
+        "bits": "1c003e023a"
+      },
+      {
+        "t_ms": 101080,
+        "kind": 4,
+        "logical": 33754,
+        "target": 33754,
+        "id": 0,
+        "v": 25,
+        "ch": 0,
+        "value": 13,
+        "bits": "1c003e023a"
+      },
+      {
+        "t_ms": 101110,
+        "kind": 5,
+        "logical": 33764,
+        "target": 34354,
+        "id": 89,
+        "v": 26,
+        "ch": 0,
+        "value": 1,
+        "bits": "1c003c023a"
+      },
+      {
+        "t_ms": 102865,
+        "kind": 4,
+        "logical": 34354,
+        "target": 34354,
+        "id": 0,
+        "v": 26,
+        "ch": 0,
+        "value": 12,
+        "bits": "1c003c023a"
+      },
+      {
+        "t_ms": 102889,
+        "kind": 5,
+        "logical": 34362,
+        "target": 34654,
+        "id": 90,
+        "v": 26,
+        "ch": 24,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 103785,
+        "kind": 5,
+        "logical": 34663,
+        "target": 35255,
+        "id": 91,
+        "v": 27,
+        "ch": 0,
+        "value": 1,
+        "bits": "1c013c023a"
+      },
+      {
+        "t_ms": 105546,
+        "kind": 4,
+        "logical": 35255,
+        "target": 35255,
+        "id": 0,
+        "v": 27,
+        "ch": 0,
+        "value": 13,
+        "bits": "1c013c023a"
+      },
+      {
+        "t_ms": 105576,
+        "kind": 5,
+        "logical": 35265,
+        "target": 35855,
+        "id": 92,
+        "v": 28,
+        "ch": 0,
+        "value": 1,
+        "bits": "1c012c023a"
+      },
+      {
+        "t_ms": 107331,
+        "kind": 4,
+        "logical": 35855,
+        "target": 35855,
+        "id": 0,
+        "v": 28,
+        "ch": 0,
+        "value": 12,
+        "bits": "1c012c023a"
+      },
+      {
+        "t_ms": 107358,
+        "kind": 5,
+        "logical": 35864,
+        "target": 36155,
+        "id": 93,
+        "v": 28,
+        "ch": 28,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 108257,
+        "kind": 5,
+        "logical": 36166,
+        "target": 36756,
+        "id": 94,
+        "v": 29,
+        "ch": 0,
+        "value": 1,
+        "bits": "1c112c023a"
+      },
+      {
+        "t_ms": 110012,
+        "kind": 4,
+        "logical": 36756,
+        "target": 36756,
+        "id": 0,
+        "v": 29,
+        "ch": 0,
+        "value": 13,
+        "bits": "1c112c023a"
+      },
+      {
+        "t_ms": 110033,
+        "kind": 5,
+        "logical": 36763,
+        "target": 37356,
+        "id": 95,
+        "v": 30,
+        "ch": 0,
+        "value": 1,
+        "bits": "1c110c023a"
+      },
+      {
+        "t_ms": 111797,
+        "kind": 4,
+        "logical": 37356,
+        "target": 37356,
+        "id": 0,
+        "v": 30,
+        "ch": 0,
+        "value": 12,
+        "bits": "1c110c023a"
+      },
+      {
+        "t_ms": 111827,
+        "kind": 5,
+        "logical": 37366,
+        "target": 37656,
+        "id": 96,
+        "v": 30,
+        "ch": 29,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 112711,
+        "kind": 5,
+        "logical": 37663,
+        "target": 38257,
+        "id": 97,
+        "v": 31,
+        "ch": 0,
+        "value": 1,
+        "bits": "1c310c023a"
+      },
+      {
+        "t_ms": 114477,
+        "kind": 4,
+        "logical": 38257,
+        "target": 38257,
+        "id": 0,
+        "v": 31,
+        "ch": 0,
+        "value": 13,
+        "bits": "1c310c023a"
+      },
+      {
+        "t_ms": 114501,
+        "kind": 5,
+        "logical": 38265,
+        "target": 38857,
+        "id": 98,
+        "v": 32,
+        "ch": 0,
+        "value": 1,
+        "bits": "1c300c023a"
+      },
+      {
+        "t_ms": 116263,
+        "kind": 4,
+        "logical": 38857,
+        "target": 38857,
+        "id": 0,
+        "v": 32,
+        "ch": 0,
+        "value": 12,
+        "bits": "1c300c023a"
+      },
+      {
+        "t_ms": 116287,
+        "kind": 5,
+        "logical": 38865,
+        "target": 39157,
+        "id": 99,
+        "v": 32,
+        "ch": 30,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 117182,
+        "kind": 5,
+        "logical": 39166,
+        "target": 39758,
+        "id": 100,
+        "v": 33,
+        "ch": 0,
+        "value": 1,
+        "bits": "1c700c023a"
+      },
+      {
+        "t_ms": 118943,
+        "kind": 4,
+        "logical": 39758,
+        "target": 39758,
+        "id": 0,
+        "v": 33,
+        "ch": 0,
+        "value": 13,
+        "bits": "1c700c023a"
+      },
+      {
+        "t_ms": 118976,
+        "kind": 5,
+        "logical": 39769,
+        "target": 40358,
+        "id": 101,
+        "v": 34,
+        "ch": 0,
+        "value": 1,
+        "bits": "1c700c003a"
+      },
+      {
+        "t_ms": 120728,
+        "kind": 4,
+        "logical": 40358,
+        "target": 40358,
+        "id": 0,
+        "v": 34,
+        "ch": 0,
+        "value": 12,
+        "bits": "1c700c003a"
+      },
+      {
+        "t_ms": 120749,
+        "kind": 5,
+        "logical": 40365,
+        "target": 40658,
+        "id": 102,
+        "v": 34,
+        "ch": 31,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 121648,
+        "kind": 5,
+        "logical": 40667,
+        "target": 41259,
+        "id": 103,
+        "v": 35,
+        "ch": 0,
+        "value": 1,
+        "bits": "1cf00c003a"
+      },
+      {
+        "t_ms": 123409,
+        "kind": 4,
+        "logical": 41259,
+        "target": 41259,
+        "id": 0,
+        "v": 35,
+        "ch": 0,
+        "value": 13,
+        "bits": "1cf00c003a"
+      },
+      {
+        "t_ms": 123442,
+        "kind": 5,
+        "logical": 41270,
+        "target": 41859,
+        "id": 104,
+        "v": 36,
+        "ch": 0,
+        "value": 1,
+        "bits": "14f00c003a"
+      },
+      {
+        "t_ms": 125194,
+        "kind": 4,
+        "logical": 41859,
+        "target": 41859,
+        "id": 0,
+        "v": 36,
+        "ch": 0,
+        "value": 12,
+        "bits": "14f00c003a"
+      },
+      {
+        "t_ms": 125230,
+        "kind": 5,
+        "logical": 41871,
+        "target": 42159,
+        "id": 105,
+        "v": 36,
+        "ch": 2,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 126108,
+        "kind": 5,
+        "logical": 42166,
+        "target": 42460,
+        "id": 106,
+        "v": 36,
+        "ch": 32,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 127018,
+        "kind": 5,
+        "logical": 42472,
+        "target": 43061,
+        "id": 107,
+        "v": 37,
+        "ch": 0,
+        "value": 1,
+        "bits": "15f00c003a"
+      },
+      {
+        "t_ms": 128770,
+        "kind": 4,
+        "logical": 43061,
+        "target": 43061,
+        "id": 0,
+        "v": 37,
+        "ch": 0,
+        "value": 13,
+        "bits": "15f00c003a"
+      },
+      {
+        "t_ms": 128797,
+        "kind": 5,
+        "logical": 43070,
+        "target": 43661,
+        "id": 108,
+        "v": 38,
+        "ch": 0,
+        "value": 1,
+        "bits": "15f004003a"
+      },
+      {
+        "t_ms": 130556,
+        "kind": 4,
+        "logical": 43661,
+        "target": 43661,
+        "id": 0,
+        "v": 38,
+        "ch": 0,
+        "value": 12,
+        "bits": "15f004003a"
+      },
+      {
+        "t_ms": 130592,
+        "kind": 5,
+        "logical": 43673,
+        "target": 43961,
+        "id": 109,
+        "v": 38,
+        "ch": 33,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 131475,
+        "kind": 5,
+        "logical": 43970,
+        "target": 44562,
+        "id": 110,
+        "v": 39,
+        "ch": 0,
+        "value": 1,
+        "bits": "17f004003a"
+      },
+      {
+        "t_ms": 133236,
+        "kind": 4,
+        "logical": 44562,
+        "target": 44562,
+        "id": 0,
+        "v": 39,
+        "ch": 0,
+        "value": 13,
+        "bits": "17f004003a"
+      },
+      {
+        "t_ms": 133263,
+        "kind": 5,
+        "logical": 44571,
+        "target": 45162,
+        "id": 111,
+        "v": 40,
+        "ch": 0,
+        "value": 1,
+        "bits": "16f004003a"
+      },
+      {
+        "t_ms": 135021,
+        "kind": 4,
+        "logical": 45162,
+        "target": 45162,
+        "id": 0,
+        "v": 40,
+        "ch": 0,
+        "value": 12,
+        "bits": "16f004003a"
+      },
+      {
+        "t_ms": 135054,
+        "kind": 5,
+        "logical": 45173,
+        "target": 45462,
+        "id": 112,
+        "v": 40,
+        "ch": 27,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 135950,
+        "kind": 5,
+        "logical": 45474,
+        "target": 46063,
+        "id": 113,
+        "v": 41,
+        "ch": 0,
+        "value": 1,
+        "bits": "16f804003a"
+      },
+      {
+        "t_ms": 137702,
+        "kind": 4,
+        "logical": 46063,
+        "target": 46063,
+        "id": 0,
+        "v": 41,
+        "ch": 0,
+        "value": 13,
+        "bits": "16f804003a"
+      },
+      {
+        "t_ms": 137735,
+        "kind": 5,
+        "logical": 46074,
+        "target": 46663,
+        "id": 114,
+        "v": 42,
+        "ch": 0,
+        "value": 1,
+        "bits": "06f804003a"
+      },
+      {
+        "t_ms": 139487,
+        "kind": 4,
+        "logical": 46663,
+        "target": 46663,
+        "id": 0,
+        "v": 42,
+        "ch": 0,
+        "value": 12,
+        "bits": "06f804003a"
+      },
+      {
+        "t_ms": 139502,
+        "kind": 5,
+        "logical": 46668,
+        "target": 46963,
+        "id": 115,
+        "v": 42,
+        "ch": 6,
+        "value": 2,
+        "bits": "0000000000"
+      },
+      {
+        "t_ms": 140415,
+        "kind": 5,
+        "logical": 46975,
+        "target": 47564,
+        "id": 116,
+        "v": 43,
+        "ch": 0,
+        "value": 1,
+        "bits": "06f804007a"
+      },
+      {
+        "t_ms": 142167,
+        "kind": 4,
+        "logical": 47564,
+        "target": 47564,
+        "id": 0,
+        "v": 43,
+        "ch": 0,
+        "value": 13,
+        "bits": "06f804007a"
+      },
+      {
+        "t_ms": 142197,
+        "kind": 5,
+        "logical": 47574,
+        "target": 48164,
+        "id": 117,
+        "v": 44,
+        "ch": 0,
+        "value": 1,
+        "bits": "06f8040072"
+      },
+      {
+        "t_ms": 143953,
+        "kind": 4,
+        "logical": 48164,
+        "target": 48164,
+        "id": 0,
+        "v": 44,
+        "ch": 0,
+        "value": 12,
+        "bits": "06f8040072"
+      }
+    ],
+    "map_agreement": {
+      "rx_activations": [
+        [
+          2,
+          978
+        ],
+        [
+          3,
+          1578
+        ],
+        [
+          4,
+          2191
+        ],
+        [
+          5,
+          2791
+        ],
+        [
+          6,
+          3391
+        ],
+        [
+          7,
+          3991
+        ],
+        [
+          8,
+          4591
+        ],
+        [
+          9,
+          5191
+        ],
+        [
+          10,
+          5791
+        ],
+        [
+          11,
+          6391
+        ],
+        [
+          12,
+          6991
+        ],
+        [
+          13,
+          14815
+        ],
+        [
+          14,
+          15415
+        ],
+        [
+          15,
+          23841
+        ],
+        [
+          16,
+          24441
+        ],
+        [
+          17,
+          27148
+        ],
+        [
+          18,
+          27748
+        ],
+        [
+          19,
+          28950
+        ],
+        [
+          20,
+          29550
+        ],
+        [
+          21,
+          30451
+        ],
+        [
+          22,
+          31051
+        ],
+        [
+          23,
+          31952
+        ],
+        [
+          24,
+          32552
+        ],
+        [
+          25,
+          33754
+        ],
+        [
+          26,
+          34354
+        ],
+        [
+          27,
+          35255
+        ],
+        [
+          28,
+          35855
+        ],
+        [
+          29,
+          36756
+        ],
+        [
+          30,
+          37356
+        ],
+        [
+          31,
+          38257
+        ],
+        [
+          32,
+          38857
+        ],
+        [
+          33,
+          39758
+        ]
+      ],
+      "tx_activations": [
+        [
+          2,
+          978
+        ],
+        [
+          3,
+          1578
+        ],
+        [
+          4,
+          2191
+        ],
+        [
+          5,
+          2791
+        ],
+        [
+          6,
+          3391
+        ],
+        [
+          7,
+          3991
+        ],
+        [
+          8,
+          4591
+        ],
+        [
+          9,
+          5191
+        ],
+        [
+          10,
+          5791
+        ],
+        [
+          11,
+          6391
+        ],
+        [
+          12,
+          6991
+        ],
+        [
+          13,
+          14815
+        ],
+        [
+          14,
+          15415
+        ],
+        [
+          15,
+          23841
+        ],
+        [
+          16,
+          24441
+        ],
+        [
+          17,
+          27148
+        ],
+        [
+          18,
+          27748
+        ],
+        [
+          19,
+          28950
+        ],
+        [
+          20,
+          29550
+        ],
+        [
+          21,
+          30451
+        ],
+        [
+          22,
+          31051
+        ],
+        [
+          23,
+          31952
+        ],
+        [
+          24,
+          32552
+        ],
+        [
+          25,
+          33754
+        ],
+        [
+          26,
+          34354
+        ],
+        [
+          27,
+          35255
+        ],
+        [
+          28,
+          35855
+        ],
+        [
+          29,
+          36756
+        ],
+        [
+          30,
+          37356
+        ],
+        [
+          31,
+          38257
+        ],
+        [
+          32,
+          38857
+        ],
+        [
+          33,
+          39758
+        ]
+      ],
+      "activation_lists_equal": true,
+      "final_version_rx": 45,
+      "final_version_tx": 46,
+      "final_bits_rx": "06f80400f2",
+      "final_bits_tx": "06f00400f2",
+      "pending_rx": [
+        1,
+        46,
+        49665
+      ],
+      "pending_tx": [
+        0,
+        46,
+        49665
+      ],
+      "final_map_equal": false,
+      "one_sided_ids": [],
+      "version_mismatch": true
+    },
+    "relay": {
+      "proposals": 120,
+      "commits": 120,
+      "divergence": 0,
+      "tx_no_ack": 0,
+      "bad_lines": 0,
+      "relay_ms": [
+        16.0,
+        16.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        16.0,
+        16.0,
+        0.0,
+        0.0,
+        16.0,
+        0.0,
+        16.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        16.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        15.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        15.0,
+        15.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        16.0,
+        0.0,
+        0.0,
+        16.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        16.0,
+        16.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        16.0,
+        0.0,
+        0.0,
+        0.0,
+        16.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        15.0,
+        0.0,
+        0.0,
+        16.0,
+        0.0,
+        0.0,
+        15.0,
+        0.0,
+        0.0,
+        15.0,
+        15.0,
+        0.0,
+        16.0,
+        15.0,
+        15.0,
+        0.0,
+        0.0,
+        15.0,
+        0.0,
+        0.0,
+        16.0,
+        0.0,
+        0.0,
+        0.0,
+        15.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        16.0,
+        0.0,
+        16.0,
+        0.0,
+        0.0,
+        0.0,
+        16.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "ids": {
+        "1": {
+          "type": "map",
+          "prop": "PR1PROP id=1 type=map v=2 old=1 bits=efffffffff oldbits=ffffffffff act=978 rx_logical=378 active=39",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "2": {
+          "type": "map",
+          "prop": "PR1PROP id=2 type=map v=3 old=2 bits=ef8efffffd oldbits=efffffffff act=1578 rx_logical=978 active=34",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "3": {
+          "type": "probe",
+          "prop": "PR1PROP id=3 type=probe ch=1 at=1878 v=3 rx_logical=1578",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "4": {
+          "type": "map",
+          "prop": "PR1PROP id=4 type=map v=4 old=3 bits=ef0efffffd oldbits=ef8efffffd act=2191 rx_logical=1591 active=33",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "5": {
+          "type": "map",
+          "prop": "PR1PROP id=5 type=map v=5 old=4 bits=ac0edfdffd oldbits=ef0efffffd act=2791 rx_logical=2191 active=28",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "6": {
+          "type": "map",
+          "prop": "PR1PROP id=6 type=map v=6 old=5 bits=a80cd7dff5 oldbits=ac0edfdffd act=3391 rx_logical=2791 active=24",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "7": {
+          "type": "map",
+          "prop": "PR1PROP id=7 type=map v=7 old=6 bits=a804d38ff5 oldbits=a80cd7dff5 act=3991 rx_logical=3391 active=20",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "8": {
+          "type": "map",
+          "prop": "PR1PROP id=8 type=map v=8 old=7 bits=a800d28ff5 oldbits=a804d38ff5 act=4591 rx_logical=3991 active=18",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "9": {
+          "type": "map",
+          "prop": "PR1PROP id=9 type=map v=9 old=8 bits=a800d20f75 oldbits=a800d28ff5 act=5191 rx_logical=4591 active=16",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "10": {
+          "type": "map",
+          "prop": "PR1PROP id=10 type=map v=10 old=9 bits=8800d20f75 oldbits=a800d20f75 act=5791 rx_logical=5191 active=15",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "11": {
+          "type": "map",
+          "prop": "PR1PROP id=11 type=map v=11 old=10 bits=0800d20f75 oldbits=8800d20f75 act=6391 rx_logical=5791 active=14",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "12": {
+          "type": "map",
+          "prop": "PR1PROP id=12 type=map v=12 old=11 bits=0800920f35 oldbits=0800d20f75 act=6991 rx_logical=6391 active=12",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "13": {
+          "type": "probe",
+          "prop": "PR1PROP id=13 type=probe ch=1 at=7291 v=12 rx_logical=6991",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "14": {
+          "type": "probe",
+          "prop": "PR1PROP id=14 type=probe ch=3 at=7592 v=12 rx_logical=7292",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "15": {
+          "type": "probe",
+          "prop": "PR1PROP id=15 type=probe ch=36 at=7893 v=12 rx_logical=7593",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "16": {
+          "type": "probe",
+          "prop": "PR1PROP id=16 type=probe ch=24 at=8194 v=12 rx_logical=7894",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "17": {
+          "type": "probe",
+          "prop": "PR1PROP id=17 type=probe ch=21 at=8495 v=12 rx_logical=8195",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "18": {
+          "type": "probe",
+          "prop": "PR1PROP id=18 type=probe ch=19 at=8796 v=12 rx_logical=8496",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "19": {
+          "type": "probe",
+          "prop": "PR1PROP id=19 type=probe ch=28 at=9097 v=12 rx_logical=8797",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "20": {
+          "type": "probe",
+          "prop": "PR1PROP id=20 type=probe ch=30 at=9398 v=12 rx_logical=9098",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "21": {
+          "type": "probe",
+          "prop": "PR1PROP id=21 type=probe ch=34 at=9699 v=12 rx_logical=9399",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "22": {
+          "type": "probe",
+          "prop": "PR1PROP id=22 type=probe ch=29 at=10000 v=12 rx_logical=9700",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "23": {
+          "type": "probe",
+          "prop": "PR1PROP id=23 type=probe ch=18 at=10301 v=12 rx_logical=10001",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "24": {
+          "type": "probe",
+          "prop": "PR1PROP id=24 type=probe ch=31 at=10602 v=12 rx_logical=10302",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "25": {
+          "type": "probe",
+          "prop": "PR1PROP id=25 type=probe ch=12 at=10903 v=12 rx_logical=10603",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "26": {
+          "type": "probe",
+          "prop": "PR1PROP id=26 type=probe ch=13 at=11204 v=12 rx_logical=10904",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "27": {
+          "type": "probe",
+          "prop": "PR1PROP id=27 type=probe ch=33 at=11505 v=12 rx_logical=11205",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "28": {
+          "type": "probe",
+          "prop": "PR1PROP id=28 type=probe ch=16 at=11806 v=12 rx_logical=11506",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "29": {
+          "type": "probe",
+          "prop": "PR1PROP id=29 type=probe ch=32 at=12107 v=12 rx_logical=11807",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "30": {
+          "type": "probe",
+          "prop": "PR1PROP id=30 type=probe ch=38 at=12408 v=12 rx_logical=12108",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "31": {
+          "type": "probe",
+          "prop": "PR1PROP id=31 type=probe ch=7 at=12709 v=12 rx_logical=12409",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "32": {
+          "type": "probe",
+          "prop": "PR1PROP id=32 type=probe ch=25 at=13010 v=12 rx_logical=12710",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "33": {
+          "type": "probe",
+          "prop": "PR1PROP id=33 type=probe ch=14 at=13311 v=12 rx_logical=13011",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "34": {
+          "type": "probe",
+          "prop": "PR1PROP id=34 type=probe ch=27 at=13612 v=12 rx_logical=13312",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "35": {
+          "type": "probe",
+          "prop": "PR1PROP id=35 type=probe ch=26 at=13913 v=12 rx_logical=13613",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "36": {
+          "type": "probe",
+          "prop": "PR1PROP id=36 type=probe ch=1 at=14214 v=12 rx_logical=13914",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "37": {
+          "type": "map",
+          "prop": "PR1PROP id=37 type=map v=13 old=12 bits=0800920f37 oldbits=0800920f35 act=14815 rx_logical=14215 active=13",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "38": {
+          "type": "map",
+          "prop": "PR1PROP id=38 type=map v=14 old=13 bits=0800920e37 oldbits=0800920f37 act=15415 rx_logical=14815 active=12",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "39": {
+          "type": "probe",
+          "prop": "PR1PROP id=39 type=probe ch=15 at=15715 v=14 rx_logical=15415",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "40": {
+          "type": "probe",
+          "prop": "PR1PROP id=40 type=probe ch=6 at=16016 v=14 rx_logical=15716",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "41": {
+          "type": "probe",
+          "prop": "PR1PROP id=41 type=probe ch=22 at=16317 v=14 rx_logical=16017",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "42": {
+          "type": "probe",
+          "prop": "PR1PROP id=42 type=probe ch=3 at=16618 v=14 rx_logical=16318",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "43": {
+          "type": "probe",
+          "prop": "PR1PROP id=43 type=probe ch=37 at=16919 v=14 rx_logical=16619",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "44": {
+          "type": "probe",
+          "prop": "PR1PROP id=44 type=probe ch=39 at=17220 v=14 rx_logical=16920",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "45": {
+          "type": "probe",
+          "prop": "PR1PROP id=45 type=probe ch=36 at=17521 v=14 rx_logical=17221",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "46": {
+          "type": "probe",
+          "prop": "PR1PROP id=46 type=probe ch=21 at=17822 v=14 rx_logical=17522",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "47": {
+          "type": "probe",
+          "prop": "PR1PROP id=47 type=probe ch=24 at=18123 v=14 rx_logical=17823",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "48": {
+          "type": "probe",
+          "prop": "PR1PROP id=48 type=probe ch=19 at=18424 v=14 rx_logical=18124",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "49": {
+          "type": "probe",
+          "prop": "PR1PROP id=49 type=probe ch=18 at=18725 v=14 rx_logical=18425",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "50": {
+          "type": "probe",
+          "prop": "PR1PROP id=50 type=probe ch=34 at=19026 v=14 rx_logical=18726",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "51": {
+          "type": "probe",
+          "prop": "PR1PROP id=51 type=probe ch=28 at=19327 v=14 rx_logical=19027",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "52": {
+          "type": "probe",
+          "prop": "PR1PROP id=52 type=probe ch=12 at=19628 v=14 rx_logical=19328",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "53": {
+          "type": "probe",
+          "prop": "PR1PROP id=53 type=probe ch=30 at=19929 v=14 rx_logical=19629",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "54": {
+          "type": "probe",
+          "prop": "PR1PROP id=54 type=probe ch=29 at=20230 v=14 rx_logical=19930",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "55": {
+          "type": "probe",
+          "prop": "PR1PROP id=55 type=probe ch=16 at=20531 v=14 rx_logical=20231",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "56": {
+          "type": "probe",
+          "prop": "PR1PROP id=56 type=probe ch=31 at=20832 v=14 rx_logical=20532",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "57": {
+          "type": "probe",
+          "prop": "PR1PROP id=57 type=probe ch=13 at=21133 v=14 rx_logical=20833",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "58": {
+          "type": "probe",
+          "prop": "PR1PROP id=58 type=probe ch=33 at=21434 v=14 rx_logical=21134",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "59": {
+          "type": "probe",
+          "prop": "PR1PROP id=59 type=probe ch=32 at=21735 v=14 rx_logical=21435",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "60": {
+          "type": "probe",
+          "prop": "PR1PROP id=60 type=probe ch=38 at=22036 v=14 rx_logical=21736",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "61": {
+          "type": "probe",
+          "prop": "PR1PROP id=61 type=probe ch=8 at=22337 v=14 rx_logical=22037",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "62": {
+          "type": "probe",
+          "prop": "PR1PROP id=62 type=probe ch=7 at=22638 v=14 rx_logical=22338",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "63": {
+          "type": "probe",
+          "prop": "PR1PROP id=63 type=probe ch=25 at=22939 v=14 rx_logical=22639",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "64": {
+          "type": "probe",
+          "prop": "PR1PROP id=64 type=probe ch=3 at=23240 v=14 rx_logical=22940",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "65": {
+          "type": "map",
+          "prop": "PR1PROP id=65 type=map v=15 old=14 bits=0800920e3f oldbits=0800920e37 act=23841 rx_logical=23241 active=13",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "66": {
+          "type": "map",
+          "prop": "PR1PROP id=66 type=map v=16 old=15 bits=0800920e3b oldbits=0800920e3f act=24441 rx_logical=23841 active=12",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "67": {
+          "type": "probe",
+          "prop": "PR1PROP id=67 type=probe ch=14 at=24741 v=16 rx_logical=24441",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "68": {
+          "type": "probe",
+          "prop": "PR1PROP id=68 type=probe ch=27 at=25042 v=16 rx_logical=24742",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "69": {
+          "type": "probe",
+          "prop": "PR1PROP id=69 type=probe ch=26 at=25343 v=16 rx_logical=25043",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "70": {
+          "type": "probe",
+          "prop": "PR1PROP id=70 type=probe ch=6 at=25644 v=16 rx_logical=25344",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "71": {
+          "type": "probe",
+          "prop": "PR1PROP id=71 type=probe ch=22 at=25945 v=16 rx_logical=25645",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "72": {
+          "type": "probe",
+          "prop": "PR1PROP id=72 type=probe ch=15 at=26246 v=16 rx_logical=25946",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "73": {
+          "type": "probe",
+          "prop": "PR1PROP id=73 type=probe ch=36 at=26547 v=16 rx_logical=26247",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "74": {
+          "type": "map",
+          "prop": "PR1PROP id=74 type=map v=17 old=16 bits=1800920e3b oldbits=0800920e3b act=27148 rx_logical=26548 active=13",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "75": {
+          "type": "map",
+          "prop": "PR1PROP id=75 type=map v=18 old=17 bits=180092063b oldbits=1800920e3b act=27748 rx_logical=27148 active=12",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "76": {
+          "type": "probe",
+          "prop": "PR1PROP id=76 type=probe ch=37 at=28048 v=18 rx_logical=27748",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "77": {
+          "type": "probe",
+          "prop": "PR1PROP id=77 type=probe ch=21 at=28349 v=18 rx_logical=28049",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "78": {
+          "type": "map",
+          "prop": "PR1PROP id=78 type=map v=19 old=18 bits=1800b2063b oldbits=180092063b act=28950 rx_logical=28350 active=13",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "79": {
+          "type": "map",
+          "prop": "PR1PROP id=79 type=map v=20 old=19 bits=180032063b oldbits=1800b2063b act=29550 rx_logical=28950 active=12",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "80": {
+          "type": "probe",
+          "prop": "PR1PROP id=80 type=probe ch=19 at=29850 v=20 rx_logical=29550",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "81": {
+          "type": "map",
+          "prop": "PR1PROP id=81 type=map v=21 old=20 bits=18003a063b oldbits=180032063b act=30451 rx_logical=29851 active=13",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "82": {
+          "type": "map",
+          "prop": "PR1PROP id=82 type=map v=22 old=21 bits=18003a063a oldbits=18003a063b act=31051 rx_logical=30451 active=12",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "83": {
+          "type": "probe",
+          "prop": "PR1PROP id=83 type=probe ch=18 at=31351 v=22 rx_logical=31051",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "84": {
+          "type": "map",
+          "prop": "PR1PROP id=84 type=map v=23 old=22 bits=18003e063a oldbits=18003a063a act=31952 rx_logical=31352 active=13",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "85": {
+          "type": "map",
+          "prop": "PR1PROP id=85 type=map v=24 old=23 bits=18003e023a oldbits=18003e063a act=32552 rx_logical=31952 active=12",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "86": {
+          "type": "probe",
+          "prop": "PR1PROP id=86 type=probe ch=39 at=32852 v=24 rx_logical=32552",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "87": {
+          "type": "probe",
+          "prop": "PR1PROP id=87 type=probe ch=34 at=33153 v=24 rx_logical=32853",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "88": {
+          "type": "map",
+          "prop": "PR1PROP id=88 type=map v=25 old=24 bits=1c003e023a oldbits=18003e023a act=33754 rx_logical=33154 active=13",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "89": {
+          "type": "map",
+          "prop": "PR1PROP id=89 type=map v=26 old=25 bits=1c003c023a oldbits=1c003e023a act=34354 rx_logical=33754 active=12",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "90": {
+          "type": "probe",
+          "prop": "PR1PROP id=90 type=probe ch=24 at=34654 v=26 rx_logical=34354",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "91": {
+          "type": "map",
+          "prop": "PR1PROP id=91 type=map v=27 old=26 bits=1c013c023a oldbits=1c003c023a act=35255 rx_logical=34655 active=13",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "92": {
+          "type": "map",
+          "prop": "PR1PROP id=92 type=map v=28 old=27 bits=1c012c023a oldbits=1c013c023a act=35855 rx_logical=35255 active=12",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "93": {
+          "type": "probe",
+          "prop": "PR1PROP id=93 type=probe ch=28 at=36155 v=28 rx_logical=35855",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "94": {
+          "type": "map",
+          "prop": "PR1PROP id=94 type=map v=29 old=28 bits=1c112c023a oldbits=1c012c023a act=36756 rx_logical=36156 active=13",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "95": {
+          "type": "map",
+          "prop": "PR1PROP id=95 type=map v=30 old=29 bits=1c110c023a oldbits=1c112c023a act=37356 rx_logical=36756 active=12",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "96": {
+          "type": "probe",
+          "prop": "PR1PROP id=96 type=probe ch=29 at=37656 v=30 rx_logical=37356",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "97": {
+          "type": "map",
+          "prop": "PR1PROP id=97 type=map v=31 old=30 bits=1c310c023a oldbits=1c110c023a act=38257 rx_logical=37657 active=13",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "98": {
+          "type": "map",
+          "prop": "PR1PROP id=98 type=map v=32 old=31 bits=1c300c023a oldbits=1c310c023a act=38857 rx_logical=38257 active=12",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "99": {
+          "type": "probe",
+          "prop": "PR1PROP id=99 type=probe ch=30 at=39157 v=32 rx_logical=38857",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "100": {
+          "type": "map",
+          "prop": "PR1PROP id=100 type=map v=33 old=32 bits=1c700c023a oldbits=1c300c023a act=39758 rx_logical=39158 active=13",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "101": {
+          "type": "map",
+          "prop": "PR1PROP id=101 type=map v=34 old=33 bits=1c700c003a oldbits=1c700c023a act=40358 rx_logical=39758 active=12",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "102": {
+          "type": "probe",
+          "prop": "PR1PROP id=102 type=probe ch=31 at=40658 v=34 rx_logical=40358",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "103": {
+          "type": "map",
+          "prop": "PR1PROP id=103 type=map v=35 old=34 bits=1cf00c003a oldbits=1c700c003a act=41259 rx_logical=40659 active=13",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "104": {
+          "type": "map",
+          "prop": "PR1PROP id=104 type=map v=36 old=35 bits=14f00c003a oldbits=1cf00c003a act=41859 rx_logical=41259 active=12",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "105": {
+          "type": "probe",
+          "prop": "PR1PROP id=105 type=probe ch=2 at=42159 v=36 rx_logical=41859",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "106": {
+          "type": "probe",
+          "prop": "PR1PROP id=106 type=probe ch=32 at=42460 v=36 rx_logical=42160",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "107": {
+          "type": "map",
+          "prop": "PR1PROP id=107 type=map v=37 old=36 bits=15f00c003a oldbits=14f00c003a act=43061 rx_logical=42461 active=13",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "108": {
+          "type": "map",
+          "prop": "PR1PROP id=108 type=map v=38 old=37 bits=15f004003a oldbits=15f00c003a act=43661 rx_logical=43061 active=12",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "109": {
+          "type": "probe",
+          "prop": "PR1PROP id=109 type=probe ch=33 at=43961 v=38 rx_logical=43661",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "110": {
+          "type": "map",
+          "prop": "PR1PROP id=110 type=map v=39 old=38 bits=17f004003a oldbits=15f004003a act=44562 rx_logical=43962 active=13",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "111": {
+          "type": "map",
+          "prop": "PR1PROP id=111 type=map v=40 old=39 bits=16f004003a oldbits=17f004003a act=45162 rx_logical=44562 active=12",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "112": {
+          "type": "probe",
+          "prop": "PR1PROP id=112 type=probe ch=27 at=45462 v=40 rx_logical=45162",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "113": {
+          "type": "map",
+          "prop": "PR1PROP id=113 type=map v=41 old=40 bits=16f804003a oldbits=16f004003a act=46063 rx_logical=45463 active=13",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "114": {
+          "type": "map",
+          "prop": "PR1PROP id=114 type=map v=42 old=41 bits=06f804003a oldbits=16f804003a act=46663 rx_logical=46063 active=12",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "115": {
+          "type": "probe",
+          "prop": "PR1PROP id=115 type=probe ch=6 at=46963 v=42 rx_logical=46663",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "116": {
+          "type": "map",
+          "prop": "PR1PROP id=116 type=map v=43 old=42 bits=06f804007a oldbits=06f804003a act=47564 rx_logical=46964 active=13",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "117": {
+          "type": "map",
+          "prop": "PR1PROP id=117 type=map v=44 old=43 bits=06f8040072 oldbits=06f804007a act=48164 rx_logical=47564 active=12",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "118": {
+          "type": "probe",
+          "prop": "PR1PROP id=118 type=probe ch=7 at=48464 v=44 rx_logical=48164",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "119": {
+          "type": "map",
+          "prop": "PR1PROP id=119 type=map v=45 old=44 bits=06f80400f2 oldbits=06f8040072 act=49065 rx_logical=48465 active=13",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        },
+        "120": {
+          "type": "map",
+          "prop": "PR1PROP id=120 type=map v=46 old=45 bits=06f00400f2 oldbits=06f80400f2 act=49665 rx_logical=49065 active=12",
+          "tx_valid": 1,
+          "rx_commit": true,
+          "tx_staged": true
+        }
+      }
+    },
+    "rx_event_counts": {
+      "suspect": 48,
+      "excluded": 28,
+      "proposed": 22,
+      "committed": 22,
+      "activated": 11,
+      "probe_result": 10,
+      "recovered": 19
+    }
+  }
+}

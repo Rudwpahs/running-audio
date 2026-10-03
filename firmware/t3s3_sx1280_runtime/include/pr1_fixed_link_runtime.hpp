@@ -73,7 +73,9 @@ class FixedLinkRuntime {
   void onControlLine(const char* line) {
     if constexpr (kAdaptive) {
       if (role_ == RuntimeRole::Tx) {
-        txControl(line);  // TX loop is not timing-critical for reception
+        const std::uint32_t start_us = radio_.nowMicros();
+        txControl(line);
+        amap_.ctrl_us.observe(radio_.nowMicros() - start_us);
       } else if (role_ == RuntimeRole::Rx) {
         // Never handle on the RX loop directly: defer to serviceQuality's safe window.
         std::strncpy(rx_ctrl_line_, line, sizeof(rx_ctrl_line_) - 1U);
@@ -559,7 +561,9 @@ class FixedLinkRuntime {
   bool serviceQuality() {
     if (rx_ctrl_pending_) {
       rx_ctrl_pending_ = false;
+      const std::uint32_t start_us = radio_.nowMicros();
       rxControl(rx_ctrl_line_);
+      amap_.ctrl_us.observe(radio_.nowMicros() - start_us);
       return true;
     }
     amap::Outcome o{};
@@ -694,9 +698,10 @@ class FixedLinkRuntime {
 
   // Host relays the TX acknowledgement: "ACK id=<id> ok=<0|1>".
   void rxControl(const char* line) {
-    unsigned id = 0U, ok = 0U;
+    unsigned long long id_ = 0ULL, ok_ = 0ULL;
     char out[120];
-    if (std::sscanf(line, "ACK id=%u ok=%u", &id, &ok) != 2) return;
+    if (!starts(line, "ACK") || !kv(line, "id", 10, &id_) || !kv(line, "ok", 10, &ok_)) return;
+    const unsigned id = static_cast<unsigned>(id_), ok = static_cast<unsigned>(ok_);
     if (proposal_.type == amap::ProposalType::None || id != proposal_.id) {
       std::snprintf(out, sizeof(out), "PR1COMMIT id=%u ok=0 tx_ok=%u in_time=0 reason=unknown_id", id, ok);
       emit(out);
@@ -731,19 +736,38 @@ class FixedLinkRuntime {
     emit(out);
   }
 
+  // Minimal "key=value" reader for control lines (no sscanf on the radio loop).
+  static bool kv(const char* line, const char* key, int base, unsigned long long* out) {
+    const std::size_t klen = std::strlen(key);
+    for (const char* p = line; (p = std::strstr(p, key)) != nullptr; p += klen) {
+      if ((p == line || p[-1] == ' ') && p[klen] == '=') {
+        char* end = nullptr;
+        *out = std::strtoull(p + klen + 1, &end, base);
+        return end != p + klen + 1;
+      }
+    }
+    return false;
+  }
+  static bool starts(const char* line, const char* word) {
+    return std::strncmp(line, word, std::strlen(word)) == 0 && line[std::strlen(word)] == ' ';
+  }
+
   // Host -> TX (two-phase):
   //   "MAP id=<id> v=<ver> old=<ver> oldbits=<hex> bits=<hex> act=<frame>"  validate only
   //   "PRB id=<id> ch=<c> at=<frame> v=<ver>"                                validate only
   //   "COMMIT id=<id>"  stage the validated candidate (only after the RX committed)
   //   "ABORT id=<id>"   drop it
   void txControl(const char* line) {
-    unsigned id = 0U, v = 0U, old_v = 0U, ch = 0U;
+    unsigned long long id_ = 0ULL, v_ = 0ULL, old_v_ = 0ULL, ch_ = 0ULL;
     unsigned long long bits = 0ULL, old_bits = 0ULL, act = 0ULL;
+    const bool has_id = kv(line, "id", 10, &id_);
+    const unsigned id = static_cast<unsigned>(id_);
     char out[140];
     const char* reason = "parse";
     bool ok = false;
-    if (std::sscanf(line, "MAP id=%u v=%u old=%u oldbits=%llx bits=%llx act=%llu", &id, &v, &old_v,
-                    &old_bits, &bits, &act) == 6) {
+    if (starts(line, "MAP") && has_id && kv(line, "v", 10, &v_) && kv(line, "old", 10, &old_v_) &&
+        kv(line, "oldbits", 16, &old_bits) && kv(line, "bits", 16, &bits) && kv(line, "act", 10, &act)) {
+      const unsigned v = static_cast<unsigned>(v_), old_v = static_cast<unsigned>(old_v_);
       afh::ChannelMap map{};
       map.bits = bits;
       const auto& cur = scheduler_.current();
@@ -763,7 +787,9 @@ class FixedLinkRuntime {
       }
       std::snprintf(out, sizeof(out), "PR1ACK id=%u ok=%u reason=%s tx_logical=%" PRIu64, id, ok ? 1U : 0U,
                     reason, hop_.logical);
-    } else if (std::sscanf(line, "PRB id=%u ch=%u at=%llu v=%u", &id, &ch, &act, &v) == 4) {
+    } else if (starts(line, "PRB") && has_id && kv(line, "ch", 10, &ch_) && kv(line, "at", 10, &act) &&
+               kv(line, "v", 10, &v_)) {
+      const unsigned v = static_cast<unsigned>(v_), ch = static_cast<unsigned>(ch_);
       if (probe_.valid) {
         reason = "busy";
       } else if (ch >= afh::kChannelCount || act <= hop_.logical + PR1_MAP_GUARD_FRAMES / 2U) {
@@ -776,7 +802,7 @@ class FixedLinkRuntime {
       }
       std::snprintf(out, sizeof(out), "PR1ACK id=%u ok=%u reason=%s tx_logical=%" PRIu64, id, ok ? 1U : 0U,
                     reason, hop_.logical);
-    } else if (std::sscanf(line, "COMMIT id=%u", &id) == 1) {
+    } else if (starts(line, "COMMIT") && has_id) {
       if (candidate_.type == amap::ProposalType::None || candidate_.id != id) {
         reason = "unknown_id";
       } else if (candidate_.type == amap::ProposalType::Map) {
@@ -798,7 +824,7 @@ class FixedLinkRuntime {
       candidate_.type = amap::ProposalType::None;
       std::snprintf(out, sizeof(out), "PR1STAGED id=%u ok=%u reason=%s tx_logical=%" PRIu64, id, ok ? 1U : 0U,
                     reason, hop_.logical);
-    } else if (std::sscanf(line, "ABORT id=%u", &id) == 1) {
+    } else if (starts(line, "ABORT") && has_id) {
       const bool had = candidate_.type != amap::ProposalType::None && candidate_.id == id;
       if (had) candidate_.type = amap::ProposalType::None;
       std::snprintf(out, sizeof(out), "PR1ABORTED id=%u had=%u", id, had ? 1U : 0U);

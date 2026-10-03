@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "run_id": "C-gap-150us-10000",
+  "created_utc": "2026-10-03T09:28:21.652955Z",
+  "gate": "C",
+  "gap_us": 150,
+  "target_packets": 10000,
+  "phase": "revalidate",
+  "firmware_sha": "d1b7ec2b1130fd63fb0eb11fd900b0622766f14c",
+  "frozen_baseline": {
+    "frequency_mhz": 2404.0,
+    "bitrate_kbps": 1300,
+    "coding_rate": 3,
+    "output_dbm": 0,
+    "packet_bytes": 116,
+    "sx1280_spi_hz": 2000000,
+    "adaptive_layers": false
+  },
+  "rx_variant": "-D PR1_ENABLE_ADAPTIVE_MAP=1",
+  "feature_flags": {
+    "PR1_ENABLE_AFH": 1,
+    "afh_map": "static all-40",
+    "channel_quality": 1,
+    "fec": 0,
+    "arq": 0,
+    "phy_ladder": 0,
+    "controller": 0,
+    "control_plane": "usb_host_relay"
+  },
+  "images": {
+    "rx": {
+      "key": "C:C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-dart-layered-20261003\\build\\C-rx\\rf_rx_compile",
+      "image": "runs\\pr1-dart-layered-20261003\\build\\C-rx\\rf_rx_compile",
+      "sha256": "96cc5a1a65759771cba7a593b85022ec35b13d833f9f2f4f1021f7b831e853d8",
+      "flashed_utc": "2026-10-03T09:28:16.688354Z"
+    },
+    "tx": {
+      "key": "C:C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-dart-layered-20261003\\build\\C-tx-150us\\rf_tx_compile",
+      "image": "runs\\pr1-dart-layered-20261003\\build\\C-tx-150us\\rf_tx_compile",
+      "sha256": "d4fcb9286780398f104d9c46ae5e298777c9e49837b6f81fe60eba4e21b5d6b6",
+      "flashed_utc": "2026-10-03T09:28:21.651955Z"
+    }
+  },
+  "placement": "2026-10-03 operator photo placement_20261003.jpg: RX on desk top (antenna ~vertical, iron and bottles nearby), TX on white box below (antenna vertical). Unchanged for all gates.",
+  "files": {
+    "rx_log": "rx.log",
+    "tx_log": "tx.log"
+  },
+  "build_identity": {
+    "source_head_sha": "247199c138b1de7f2f8f486fbd1ce7d2bd514736",
+    "frozen_firmware_sha": "d1b7ec2b1130fd63fb0eb11fd900b0622766f14c",
+    "git_dirty": true,
+    "platformio_version": "unavailable: [WinError 2] \uc9c0\uc815\ub41c \ud30c\uc77c\uc744 \ucc3e\uc744 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4",
+    "platformio_ini_sha256": "6f79f96979b96bf460260b1c13cdf85e16b6d647f183232e921e72e0bde094a3",
+    "controller_file_sha256": "61fa703d25e4ff7319b7158e30e1d6778d981263bdae22b51437d29e0263f778"
+  },
+  "notes": "issue #52 layered activation",
+  "host_polling": "none during measured window; single final snapshot"
+}

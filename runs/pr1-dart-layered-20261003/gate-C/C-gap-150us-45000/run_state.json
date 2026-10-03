@@ -1,0 +1,9 @@
+{
+  "status": "complete",
+  "updated_utc": "2026-10-03T09:33:00.925466Z",
+  "run_id": "C-gap-150us-45000",
+  "gap_us": 150,
+  "target_packets": 45000,
+  "packet_count": 49267,
+  "finished_utc": "2026-10-03T09:33:00.925466Z"
+}

@@ -182,7 +182,7 @@ void printQuality() {
     Serial.printf(
         "PR1QS map_version=%u active=%u bits=%010llx pending=%u pending_v=%u pending_act=%llu "
         "min_active_seen=%u proposals=%lu commits=%lu commit_late=%lu expired=%lu activations=%lu "
-        "tx_rejects=%lu outcomes_dropped=%lu events=%lu emit_dropped=%lu activation_count=%lu\n",
+        "tx_rejects=%lu outcomes_dropped=%lu events=%lu emit_dropped=%lu activation_count=%lu ctrl_us_p99=%lu ctrl_us_max=%lu\n",
         static_cast<unsigned>(cur.map_version), static_cast<unsigned>(cur.map.activeCount()),
         static_cast<unsigned long long>(cur.map.bits), pend.valid ? 1U : 0U,
         static_cast<unsigned>(pend.map_version), static_cast<unsigned long long>(pend.activation_sequence),
@@ -191,7 +191,8 @@ void printQuality() {
         static_cast<unsigned long>(m.expired), static_cast<unsigned long>(m.activations),
         static_cast<unsigned long>(m.tx_rejects), static_cast<unsigned long>(m.outcomes_dropped),
         static_cast<unsigned long>(m.events_written), static_cast<unsigned long>(m.emit_dropped),
-        static_cast<unsigned long>(m.activation_count));
+        static_cast<unsigned long>(m.activation_count),
+        static_cast<unsigned long>(m.ctrl_us.percentile(99)), static_cast<unsigned long>(m.ctrl_us.maxUs()));
     for (std::uint32_t i = 0; i < m.activation_count && i < m.activation_log.size(); ++i) {
       const auto& a = m.activation_log[i];
       Serial.printf("PR1QA v=%u activation=%lu applied_at=%lu\n", static_cast<unsigned>(a.version),
