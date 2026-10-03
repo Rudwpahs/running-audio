@@ -16,6 +16,14 @@
 #include <cmath>
 #include <cstdint>
 
+#include "pr1_ima_adpcm.hpp"
+
+#if PR1_AUDIO_MODE_CLIP
+// data/clip.adpcm embedded by board_build.embed_files.
+extern const std::uint8_t clip_start[] asm("_binary_data_clip_adpcm_start");
+extern const std::uint8_t clip_end[] asm("_binary_data_clip_adpcm_end");
+#endif
+
 namespace {
 
 constexpr int kPinBclk = 40;
@@ -43,6 +51,10 @@ struct Stats {
   volatile std::uint32_t max_write_us = 0;
   volatile bool playing = true;
   volatile int core = -1;
+  volatile std::uint32_t blocks = 0;        // clip mode: blocks decoded
+  volatile std::uint32_t decode_errors = 0;
+  volatile std::uint32_t loops = 0;
+  volatile std::uint32_t max_decode_us = 0;
 } g_stats;
 
 esp_err_t g_install = ESP_FAIL, g_pins = ESP_FAIL, g_zero = ESP_FAIL;
@@ -77,6 +89,42 @@ void configureI2s() {
   digitalWrite(kPinAmpSd, HIGH);
 }
 
+#if PR1_AUDIO_MODE_CLIP
+// D2-2: decode the stored clip block by block and stream it, looping.
+void audioTask(void*) {
+  g_stats.core = xPortGetCoreID();
+  configureI2s();
+  const std::size_t nblocks = static_cast<std::size_t>(clip_end - clip_start) / pr1::audio::kBlockBytes;
+  static std::int16_t pcm[pr1::audio::kSamplesPerBlock];
+  static std::int16_t buf[pr1::audio::kSamplesPerBlock * 2];
+  std::size_t b = 0;
+  for (;;) {
+    const std::uint32_t t0 = micros();
+    const bool ok = pr1::audio::decodeBlock(clip_start + b * pr1::audio::kBlockBytes, pcm);
+    const std::uint32_t dt = micros() - t0;
+    if (dt > g_stats.max_decode_us) g_stats.max_decode_us = dt;
+    if (!ok) ++g_stats.decode_errors;
+    for (std::size_t i = 0; i < pr1::audio::kSamplesPerBlock; ++i) {
+      const std::int16_t s = (ok && g_stats.playing) ? pcm[i] : 0;
+      buf[2 * i] = s;
+      buf[2 * i + 1] = s;
+    }
+    size_t written = 0;
+    const std::uint32_t w0 = micros();
+    const esp_err_t err = i2s_write(kPort, buf, sizeof(buf), &written, pdMS_TO_TICKS(100));
+    const std::uint32_t wt = micros() - w0;
+    if (wt > g_stats.max_write_us) g_stats.max_write_us = wt;
+    if (err != ESP_OK) ++g_stats.write_errors;
+    if (written != sizeof(buf)) ++g_stats.short_writes;
+    g_stats.frames_written += written / 4U;
+    ++g_stats.blocks;
+    if (++b >= nblocks) {
+      b = 0;
+      ++g_stats.loops;
+    }
+  }
+}
+#else
 void audioTask(void*) {
   g_stats.core = xPortGetCoreID();
   configureI2s();  // I2S interrupt is allocated on this core (core 0)
@@ -105,6 +153,7 @@ void audioTask(void*) {
     g_stats.frames_written += written / 4U;
   }
 }
+#endif
 
 }  // namespace
 
@@ -112,6 +161,12 @@ void setup() {
   Serial.begin(115200);
   delay(300);
   Serial.println("PR1_AUDIO_BRINGUP");
+#if PR1_AUDIO_MODE_CLIP
+  Serial.printf("audio_mode=clip clip_bytes=%u clip_blocks=%u samples_per_block=%u codec=ima_adpcm_4bit\n",
+                static_cast<unsigned>(clip_end - clip_start),
+                static_cast<unsigned>((clip_end - clip_start) / pr1::audio::kBlockBytes),
+                static_cast<unsigned>(pr1::audio::kSamplesPerBlock));
+#endif
   Serial.printf("audio_mode=tone tone_hz=%u amplitude=%u sample_rate=%lu bits=16 channels=RIGHT_LEFT(mono dup) "
                 "port=I2S1 bclk=%d lrclk=%d dout=%d sd=%d dma=8x%u apll=0 rf=off\n",
                 PR1_TONE_HZ, PR1_TONE_AMPLITUDE, static_cast<unsigned long>(kRate), kPinBclk, kPinLrclk, kPinDout,
@@ -134,6 +189,9 @@ void loop() {
   }
   if (millis() - last_ms >= 2000U) {
     last_ms = millis();
+    Serial.printf("[AUDIO] blocks=%lu loops=%lu decode_errors=%lu max_decode_us=%lu\n",
+                  static_cast<unsigned long>(g_stats.blocks), static_cast<unsigned long>(g_stats.loops),
+                  static_cast<unsigned long>(g_stats.decode_errors), static_cast<unsigned long>(g_stats.max_decode_us));
     Serial.printf("[AUDIO] t_ms=%lu frames=%lu expected=%lu short_writes=%lu errors=%lu max_write_us=%lu playing=%u\n",
                   static_cast<unsigned long>(last_ms), static_cast<unsigned long>(g_stats.frames_written),
                   static_cast<unsigned long>(static_cast<std::uint64_t>(last_ms) * kRate / 1000U),
