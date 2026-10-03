@@ -369,6 +369,7 @@ def capture_run_from_serial(
     max_polls: int = 240,
     profile: dict | None = None,
     monotonic_fn: Callable[[], float] = time.monotonic,
+    poll_progress: bool = True,
 ) -> dict:
     """Capture one run while continuously preserving serial evidence to disk."""
     run_dir.mkdir(parents=True, exist_ok=True)
@@ -406,7 +407,10 @@ def capture_run_from_serial(
             sleep_fn(wait_s)
             observed = 0
             polls = 0
-            while observed < target_packets:
+            # poll_progress=False: no serial I/O during the measured window (AFH RX
+            # cannot retune while printing); wait_s must already cover the target and
+            # target_reached is decided from the single final snapshot.
+            while poll_progress and observed < target_packets:
                 if polls >= max_polls:
                     raise TimeoutError(
                         f"packet target not reached after {max_polls} telemetry polls: {observed}/{target_packets}"

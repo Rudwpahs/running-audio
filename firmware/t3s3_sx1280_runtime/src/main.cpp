@@ -126,6 +126,9 @@ void printHop() {
         static_cast<unsigned long>(h.retune_us.maxUs()),
         static_cast<unsigned long>(h.hop_compute_us.percentile(99)),
         static_cast<unsigned long>(h.hop_compute_us.maxUs()));
+    Serial.printf("PR1HQ acq_anchors=%lu acq_crc=%lu acq_frames=%u acq_done_us=%lu\n",
+                  static_cast<unsigned long>(h.acq_anchors), static_cast<unsigned long>(h.acq_crc),
+                  static_cast<unsigned>(h.acq_frames), static_cast<unsigned long>(h.acq_done_us));
     Serial.print("PR1HC ok=");
     for (unsigned c = 0; c < h.channel_ok.size(); ++c) {
       Serial.printf(c == 0 ? "%lu" : ",%lu", static_cast<unsigned long>(h.channel_ok[c]));

@@ -164,7 +164,11 @@ class FixedLinkRuntime {
     std::uint16_t hop_raw = 0U;
     std::int16_t hop_rssi = 0;
     if (read_result == RadioReadResult::CrcError) {
-      metrics_.onRxCrcFail(spi_end_us, label_sequence);
+      if (!kAfhEnabled || hop_acquired_) {
+        metrics_.onRxCrcFail(spi_end_us, label_sequence);
+      } else {
+        ++hop_.acq_crc;  // before acquisition: not part of the measured span
+      }
     } else if (read_result == RadioReadResult::Ok) {
       pr1::DecodedPacket decoded{};
       const bool canonical_length = packet_len == pr1::kDartPacketBytes;
@@ -175,8 +179,11 @@ class FixedLinkRuntime {
           decoded.header.payload_len == pr1::kDartTargetOpusPayloadBytes) {
         const std::uint32_t packet_done_us = radio_.nowMicros();
         const std::int16_t rssi = radio_.rssiDbm();
-        metrics_.onRxPacket(packet_done_us, decoded.header.sequence, rssi);
-        observeSequence(decoded.header.sequence);
+        // AFH: the measured span starts once acquisition has a period (see acquire()).
+        if (!kAfhEnabled || acquire(decoded.header.sequence, irq_timestamp_us)) {
+          metrics_.onRxPacket(packet_done_us, decoded.header.sequence, rssi);
+          observeSequence(decoded.header.sequence);
+        }
         if constexpr (kAfhEnabled) {
           hop_decoded = true;
           hop_raw = decoded.header.sequence;
@@ -249,6 +256,28 @@ class FixedLinkRuntime {
     return ref + static_cast<std::int64_t>(diff);
   }
 
+  // Initial acquisition (Gate B pre-C fix): stay parked on the rendezvous channel
+  // until two packets are heard there; their spacing gives the frame period, so
+  // the follower never starts without a loss deadline (the 11-frame start-up skip
+  // came from losing the frame after a period-less lock). Returns true when this
+  // packet belongs to the measured span.
+  bool acquire(std::uint16_t raw, std::uint32_t irq_us) {
+    if (hop_acquired_) return true;
+    const auto frames = static_cast<std::uint16_t>(raw - acq_raw_);
+    if (acq_anchor_valid_ && frames >= 1U && frames <= 120U) {
+      hop_.period_est_us = (irq_us - acq_irq_us_) / frames;
+      hop_.acq_frames = frames;
+      hop_.acq_done_us = irq_us;
+      hop_acquired_ = true;
+      return true;
+    }
+    acq_anchor_valid_ = true;  // first packet, or spacing out of range: re-anchor
+    acq_raw_ = raw;
+    acq_irq_us_ = irq_us;
+    ++hop_.acq_anchors;
+    return false;
+  }
+
   // Margin after the predicted RX-done time before declaring the frame lost.
   // Must stay well below the on-air idle time so the retune lands before the
   // next preamble (P - airtime ~1.9 ms at 150 us gap).
@@ -283,6 +312,11 @@ class FixedLinkRuntime {
   void followAfterRx(RadioReadResult result, bool decoded, std::uint16_t raw, std::int16_t rssi,
                      std::uint32_t irq_us) {
     const std::uint8_t heard_channel = hop_.current_channel;
+    if (decoded && !hop_acquired_) {
+      // Acquisition anchor only: stay parked on this channel (re-armed by serviceRx).
+      hop_.record({irq_us, raw, raw, heard_channel, afhrt::HopEventKind::RxOther, rssi});
+      return;
+    }
     if (decoded) {
       const std::uint64_t logical = hopLogicalFor(raw);
       if (hop_.locked && logical < hop_.logical) {
@@ -424,6 +458,10 @@ class FixedLinkRuntime {
   bool last_rx_valid_ = false;
   std::uint32_t hop_deadline_us_ = 0U;
   bool hop_deadline_valid_ = false;
+  bool hop_acquired_ = false;
+  bool acq_anchor_valid_ = false;
+  std::uint16_t acq_raw_ = 0U;
+  std::uint32_t acq_irq_us_ = 0U;
   bool deferred_check_valid_ = false;
   std::uint64_t deferred_check_logical_ = 0U;
   std::uint8_t deferred_check_channel_ = 0U;

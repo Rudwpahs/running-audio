@@ -161,7 +161,7 @@ def pull(ser, fh, command: bytes, end_marker: str | None, timeout_s: float = 3.0
 def parse_hop(lines: list[str]) -> dict:
     out: dict = {}
     for ln in lines:
-        if ln.startswith("PR1H "):
+        if ln.startswith("PR1H ") or ln.startswith("PR1HQ "):
             for tok in ln.split()[1:]:
                 k, _, v = tok.partition("=")
                 out[k] = int(v) if v.lstrip("-").isdigit() else v
@@ -196,15 +196,20 @@ def cmd_run(gate: str, gap: int, target: int) -> None:
         "notes": "issue #52 layered activation",
     }
     (run_dir / "metadata.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
-    period_s = (gap + 2750) / 1e6
+    # Measured frame period is gap + ~2850 us on this link (A/B period_est). No serial
+    # I/O during the measured window: wait past the target, then one final snapshot.
+    period_s = (gap + 2850) / 1e6
+    meta["host_polling"] = "none during measured window; single final snapshot"
+    (run_dir / "metadata.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
     rx = ctl._open_serial(port_of("rx"))
     tx = ctl._open_serial(port_of("tx"))
     hop = {}
     try:
         ctl._drain_stale_input(tx); ctl._pulse_reset(tx)
         ctl._drain_stale_input(rx); ctl._pulse_reset(rx)
-        result = ctl.capture_run_from_serial(meta, run_dir, rx, tx, initial_wait_s=0.7 * target * period_s,
-                                             settle_s=0.5, max_polls=100)
+        result = ctl.capture_run_from_serial(meta, run_dir, rx, tx,
+                                             initial_wait_s=1.08 * target * period_s + 1.0,
+                                             settle_s=0.0, max_polls=100, poll_progress=False)
         if gate != "A":
             with (run_dir / "rx.log").open("a", encoding="utf-8") as rfh, (run_dir / "tx.log").open("a", encoding="utf-8") as tfh:
                 hop["rx"] = parse_hop(pull(rx, rfh, b"h", None))

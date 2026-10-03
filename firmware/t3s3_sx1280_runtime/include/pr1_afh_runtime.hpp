@@ -108,6 +108,11 @@ struct HopTelemetry {
   std::uint32_t period_est_us = 0;
   std::uint32_t consecutive_timeouts = 0;
   std::uint32_t max_consecutive_timeouts = 0;
+  // Initial acquisition (two packets on the rendezvous channel).
+  std::uint32_t acq_anchors = 0;     // packets used as (re-)anchors before acquisition
+  std::uint32_t acq_crc = 0;         // CRC-bad before acquisition (outside the span)
+  std::uint16_t acq_frames = 0;      // frame spacing that produced the period
+  std::uint32_t acq_done_us = 0;     // RX time acquisition completed
   std::array<std::uint32_t, afh::kChannelCount> channel_ok{};
   std::array<std::uint32_t, afh::kChannelCount> channel_crc{};
   instrumentation::DurationWindow<64> retune_us{};
