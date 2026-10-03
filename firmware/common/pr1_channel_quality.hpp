@@ -6,6 +6,7 @@
 #include <limits>
 
 #include "pr1_afh.hpp"
+#include "pr1_placement.hpp"
 
 namespace pr1::quality {
 
@@ -105,7 +106,7 @@ class Estimator {
   }
   std::uint8_t activeCount() const { return active_count_; }
 
-  void observeData(std::uint8_t c, bool success, std::uint32_t now_ms) {
+  PR1_IRAM void observeData(std::uint8_t c, bool success, std::uint32_t now_ms) {
     if (c >= afh::kChannelCount) return;
     auto& s = channels_[c];
     s.last_seen_ms = now_ms;
@@ -147,7 +148,7 @@ class Estimator {
     }
   }
 
-  bool probeDue(std::uint8_t c, std::uint32_t now_ms) const {
+  PR1_IRAM bool probeDue(std::uint8_t c, std::uint32_t now_ms) const {
     if (c >= afh::kChannelCount) return false;
     const auto& s = channels_[c];
     if (s.state != ChannelState::Excluded && s.state != ChannelState::Probe) {
@@ -158,7 +159,7 @@ class Estimator {
 
   // Returns a relative priority only. It is intentionally simple/integer-only
   // so it can run cheaply on ESP32-S3 and be tuned from hardware data later.
-  std::int32_t reprobeScore(std::uint8_t c, std::uint32_t now_ms) const {
+  PR1_IRAM std::int32_t reprobeScore(std::uint8_t c, std::uint32_t now_ms) const {
     if (c >= afh::kChannelCount || !probeDue(c, now_ms)) {
       return std::numeric_limits<std::int32_t>::min();
     }
@@ -184,7 +185,7 @@ class Estimator {
     return static_cast<std::int32_t>(score);
   }
 
-  bool nextProbeChannel(std::uint32_t now_ms, std::uint8_t* out_channel) const {
+  PR1_IRAM bool nextProbeChannel(std::uint32_t now_ms, std::uint8_t* out_channel) const {
     if (out_channel == nullptr) return false;
     bool found = false;
     std::uint8_t best_channel = 0;
@@ -202,7 +203,7 @@ class Estimator {
     return found;
   }
 
-  bool beginProbe(std::uint8_t c, std::uint32_t now_ms) {
+  PR1_IRAM bool beginProbe(std::uint8_t c, std::uint32_t now_ms) {
     if (c >= afh::kChannelCount || !probeDue(c, now_ms)) return false;
     auto& s = channels_[c];
     s.state = ChannelState::Probe;
@@ -211,7 +212,7 @@ class Estimator {
   }
 
   // Returns false for a stale/invalid probe result so callers can count it.
-  bool observeProbe(std::uint8_t c, bool success, std::uint32_t now_ms) {
+  PR1_IRAM bool observeProbe(std::uint8_t c, bool success, std::uint32_t now_ms) {
     if (c >= afh::kChannelCount) return false;
     auto& s = channels_[c];
     if (s.state != ChannelState::Probe) return false;
@@ -246,7 +247,7 @@ class Estimator {
     return true;
   }
 
-  afh::ChannelMap activeMap() const {
+  PR1_IRAM afh::ChannelMap activeMap() const {
     afh::ChannelMap map{0};
     for (std::uint8_t c = 0; c < afh::kChannelCount; ++c) {
       if (channels_[c].state == ChannelState::Active ||
@@ -262,11 +263,11 @@ class Estimator {
   std::array<ChannelStats, afh::kChannelCount> channels_{};
   std::uint8_t active_count_ = afh::kChannelCount;
 
-  static std::uint32_t elapsedMs(std::uint32_t now_ms, std::uint32_t then_ms) {
+  PR1_IRAM static std::uint32_t elapsedMs(std::uint32_t now_ms, std::uint32_t then_ms) {
     return now_ms - then_ms;
   }
 
-  void excludeChannel(std::uint8_t c, std::uint32_t now_ms) {
+  PR1_IRAM void excludeChannel(std::uint8_t c, std::uint32_t now_ms) {
     auto& s = channels_[c];
     if (s.state == ChannelState::Excluded || s.state == ChannelState::Probe) return;
     s.state = ChannelState::Excluded;
@@ -278,7 +279,7 @@ class Estimator {
     s.consecutive_successes = 0;
   }
 
-  static void ewma(std::uint16_t& current, bool success, std::uint8_t shift) {
+  PR1_IRAM static void ewma(std::uint16_t& current, bool success, std::uint8_t shift) {
     const std::uint8_t safe_shift = shift > 15U ? 15U : shift;
     const std::int32_t target = success ? 32767 : 0;
     const std::int32_t value = static_cast<std::int32_t>(current);
@@ -289,7 +290,7 @@ class Estimator {
     current = static_cast<std::uint16_t>(next);
   }
 
-  std::uint32_t probeIntervalMs(const ChannelStats& s) const {
+  PR1_IRAM std::uint32_t probeIntervalMs(const ChannelStats& s) const {
     std::uint64_t interval = config_.initial_probe_ms;
     const std::uint8_t exp = s.probe_failure_exp > 31U ? 31U : s.probe_failure_exp;
     interval <<= exp;
@@ -297,7 +298,7 @@ class Estimator {
     return static_cast<std::uint32_t>(interval);
   }
 
-  std::uint16_t neighborQualityQ15(std::uint8_t c) const {
+  PR1_IRAM std::uint16_t neighborQualityQ15(std::uint8_t c) const {
     std::uint32_t sum = 0;
     std::uint8_t count = 0;
     if (c > 0U) {
@@ -311,12 +312,12 @@ class Estimator {
     return count == 0U ? 32767U : static_cast<std::uint16_t>(sum / count);
   }
 
-  static std::uint16_t effectiveNeighborPdr(const ChannelStats& s) {
+  PR1_IRAM static std::uint16_t effectiveNeighborPdr(const ChannelStats& s) {
     if (s.state == ChannelState::Excluded || s.state == ChannelState::Probe) return 0;
     return s.pdr_slow_q15;
   }
 
-  static std::uint8_t popcount3(std::uint8_t v) {
+  PR1_IRAM static std::uint8_t popcount3(std::uint8_t v) {
     v &= 0x07U;
     return static_cast<std::uint8_t>((v & 1U) + ((v >> 1U) & 1U) +
                                      ((v >> 2U) & 1U));

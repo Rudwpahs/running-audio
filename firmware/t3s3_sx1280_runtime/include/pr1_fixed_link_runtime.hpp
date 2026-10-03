@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <atomic>
 #include <cinttypes>
 #include <cstddef>
 #include <cstdint>
@@ -11,9 +12,37 @@
 #include "../../common/pr1_sequence.hpp"
 #include "pr1_adaptive_map_runtime.hpp"
 #include "pr1_afh_runtime.hpp"
+#include "pr1_ctrl_plane.hpp"
+#include "../../common/pr1_placement.hpp"
 #include "pr1_live_metrics.hpp"
 #include "pr1_live_profile.hpp"
 #include "pr1_radio_port.hpp"
+
+#ifndef PR1_DIAG_TX_LATE_US
+#define PR1_DIAG_TX_LATE_US 30
+#endif
+#ifndef PR1_DIAG_TX_SLOW_US
+#define PR1_DIAG_TX_SLOW_US 40
+#endif
+#ifndef PR1_DIAG_RX_LATE_US
+#define PR1_DIAG_RX_LATE_US 60
+#endif
+// RX: the control core may touch USB only from RX re-armed until this long before the
+// next expected RX-done (core-0 USB work measurably slows the radio core's post-read path).
+#ifndef PR1_CTRL_WINDOW_GUARD_US
+#define PR1_CTRL_WINDOW_GUARD_US 600
+#endif
+
+// Diagnostic only (C1 cache test): every N frames run rarely-used code (text formatting,
+// no I/O, no state change) in the RX idle window, then see whether the next post-read
+// path slows down. 0 = off.
+#ifndef PR1_DIAG_COLD_WORK_EVERY
+#define PR1_DIAG_COLD_WORK_EVERY 0
+#endif
+
+#ifndef PR1_DIAG_RX_READY_US
+#define PR1_DIAG_RX_READY_US 1950
+#endif
 
 namespace pr1::runtime {
 
@@ -21,7 +50,10 @@ class FixedLinkRuntime {
  public:
   static constexpr bool kAfhEnabled = afh::kEnabledByDefault;
   static constexpr bool kAdaptive = kAfhEnabled && amap::kEnabled;
-  using LineSink = bool (*)(const char* line);
+  // Gate C1: the control plane lives on the other core; the radio loop only
+  // exchanges fixed-size records with it (no parsing, printf or Serial here).
+  using CtrlSink = bool (*)(const ctrl::Out& out);
+  using CtrlSource = bool (*)(ctrl::In* in);
 
   FixedLinkRuntime(RadioPort& radio,
                    RuntimeRole role,
@@ -51,6 +83,13 @@ class FixedLinkRuntime {
   void tick(std::uint32_t now_us) {
     if (!initialized_) return;
     if (role_ == RuntimeRole::Tx) {
+      if constexpr (kAdaptive) {
+        // Control records are applied only while no transmission is due.
+        if (!deadlineReached(now_us, next_tx_allowed_us_)) {
+          serviceTxControl();
+          return;
+        }
+      }
       serviceTx(now_us);
     } else if (role_ == RuntimeRole::Rx) {
       if (rx_pending_) {
@@ -67,26 +106,20 @@ class FixedLinkRuntime {
   const amap::Telemetry& mapTelemetry() const { return amap_; }
   const quality::Estimator& estimator() const { return estimator_; }
   const amap::ProbeSlot& probeSlot() const { return probe_; }
-  void setLineSink(LineSink sink) { sink_ = sink; }
 
-  // Gate C bench control plane (USB/host relay). Lines are short ASCII commands.
-  void onControlLine(const char* line) {
-    if constexpr (kAdaptive) {
-      if (role_ == RuntimeRole::Tx) {
-        const std::uint32_t start_us = radio_.nowMicros();
-        txControl(line);
-        amap_.ctrl_us.observe(radio_.nowMicros() - start_us);
-      } else if (role_ == RuntimeRole::Rx) {
-        // Never handle on the RX loop directly: defer to serviceQuality's safe window.
-        std::strncpy(rx_ctrl_line_, line, sizeof(rx_ctrl_line_) - 1U);
-        rx_ctrl_line_[sizeof(rx_ctrl_line_) - 1U] = '\0';
-        rx_ctrl_pending_ = true;
-      }
-    } else {
-      (void)line;
-    }
+  void setControlPlane(CtrlSink sink, CtrlSource source) {
+    sink_ = sink;
+    source_ = source;
   }
   bool initialized() const { return initialized_; }
+
+  // Called from the control core (a plain internal-RAM flag read: no timer or
+  // peripheral access while waiting). TX: always open (a late TX start only shifts the
+  // whole timeline). RX: the radio core's idle loop sets/clears it around each frame.
+  PR1_IRAM bool controlWindowOpen() const {
+    if (role_ != RuntimeRole::Rx) return true;
+    return ctrl_window_open_.load(std::memory_order_acquire);
+  }
 
  private:
   static void rxIrqThunk(void* context, std::uint32_t timestamp_us) {
@@ -149,9 +182,21 @@ class FixedLinkRuntime {
 
     metrics_.onTxQueued(radio_.nowMicros(), tx_sequence_);
     metrics_.onTxStart(radio_.nowMicros(), tx_sequence_);
+    const std::uint32_t tx_start_us = radio_.nowMicros();
     const bool sent = radio_.transmit(tx_buffer_.data(), packet_len);
     const std::uint32_t tx_attempt_done_us = radio_.nowMicros();
     if constexpr (kAfhEnabled) {
+      // Timing diagnostics (C1): late start (CPU) and slow blocking transmit.
+      const std::uint32_t tx_us = tx_attempt_done_us - tx_start_us;
+      if (sent && tx_us < tx_min_us_) tx_min_us_ = tx_us;
+      if (lateness_us > static_cast<std::uint32_t>(PR1_DIAG_TX_LATE_US)) {
+        hop_.record({now_us, static_cast<std::uint32_t>(hop_.logical), sat16(lateness_us), tx_channel,
+                     afhrt::HopEventKind::TxLate, 0});
+      }
+      if (sent && tx_us > tx_min_us_ + static_cast<std::uint32_t>(PR1_DIAG_TX_SLOW_US)) {
+        hop_.record({tx_attempt_done_us, static_cast<std::uint32_t>(hop_.logical), sat16(tx_us - tx_min_us_),
+                     tx_channel, afhrt::HopEventKind::TxSlow, 0});
+      }
       hop_.record({tx_attempt_done_us, static_cast<std::uint32_t>(hop_.logical), tx_sequence_,
                    tx_channel,
                    sent ? afhrt::HopEventKind::TxSent : afhrt::HopEventKind::TxFailed, 0});
@@ -229,6 +274,13 @@ class FixedLinkRuntime {
     const bool rearmed = radio_.startReceive();
     const std::uint32_t rearm_done_us = radio_.nowMicros();
     metrics_.onRxRearmDone(rearm_done_us, label_sequence);
+    // C1 diagnostic: two stores only; the threshold check runs in the idle loop.
+    diag_ready_us_ = rearm_done_us - irq_timestamp_us;
+    diag_ready_logical_ = hop_.logical;
+    diag_irq_to_spi_ = spi_start_us - irq_timestamp_us;
+    diag_spi_ = spi_end_us - spi_start_us;
+    diag_proc_ = rearm_start_us - spi_end_us;
+    diag_rearm_ = rearm_done_us - rearm_start_us;
     metrics_.onQueueDepth(0U, rearm_done_us, label_sequence);
     if (!rearmed) initialized_ = false;
   }
@@ -254,7 +306,7 @@ class FixedLinkRuntime {
   // Channel for a logical frame on the live timeline (monotonic callers only:
   // TX next frame, RX next expected frame). Applies a staged map at its activation
   // frame (Gate C) and the probe override for the single reserved probe frame.
-  std::uint8_t channelFor(std::uint64_t logical) {
+  PR1_IRAM std::uint8_t channelFor(std::uint64_t logical) {
     if constexpr (kAdaptive) {
       if (scheduler_.pending().valid && logical >= scheduler_.pending().activation_sequence) {
         prev_config_ = scheduler_.current();
@@ -278,7 +330,7 @@ class FixedLinkRuntime {
   }
 
   // Channel a past frame used (idle-time attribution only; never on the hot path).
-  std::uint8_t channelForPast(std::uint64_t logical) const {
+  PR1_IRAM std::uint8_t channelForPast(std::uint64_t logical) const {
     if (prev_valid_ && logical < prev_activation_) {
       const afh::Scheduler previous(prev_config_);
       return previous.channelForSequence(logical);
@@ -286,7 +338,7 @@ class FixedLinkRuntime {
     return scheduler_.channelForSequence(logical);
   }
 
-  std::uint32_t nowMs() const { return radio_.nowMicros() / 1000U; }
+  PR1_IRAM std::uint32_t nowMs() const { return radio_.nowMicros() / 1000U; }
 
   bool retune(std::uint8_t channel) {
     const std::uint32_t start_us = radio_.nowMicros();
@@ -465,10 +517,90 @@ class FixedLinkRuntime {
     retune(timedChannelFor(hop_.logical));
   }
 
+  // RX idle only (radio re-armed): window for the control core's USB work.
+  void publishControlWindow(std::uint32_t now_us) {
+    bool open = true;  // no frame timing (unlocked / acquiring): free
+    if (hop_.locked && hop_deadline_valid_) {
+      const std::uint32_t end =
+          hop_deadline_us_ - lossMargin(hop_.period_est_us) - static_cast<std::uint32_t>(PR1_CTRL_WINDOW_GUARD_US);
+      open = static_cast<std::int32_t>(end - now_us) > 0;
+    }
+    ctrl_window_open_.store(open, std::memory_order_release);
+  }
+
+  static std::uint16_t sat16(std::uint32_t v) { return v > 65535U ? 65535U : static_cast<std::uint16_t>(v); }
+
+  // Idle-loop timing diagnostic (C1): flag a good packet whose RX-done is late on the
+  // grid of the previous good packet (TX started late, or the IRQ was serviced late).
+  void checkRxLateness() {
+    if (diag_ready_us_ != 0U) {
+      if (diag_ready_us_ > static_cast<std::uint32_t>(PR1_DIAG_RX_READY_US)) {
+        hop_.record({radio_.nowMicros(), static_cast<std::uint32_t>(diag_ready_logical_), sat16(diag_ready_us_),
+                     hop_.current_channel, afhrt::HopEventKind::RxSlowReady, 0});
+        hop_.record({diag_irq_to_spi_, diag_spi_, sat16(diag_proc_), 0U, afhrt::HopEventKind::RxSlowBreakdown,
+                     static_cast<std::int16_t>(diag_rearm_ > 32767U ? 32767U : diag_rearm_)});
+      }
+      diag_ready_us_ = 0U;
+    }
+    if (!last_rx_valid_ || last_rx_logical_ == diag_rx_logical_) return;
+    if (diag_rx_valid_ && hop_.period_est_us > 0U && last_rx_logical_ > diag_rx_logical_ &&
+        last_rx_logical_ - diag_rx_logical_ <= 4U) {
+      const auto frames = static_cast<std::uint32_t>(last_rx_logical_ - diag_rx_logical_);
+      const auto late = static_cast<std::int32_t>((last_rx_irq_us_ - diag_rx_irq_us_) - frames * hop_.period_est_us);
+      if (late > PR1_DIAG_RX_LATE_US) {
+        hop_.record({last_rx_irq_us_, static_cast<std::uint32_t>(last_rx_logical_),
+                     sat16(static_cast<std::uint32_t>(late)), hop_.current_channel, afhrt::HopEventKind::RxLate, 0});
+      }
+    }
+    diag_rx_valid_ = true;
+    diag_rx_logical_ = last_rx_logical_;
+    diag_rx_irq_us_ = last_rx_irq_us_;
+  }
+
   // RX idle: if the predicted frame did not arrive, advance on the TX cadence.
+  // Microseconds until the next expected RX-done (only meaningful when locked with a deadline).
+  std::int32_t untilExpectedDone(std::uint32_t now_us) const {
+    return static_cast<std::int32_t>(hop_deadline_us_ - lossMargin(hop_.period_est_us) - now_us);
+  }
+
   void serviceHopTimeout(std::uint32_t now_us) {
+    checkRxLateness();
+    publishControlWindow(now_us);
+    if constexpr (PR1_DIAG_COLD_WORK_EVERY > 0) {
+      if (hop_.locked && hop_deadline_valid_ &&
+          untilExpectedDone(now_us) >= static_cast<std::int32_t>(PR1_CTRL_WINDOW_GUARD_US) && hop_.logical % (PR1_DIAG_COLD_WORK_EVERY > 0 ? PR1_DIAG_COLD_WORK_EVERY : 1) == 0U &&
+          hop_.logical != diag_cold_logical_) {
+        diag_cold_logical_ = hop_.logical;
+        const std::uint32_t t0 = radio_.nowMicros();
+        char buf[224];
+        std::uint32_t sink = 0U;
+        for (std::uint8_t t = 0; t <= static_cast<std::uint8_t>(ctrl::OutType::Aborted); ++t) {
+          ctrl::Out o{};
+          o.type = static_cast<ctrl::OutType>(t);
+          o.id = t; o.bits = hop_.logical * 0x9E37ULL; o.logical = hop_.logical; o.reason = "diag";
+          sink += static_cast<std::uint32_t>(ctrl::format(o, buf, sizeof(buf)));
+        }
+        sink += static_cast<std::uint32_t>(std::snprintf(buf, sizeof(buf), "%.3f %e %llx",
+            static_cast<double>(hop_.period_est_us) / 7.0, static_cast<double>(sink),
+            static_cast<unsigned long long>(hop_.logical)));
+        hop_.record({t0, static_cast<std::uint32_t>(hop_.logical), sat16(radio_.nowMicros() - t0),
+                     static_cast<std::uint8_t>(sink & 0xFFU), afhrt::HopEventKind::ColdWork, 0});
+        return;
+      }
+    }
     if constexpr (kAdaptive) {
-      if (!deadlineNear(now_us) && serviceQuality()) return;
+      if (!deadlineNear(now_us)) {
+        const std::uint32_t work_start_us = radio_.nowMicros();
+        const std::uint8_t kind = serviceQuality();
+        if (kind != 0U) {
+          if (rx_pending_) {
+            // Idle work overlapped a reception: the post-read path started late.
+            hop_.record({work_start_us, static_cast<std::uint32_t>(hop_.logical),
+                         sat16(radio_.nowMicros() - work_start_us), kind, afhrt::HopEventKind::IdleOverlap, 0});
+          }
+          return;
+        }
+      }
     }
     if (deferred_check_valid_) {
       // Idle loop, RX already armed: verify an off-expected packet against the schedule.
@@ -530,7 +662,7 @@ class FixedLinkRuntime {
 
   // --- Gate C: adaptive map (RX decides, host relays, both apply at frame N) -----
 
-  void queueOutcome(std::uint64_t logical, std::uint8_t channel, amap::OutcomeKind kind,
+  PR1_IRAM void queueOutcome(std::uint64_t logical, std::uint8_t channel, amap::OutcomeKind kind,
                     std::uint32_t t_us) {
     amap::Outcome o{};
     o.logical_lo = static_cast<std::uint32_t>(logical);
@@ -550,27 +682,37 @@ class FixedLinkRuntime {
     return static_cast<std::int32_t>(expected_done - now_us) < 400;
   }
 
-  std::uint64_t logicalFromLo(std::uint32_t lo) const {
+  PR1_IRAM std::uint64_t logicalFromLo(std::uint32_t lo) const {
     // Outcomes are at most a few frames old: rebuild the 64-bit frame near hop_.logical.
     const std::uint64_t ref = hop_.logical;
     const auto diff = static_cast<std::int32_t>(lo - static_cast<std::uint32_t>(ref));
     return ref + static_cast<std::int64_t>(diff);
   }
 
-  // Returns true if it did any work (one outcome or one proposal per call).
-  bool serviceQuality() {
-    if (rx_ctrl_pending_) {
-      rx_ctrl_pending_ = false;
-      const std::uint32_t start_us = radio_.nowMicros();
-      rxControl(rx_ctrl_line_);
-      amap_.ctrl_us.observe(radio_.nowMicros() - start_us);
-      return true;
+  PR1_IRAM void serviceTxControl() {
+    ctrl::In m{};
+    if (source_ == nullptr || !source_(&m)) return;
+    const std::uint32_t start_us = radio_.nowMicros();
+    txControl(m);
+    amap_.ctrl_us.observe(radio_.nowMicros() - start_us);
+  }
+
+  // Returns the kind of work done (0 none, 1 control, 2 outcome, 3 probe outcome, 4 proposal/probe upkeep).
+  PR1_IRAM std::uint8_t serviceQuality() {
+    ctrl::In m{};
+    if (source_ != nullptr && source_(&m)) {
+      if (m.type == ctrl::InType::Ack) {
+        const std::uint32_t start_us = radio_.nowMicros();
+        rxControl(m);
+        amap_.ctrl_us.observe(radio_.nowMicros() - start_us);
+      }
+      return 1U;
     }
     amap::Outcome o{};
     if (outcomes_.pop(&o)) {
       const std::uint64_t logical = logicalFromLo(o.logical_lo);
       const std::uint8_t ch = o.channel == 255U ? channelForPast(logical) : o.channel;
-      if (ch >= afh::kChannelCount) return true;
+      if (ch >= afh::kChannelCount) return 2U;
       const bool ok = o.kind == amap::OutcomeKind::Ok;
       auto& c = amap_.channels[ch];
       if (o.kind == amap::OutcomeKind::Ok) ++c.ok;
@@ -594,7 +736,7 @@ class FixedLinkRuntime {
           last_probe_channel_ = probe_.channel;
           probe_.valid = false;
         }
-        return true;
+        return 3U;
       }
       const auto before = estimator_.channel(ch).state;
       estimator_.observeData(ch, ok, o.t_ms);
@@ -615,25 +757,27 @@ class FixedLinkRuntime {
         }
         amap_.record({o.t_ms, o.logical_lo, 0U, 0U, 0U, scheduler_.current().map_version, ch, value, kind});
       }
-      return true;
+      return 2U;
     }
-    return maybePropose();
+    return maybePropose() ? 4U : 0U;
   }
 
-  void emit(const char* line) {
-    if (sink_ == nullptr || !sink_(line)) ++amap_.emit_dropped;
+  PR1_IRAM void emit(const ctrl::Out& out) {
+    if (sink_ == nullptr || !sink_(out)) ++amap_.emit_dropped;
   }
 
-  void abandonProposal(const char* reason) {
-    char out[120];
-    std::snprintf(out, sizeof(out), "PR1COMMIT id=%u ok=0 tx_ok=0 in_time=0 reason=%s rx_logical=%" PRIu64,
-                  static_cast<unsigned>(proposal_.id), reason, hop_.logical);
+  PR1_IRAM void abandonProposal(const char* reason) {
+    ctrl::Out out{};
+    out.type = ctrl::OutType::CommitAbandon;
+    out.id = proposal_.id;
+    out.reason = reason;
+    out.logical = hop_.logical;
     proposal_.type = amap::ProposalType::None;
     next_proposal_ms_ = nowMs() + 1000U;  // back off after any failed proposal
     emit(out);
   }
 
-  bool maybePropose() {
+  PR1_IRAM bool maybePropose() {
     if (probe_.valid && hop_.logical > probe_.at + 16U) {
       // The probe frame's outcome never reached the queue (e.g. a long stall):
       // count it as a failed probe so the estimator backs off and probing continues.
@@ -665,25 +809,30 @@ class FixedLinkRuntime {
     if (static_cast<std::int32_t>(now_ms - next_proposal_ms_) < 0) return false;
     const afh::ChannelMap desired = estimator_.activeMap();
     const afh::ScheduleConfig& cur = scheduler_.current();
-    char line[200];
+    ctrl::Out line{};
     if (desired.bits != cur.map.bits && desired.isValid()) {
       proposal_ = {amap::ProposalType::Map, ++next_id_, static_cast<std::uint16_t>(cur.map_version + 1U),
                    desired.bits, hop_.logical + PR1_MAP_LEAD_FRAMES, 0U};
-      std::snprintf(line, sizeof(line),
-                    "PR1PROP id=%u type=map v=%u old=%u bits=%010" PRIx64 " oldbits=%010" PRIx64
-                    " act=%" PRIu64 " rx_logical=%" PRIu64 " active=%u",
-                    static_cast<unsigned>(proposal_.id), static_cast<unsigned>(proposal_.version),
-                    static_cast<unsigned>(cur.map_version), proposal_.bits, cur.map.bits,
-                    proposal_.activation, hop_.logical, static_cast<unsigned>(desired.activeCount()));
+      line.type = ctrl::OutType::PropMap;
+      line.id = proposal_.id;
+      line.version = proposal_.version;
+      line.old_version = cur.map_version;
+      line.bits = proposal_.bits;
+      line.old_bits = cur.map.bits;
+      line.at = proposal_.activation;
+      line.logical = hop_.logical;
+      line.active = desired.activeCount();
     } else if (!probe_.valid) {
       std::uint8_t ch = 0U;
       if (!estimator_.nextProbeChannel(now_ms, &ch)) return false;
       proposal_ = {amap::ProposalType::Probe, ++next_id_, cur.map_version, 0U,
                    hop_.logical + PR1_MAP_LEAD_FRAMES / 2U, ch};
-      std::snprintf(line, sizeof(line),
-                    "PR1PROP id=%u type=probe ch=%u at=%" PRIu64 " v=%u rx_logical=%" PRIu64,
-                    static_cast<unsigned>(proposal_.id), static_cast<unsigned>(ch), proposal_.activation,
-                    static_cast<unsigned>(cur.map_version), hop_.logical);
+      line.type = ctrl::OutType::PropProbe;
+      line.id = proposal_.id;
+      line.channel = ch;
+      line.at = proposal_.activation;
+      line.version = cur.map_version;
+      line.logical = hop_.logical;
     } else {
       return false;
     }
@@ -696,14 +845,14 @@ class FixedLinkRuntime {
     return true;
   }
 
-  // Host relays the TX acknowledgement: "ACK id=<id> ok=<0|1>".
-  void rxControl(const char* line) {
-    unsigned long long id_ = 0ULL, ok_ = 0ULL;
-    char out[120];
-    if (!starts(line, "ACK") || !kv(line, "id", 10, &id_) || !kv(line, "ok", 10, &ok_)) return;
-    const unsigned id = static_cast<unsigned>(id_), ok = static_cast<unsigned>(ok_);
+  // Host relays the TX acknowledgement: "ACK id=<id> ok=<0|1>" (parsed on the control core).
+  PR1_IRAM void rxControl(const ctrl::In& m) {
+    const unsigned id = m.id, ok = m.ok;
+    ctrl::Out out{};
     if (proposal_.type == amap::ProposalType::None || id != proposal_.id) {
-      std::snprintf(out, sizeof(out), "PR1COMMIT id=%u ok=0 tx_ok=%u in_time=0 reason=unknown_id", id, ok);
+      out.type = ctrl::OutType::CommitUnknown;
+      out.id = m.id;
+      out.tx_ok = m.ok;
       emit(out);
       return;
     }
@@ -728,50 +877,36 @@ class FixedLinkRuntime {
                   static_cast<std::uint32_t>(proposal_.activation), proposal_.bits, proposal_.id,
                   proposal_.version, proposal_.channel, static_cast<std::uint8_t>(ok),
                   committed ? amap::EventKind::Committed : amap::EventKind::CommitLate});
-    std::snprintf(out, sizeof(out), "PR1COMMIT id=%u ok=%u tx_ok=%u in_time=%u rx_logical=%" PRIu64,
-                  static_cast<unsigned>(proposal_.id), committed ? 1U : 0U, ok, in_time ? 1U : 0U,
-                  hop_.logical);
+    out.type = ctrl::OutType::Commit;
+    out.id = proposal_.id;
+    out.ok = committed ? 1U : 0U;
+    out.tx_ok = m.ok;
+    out.in_time = in_time ? 1U : 0U;
+    out.logical = hop_.logical;
     proposal_.type = amap::ProposalType::None;
     if (!committed) next_proposal_ms_ = nowMs() + 1000U;
     emit(out);
   }
 
-  // Minimal "key=value" reader for control lines (no sscanf on the radio loop).
-  static bool kv(const char* line, const char* key, int base, unsigned long long* out) {
-    const std::size_t klen = std::strlen(key);
-    for (const char* p = line; (p = std::strstr(p, key)) != nullptr; p += klen) {
-      if ((p == line || p[-1] == ' ') && p[klen] == '=') {
-        char* end = nullptr;
-        *out = std::strtoull(p + klen + 1, &end, base);
-        return end != p + klen + 1;
-      }
-    }
-    return false;
-  }
-  static bool starts(const char* line, const char* word) {
-    return std::strncmp(line, word, std::strlen(word)) == 0 && line[std::strlen(word)] == ' ';
-  }
-
-  // Host -> TX (two-phase):
-  //   "MAP id=<id> v=<ver> old=<ver> oldbits=<hex> bits=<hex> act=<frame>"  validate only
-  //   "PRB id=<id> ch=<c> at=<frame> v=<ver>"                                validate only
-  //   "COMMIT id=<id>"  stage the validated candidate (only after the RX committed)
-  //   "ABORT id=<id>"   drop it
-  void txControl(const char* line) {
-    unsigned long long id_ = 0ULL, v_ = 0ULL, old_v_ = 0ULL, ch_ = 0ULL;
-    unsigned long long bits = 0ULL, old_bits = 0ULL, act = 0ULL;
-    const bool has_id = kv(line, "id", 10, &id_);
-    const unsigned id = static_cast<unsigned>(id_);
-    char out[140];
+  // Host -> TX (two-phase), parsed on the control core:
+  //   MAP id v old oldbits bits act   validate only
+  //   PRB id ch at v                  validate only
+  //   COMMIT id                       stage the validated candidate (only after the RX committed)
+  //   ABORT id                        drop it
+  PR1_IRAM void txControl(const ctrl::In& m) {
+    const unsigned id = m.id;
+    ctrl::Out out{};
+    out.id = m.id;
+    out.logical = hop_.logical;
     const char* reason = "parse";
     bool ok = false;
-    if (starts(line, "MAP") && has_id && kv(line, "v", 10, &v_) && kv(line, "old", 10, &old_v_) &&
-        kv(line, "oldbits", 16, &old_bits) && kv(line, "bits", 16, &bits) && kv(line, "act", 10, &act)) {
-      const unsigned v = static_cast<unsigned>(v_), old_v = static_cast<unsigned>(old_v_);
+    if (m.type == ctrl::InType::Map) {
+      const unsigned v = m.version, old_v = m.old_version;
+      const std::uint64_t bits = m.bits, act = m.at;
       afh::ChannelMap map{};
       map.bits = bits;
       const auto& cur = scheduler_.current();
-      if (cur.map_version != old_v || cur.map.bits != old_bits) {
+      if (cur.map_version != old_v || cur.map.bits != m.old_bits) {
         reason = "base_mismatch";
       } else if (v != static_cast<unsigned>(cur.map_version) + 1U || scheduler_.pending().valid) {
         reason = "version";
@@ -785,11 +920,10 @@ class FixedLinkRuntime {
         ok = true;
         reason = "validated";
       }
-      std::snprintf(out, sizeof(out), "PR1ACK id=%u ok=%u reason=%s tx_logical=%" PRIu64, id, ok ? 1U : 0U,
-                    reason, hop_.logical);
-    } else if (starts(line, "PRB") && has_id && kv(line, "ch", 10, &ch_) && kv(line, "at", 10, &act) &&
-               kv(line, "v", 10, &v_)) {
-      const unsigned v = static_cast<unsigned>(v_), ch = static_cast<unsigned>(ch_);
+      out.type = ctrl::OutType::Ack;
+    } else if (m.type == ctrl::InType::Probe) {
+      const unsigned v = m.version, ch = m.channel;
+      const std::uint64_t act = m.at;
       if (probe_.valid) {
         reason = "busy";
       } else if (ch >= afh::kChannelCount || act <= hop_.logical + PR1_MAP_GUARD_FRAMES / 2U) {
@@ -800,9 +934,8 @@ class FixedLinkRuntime {
         ok = true;
         reason = "validated";
       }
-      std::snprintf(out, sizeof(out), "PR1ACK id=%u ok=%u reason=%s tx_logical=%" PRIu64, id, ok ? 1U : 0U,
-                    reason, hop_.logical);
-    } else if (starts(line, "COMMIT") && has_id) {
+      out.type = ctrl::OutType::Ack;
+    } else if (m.type == ctrl::InType::Commit) {
       if (candidate_.type == amap::ProposalType::None || candidate_.id != id) {
         reason = "unknown_id";
       } else if (candidate_.type == amap::ProposalType::Map) {
@@ -822,15 +955,17 @@ class FixedLinkRuntime {
                     ok ? amap::EventKind::TxStaged : amap::EventKind::TxRejected});
       ok ? ++amap_.commits : ++amap_.tx_rejects;
       candidate_.type = amap::ProposalType::None;
-      std::snprintf(out, sizeof(out), "PR1STAGED id=%u ok=%u reason=%s tx_logical=%" PRIu64, id, ok ? 1U : 0U,
-                    reason, hop_.logical);
-    } else if (starts(line, "ABORT") && has_id) {
+      out.type = ctrl::OutType::Staged;
+    } else if (m.type == ctrl::InType::Abort) {
       const bool had = candidate_.type != amap::ProposalType::None && candidate_.id == id;
       if (had) candidate_.type = amap::ProposalType::None;
-      std::snprintf(out, sizeof(out), "PR1ABORTED id=%u had=%u", id, had ? 1U : 0U);
+      ok = had;
+      out.type = ctrl::OutType::Aborted;
     } else {
       return;
     }
+    out.ok = ok ? 1U : 0U;
+    out.reason = reason;
     emit(out);
   }
 
@@ -863,12 +998,23 @@ class FixedLinkRuntime {
   bool prev_valid_ = false;
   std::uint64_t last_probe_at_ = ~0ULL;
   std::uint8_t last_probe_channel_ = 0U;
-  LineSink sink_ = nullptr;
+  CtrlSink sink_ = nullptr;
+  CtrlSource source_ = nullptr;
   amap::Proposal candidate_{};            // TX: validated, not yet committed
   std::uint32_t next_proposal_ms_ = 0U;   // RX: proposal backoff
-  char rx_ctrl_line_[160] = {};
-  volatile bool rx_ctrl_pending_ = false;
   bool acq_anchor_valid_ = false;
+  std::uint32_t tx_min_us_ = ~0U;
+  bool diag_rx_valid_ = false;
+  std::atomic<bool> ctrl_window_open_{true};
+  std::uint32_t diag_ready_us_ = 0U;
+  std::uint64_t diag_cold_logical_ = ~0ULL;
+  std::uint32_t diag_irq_to_spi_ = 0U;
+  std::uint32_t diag_spi_ = 0U;
+  std::uint32_t diag_proc_ = 0U;
+  std::uint32_t diag_rearm_ = 0U;
+  std::uint64_t diag_ready_logical_ = 0U;
+  std::uint64_t diag_rx_logical_ = 0U;
+  std::uint32_t diag_rx_irq_us_ = 0U;
   std::uint16_t acq_raw_ = 0U;
   std::uint32_t acq_irq_us_ = 0U;
   bool deferred_check_valid_ = false;

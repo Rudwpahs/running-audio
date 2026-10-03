@@ -1,0 +1,175 @@
+40461.9530 RX PR1PROP id=1 type=map v=2 old=1 bits=efffffffff oldbits=ffffffffff act=978 rx_logical=378 active=39
+40461.9530 HOST->TX MAP id=1 v=2 old=1 oldbits=ffffffffff bits=efffffffff act=978
+40461.9680 TX PR1ACK id=1 ok=1 reason=validated tx_logical=380
+40461.9680 HOST->RX ACK id=1 ok=1
+40461.9840 RX PR1COMMIT id=1 ok=1 tx_ok=1 in_time=1 rx_logical=380
+40461.9840 HOST->TX COMMIT id=1
+40461.9840 TX PR1STAGED id=1 ok=1 reason=staged tx_logical=388
+40463.7650 RX PR1PROP id=2 type=map v=3 old=2 bits=ef96efdfff oldbits=efffffffff act=1578 rx_logical=978 active=33
+40463.7650 HOST->TX MAP id=2 v=3 old=2 oldbits=efffffffff bits=ef96efdfff act=1578
+40463.7650 TX PR1ACK id=2 ok=1 reason=validated tx_logical=983
+40463.7650 HOST->RX ACK id=2 ok=1
+40463.7810 RX PR1COMMIT id=2 ok=1 tx_ok=1 in_time=1 rx_logical=983
+40463.7810 HOST->TX COMMIT id=2
+40463.7810 TX PR1STAGED id=2 ok=1 reason=staged tx_logical=988
+40465.5620 RX PR1PROP id=3 type=map v=4 old=3 bits=eb86ebdfff oldbits=ef96efdfff act=2178 rx_logical=1578 active=30
+40465.5620 HOST->TX MAP id=3 v=4 old=3 oldbits=ef96efdfff bits=eb86ebdfff act=2178
+40465.5620 TX PR1ACK id=3 ok=1 reason=validated tx_logical=1581
+40465.5620 HOST->RX ACK id=3 ok=1
+40465.5620 RX PR1COMMIT id=3 ok=1 tx_ok=1 in_time=1 rx_logical=1582
+40465.5620 HOST->TX COMMIT id=3
+40465.5780 TX PR1STAGED id=3 ok=1 reason=staged tx_logical=1586
+40467.3430 RX PR1PROP id=4 type=map v=5 old=4 bits=ea86ebd7ff oldbits=eb86ebdfff act=2778 rx_logical=2178 active=28
+40467.3430 HOST->TX MAP id=4 v=5 old=4 oldbits=eb86ebdfff bits=ea86ebd7ff act=2778
+40467.3430 TX PR1ACK id=4 ok=1 reason=validated tx_logical=2180
+40467.3430 HOST->RX ACK id=4 ok=1
+40467.3590 RX PR1COMMIT id=4 ok=1 tx_ok=1 in_time=1 rx_logical=2180
+40467.3590 HOST->TX COMMIT id=4
+40467.3590 TX PR1STAGED id=4 ok=1 reason=staged tx_logical=2184
+40469.1400 RX PR1PROP id=5 type=map v=6 old=5 bits=e882e3d7f7 oldbits=ea86ebd7ff act=3378 rx_logical=2778 active=24
+40469.1400 HOST->TX MAP id=5 v=6 old=5 oldbits=ea86ebd7ff bits=e882e3d7f7 act=3378
+40469.1400 TX PR1ACK id=5 ok=1 reason=validated tx_logical=2782
+40469.1400 HOST->RX ACK id=5 ok=1
+40469.1560 RX PR1COMMIT id=5 ok=1 tx_ok=1 in_time=1 rx_logical=2782
+40469.1560 HOST->TX COMMIT id=5
+40469.1560 TX PR1STAGED id=5 ok=1 reason=staged tx_logical=2787
+40470.9370 RX PR1PROP id=6 type=map v=7 old=6 bits=e802e3d7f7 oldbits=e882e3d7f7 act=3978 rx_logical=3378 active=23
+40470.9370 HOST->TX MAP id=6 v=7 old=6 oldbits=e882e3d7f7 bits=e802e3d7f7 act=3978
+40470.9370 TX PR1ACK id=6 ok=1 reason=validated tx_logical=3383
+40470.9370 HOST->RX ACK id=6 ok=1
+40470.9530 RX PR1COMMIT id=6 ok=1 tx_ok=1 in_time=1 rx_logical=3383
+40470.9530 HOST->TX COMMIT id=6
+40470.9530 TX PR1STAGED id=6 ok=1 reason=staged tx_logical=3388
+40472.7340 RX PR1PROP id=7 type=map v=8 old=7 bits=e802e3c7f7 oldbits=e802e3d7f7 act=4578 rx_logical=3978 active=22
+40472.7340 HOST->TX MAP id=7 v=8 old=7 oldbits=e802e3d7f7 bits=e802e3c7f7 act=4578
+40472.7340 TX PR1ACK id=7 ok=1 reason=validated tx_logical=3985
+40472.7340 HOST->RX ACK id=7 ok=1
+40472.7500 RX PR1COMMIT id=7 ok=1 tx_ok=1 in_time=1 rx_logical=3985
+40472.7500 HOST->TX COMMIT id=7
+40472.7500 TX PR1STAGED id=7 ok=1 reason=staged tx_logical=3990
+40474.5000 RX PR1PROP id=8 type=probe ch=36 at=4878 v=8 rx_logical=4578
+40474.5000 HOST->TX PRB id=8 ch=36 at=4878 v=8
+40474.5150 TX PR1ACK id=8 ok=1 reason=validated tx_logical=4580
+40474.5150 HOST->RX ACK id=8 ok=1
+40474.5310 RX PR1COMMIT id=8 ok=1 tx_ok=1 in_time=1 rx_logical=4580
+40474.5310 HOST->TX COMMIT id=8
+40474.5310 TX PR1STAGED id=8 ok=1 reason=probe_reserved tx_logical=4587
+40474.9210 RX PR1PROP id=9 type=map v=9 old=8 bits=e802c3c7f7 oldbits=e802e3c7f7 act=5317 rx_logical=4717 active=21
+40474.9210 HOST->TX MAP id=9 v=9 old=8 oldbits=e802e3c7f7 bits=e802c3c7f7 act=5317
+40474.9210 TX PR1ACK id=9 ok=1 reason=validated tx_logical=4719
+40474.9210 HOST->RX ACK id=9 ok=1
+40474.9370 RX PR1COMMIT id=9 ok=1 tx_ok=1 in_time=1 rx_logical=4719
+40474.9370 HOST->TX COMMIT id=9
+40474.9370 TX PR1STAGED id=9 ok=1 reason=staged tx_logical=4724
+40476.7180 RX PR1PROP id=10 type=probe ch=24 at=5617 v=9 rx_logical=5317
+40476.7180 HOST->TX PRB id=10 ch=24 at=5617 v=9
+40476.7180 TX PR1ACK id=10 ok=1 reason=validated tx_logical=5323
+40476.7180 HOST->RX ACK id=10 ok=1
+40476.7340 RX PR1COMMIT id=10 ok=1 tx_ok=1 in_time=1 rx_logical=5323
+40476.7340 HOST->TX COMMIT id=10
+40476.7340 TX PR1STAGED id=10 ok=1 reason=probe_reserved tx_logical=5328
+40476.9210 RX PR1PROP id=11 type=map v=10 old=9 bits=e002c3c7f7 oldbits=e802c3c7f7 act=5987 rx_logical=5387 active=20
+40476.9210 HOST->TX MAP id=11 v=10 old=9 oldbits=e802c3c7f7 bits=e002c3c7f7 act=5987
+40476.9210 TX PR1ACK id=11 ok=1 reason=validated tx_logical=5389
+40476.9210 HOST->RX ACK id=11 ok=1
+40476.9370 RX PR1COMMIT id=11 ok=1 tx_ok=1 in_time=1 rx_logical=5390
+40476.9370 HOST->TX COMMIT id=11
+40476.9370 TX PR1STAGED id=11 ok=1 reason=staged tx_logical=5394
+40478.7180 RX PR1PROP id=12 type=map v=11 old=10 bits=e00243c7f7 oldbits=e002c3c7f7 act=6587 rx_logical=5987 active=19
+40478.7180 HOST->TX MAP id=12 v=11 old=10 oldbits=e002c3c7f7 bits=e00243c7f7 act=6587
+40478.7180 TX PR1ACK id=12 ok=1 reason=validated tx_logical=5991
+40478.7180 HOST->RX ACK id=12 ok=1
+40478.7340 RX PR1COMMIT id=12 ok=1 tx_ok=1 in_time=1 rx_logical=5991
+40478.7340 HOST->TX COMMIT id=12
+40478.7340 TX PR1STAGED id=12 ok=1 reason=staged tx_logical=5996
+40480.5000 RX PR1PROP id=13 type=map v=12 old=11 bits=e00043c7f7 oldbits=e00243c7f7 act=7187 rx_logical=6587 active=18
+40480.5000 HOST->TX MAP id=13 v=12 old=11 oldbits=e00243c7f7 bits=e00043c7f7 act=7187
+40480.5150 TX PR1ACK id=13 ok=1 reason=validated tx_logical=6593
+40480.5150 HOST->RX ACK id=13 ok=1
+40480.5150 RX PR1COMMIT id=13 ok=1 tx_ok=1 in_time=1 rx_logical=6593
+40480.5150 HOST->TX COMMIT id=13
+40480.5310 TX PR1STAGED id=13 ok=1 reason=staged tx_logical=6598
+40482.2810 RX PR1PROP id=14 type=probe ch=13 at=7487 v=12 rx_logical=7187
+40482.2810 HOST->TX PRB id=14 ch=13 at=7487 v=12
+40482.2810 TX PR1ACK id=14 ok=1 reason=validated tx_logical=7189
+40482.2810 HOST->RX ACK id=14 ok=1
+40482.2960 RX PR1COMMIT id=14 ok=1 tx_ok=1 in_time=1 rx_logical=7189
+40482.2960 HOST->TX COMMIT id=14
+40482.2960 TX PR1STAGED id=14 ok=1 reason=probe_reserved tx_logical=7193
+40483.1870 RX PR1PROP id=15 type=probe ch=3 at=7788 v=12 rx_logical=7488
+40483.1870 HOST->TX PRB id=15 ch=3 at=7788 v=12
+40483.1870 TX PR1ACK id=15 ok=1 reason=validated tx_logical=7494
+40483.1870 HOST->RX ACK id=15 ok=1
+40483.2030 RX PR1COMMIT id=15 ok=1 tx_ok=1 in_time=1 rx_logical=7494
+40483.2030 HOST->TX COMMIT id=15
+40483.2030 TX PR1STAGED id=15 ok=1 reason=probe_reserved tx_logical=7499
+40483.3750 RX PR1PROP id=16 type=map v=13 old=12 bits=e0004387f7 oldbits=e00043c7f7 act=8153 rx_logical=7553 active=17
+40483.3750 HOST->TX MAP id=16 v=13 old=12 oldbits=e00043c7f7 bits=e0004387f7 act=8153
+40483.3750 TX PR1ACK id=16 ok=1 reason=validated tx_logical=7556
+40483.3750 HOST->RX ACK id=16 ok=1
+40483.3900 RX PR1COMMIT id=16 ok=1 tx_ok=1 in_time=1 rx_logical=7556
+40483.3900 HOST->TX COMMIT id=16
+40483.3900 TX PR1STAGED id=16 ok=1 reason=staged tx_logical=7560
+40485.1710 RX PR1PROP id=17 type=map v=14 old=13 bits=e0000387f7 oldbits=e0004387f7 act=8753 rx_logical=8153 active=16
+40485.1710 HOST->TX MAP id=17 v=14 old=13 oldbits=e0004387f7 bits=e0000387f7 act=8753
+40485.1710 TX PR1ACK id=17 ok=1 reason=validated tx_logical=8160
+40485.1710 HOST->RX ACK id=17 ok=1
+40485.1870 RX PR1COMMIT id=17 ok=1 tx_ok=1 in_time=1 rx_logical=8160
+40485.1870 HOST->TX COMMIT id=17
+40485.1870 TX PR1STAGED id=17 ok=1 reason=staged tx_logical=8164
+40486.9530 RX PR1PROP id=18 type=probe ch=18 at=9053 v=14 rx_logical=8753
+40486.9530 HOST->TX PRB id=18 ch=18 at=9053 v=14
+40486.9530 TX PR1ACK id=18 ok=1 reason=validated tx_logical=8755
+40486.9530 HOST->RX ACK id=18 ok=1
+40486.9680 RX PR1COMMIT id=18 ok=1 tx_ok=1 in_time=1 rx_logical=8755
+40486.9680 HOST->TX COMMIT id=18
+40486.9680 TX PR1STAGED id=18 ok=1 reason=probe_reserved tx_logical=8763
+40487.8430 RX PR1PROP id=19 type=probe ch=11 at=9354 v=14 rx_logical=9054
+40487.8430 HOST->TX PRB id=19 ch=11 at=9354 v=14
+40487.8430 TX PR1ACK id=19 ok=1 reason=validated tx_logical=9056
+40487.8430 HOST->RX ACK id=19 ok=1
+40487.8590 RX PR1COMMIT id=19 ok=1 tx_ok=1 in_time=1 rx_logical=9056
+40487.8590 HOST->TX COMMIT id=19
+40487.8590 TX PR1STAGED id=19 ok=1 reason=probe_reserved tx_logical=9060
+40488.7500 RX PR1PROP id=20 type=probe ch=20 at=9655 v=14 rx_logical=9355
+40488.7500 HOST->TX PRB id=20 ch=20 at=9655 v=14
+40488.7500 TX PR1ACK id=20 ok=1 reason=validated tx_logical=9361
+40488.7500 HOST->RX ACK id=20 ok=1
+40488.7650 RX PR1COMMIT id=20 ok=1 tx_ok=1 in_time=1 rx_logical=9362
+40488.7650 HOST->TX COMMIT id=20
+40488.7650 TX PR1STAGED id=20 ok=1 reason=probe_reserved tx_logical=9366
+40489.4060 RX PR1PROP id=21 type=map v=15 old=14 bits=a0000387f7 oldbits=e0000387f7 act=10178 rx_logical=9578 active=15
+40489.4060 HOST->TX MAP id=21 v=15 old=14 oldbits=e0000387f7 bits=a0000387f7 act=10178
+40489.4060 TX PR1ACK id=21 ok=1 reason=validated tx_logical=9580
+40489.4060 HOST->RX ACK id=21 ok=1
+40489.4210 RX PR1COMMIT id=21 ok=1 tx_ok=1 in_time=1 rx_logical=9581
+40489.4210 HOST->TX COMMIT id=21
+40489.4210 TX PR1STAGED id=21 ok=1 reason=staged tx_logical=9586
+40491.2030 RX PR1PROP id=22 type=probe ch=27 at=10478 v=15 rx_logical=10178
+40491.2030 HOST->TX PRB id=22 ch=27 at=10478 v=15
+40491.2030 TX PR1ACK id=22 ok=1 reason=validated tx_logical=10183
+40491.2030 HOST->RX ACK id=22 ok=1
+40491.2180 RX PR1COMMIT id=22 ok=1 tx_ok=1 in_time=1 rx_logical=10183
+40491.2180 HOST->TX COMMIT id=22
+40491.2180 TX PR1STAGED id=22 ok=1 reason=probe_reserved tx_logical=10188
+40492.0780 RX PR1PROP id=23 type=probe ch=30 at=10779 v=15 rx_logical=10479
+40492.0780 HOST->TX PRB id=23 ch=30 at=10779 v=15
+40492.0930 TX PR1ACK id=23 ok=1 reason=validated tx_logical=10481
+40492.0930 HOST->RX ACK id=23 ok=1
+40492.1090 RX PR1COMMIT id=23 ok=1 tx_ok=1 in_time=1 rx_logical=10481
+40492.1090 HOST->TX COMMIT id=23
+40492.1090 TX PR1STAGED id=23 ok=1 reason=probe_reserved tx_logical=10489
+40492.8430 RX PR1PROP id=24 type=map v=16 old=15 bits=a0000187f7 oldbits=a0000387f7 act=11332 rx_logical=10732 active=14
+40492.8430 HOST->TX MAP id=24 v=16 old=15 oldbits=a0000387f7 bits=a0000187f7 act=11332
+40492.8430 TX PR1ACK id=24 ok=1 reason=validated tx_logical=10734
+40492.8430 HOST->RX ACK id=24 ok=1
+40492.8590 RX PR1COMMIT id=24 ok=1 tx_ok=1 in_time=1 rx_logical=10734
+40492.8590 HOST->TX COMMIT id=24
+40492.8590 TX PR1STAGED id=24 ok=1 reason=staged tx_logical=10739
+40494.6250 RX PR1PROP id=25 type=map v=17 old=16 bits=a000018777 oldbits=a0000187f7 act=11932 rx_logical=11332 active=13
+40494.6250 HOST->TX MAP id=25 v=17 old=16 oldbits=a0000187f7 bits=a000018777 act=11932
+40494.6250 TX PR1ACK id=25 ok=1 reason=validated tx_logical=11334
+40494.6250 HOST->RX ACK id=25 ok=1
+40494.6400 RX PR1COMMIT id=25 ok=1 tx_ok=1 in_time=1 rx_logical=11334
+40494.6400 HOST->TX COMMIT id=25
+40494.6400 TX PR1STAGED id=25 ok=1 reason=staged tx_logical=11340

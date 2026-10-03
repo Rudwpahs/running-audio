@@ -1,5 +1,7 @@
 #pragma once
 
+#include "pr1_placement.hpp"
+
 #include <array>
 #include <cstddef>
 #include <cstdint>
@@ -25,13 +27,13 @@ struct ChannelMap {
   bool isActive(std::uint8_t channel) const {
     return channel < kChannelCount && ((bits >> channel) & 1ULL) != 0;
   }
-  std::uint8_t activeCount() const {
+  PR1_IRAM std::uint8_t activeCount() const {
     std::uint64_t value = bits & kChannelMask;
     std::uint8_t count = 0;
     while (value != 0) { value &= value - 1ULL; ++count; }
     return count;
   }
-  bool isValid(std::uint8_t minimum_active = kExperimentalMinimumActiveChannels) const {
+  PR1_IRAM bool isValid(std::uint8_t minimum_active = kExperimentalMinimumActiveChannels) const {
     return (bits & ~kChannelMask) == 0 && activeCount() >= minimum_active;
   }
 };
@@ -67,7 +69,7 @@ class Scheduler {
   const ScheduleConfig& current() const { return current_; }
   const PendingMap& pending() const { return pending_; }
 
-  bool stageMap(std::uint16_t new_version, ChannelMap new_map,
+  PR1_IRAM bool stageMap(std::uint16_t new_version, ChannelMap new_map,
                 sequence::LogicalFrameIndex activation_sequence,
                 std::uint8_t minimum_active = kExperimentalMinimumActiveChannels) {
     if (!new_map.isValid(minimum_active)) return false;
@@ -77,7 +79,7 @@ class Scheduler {
     return true;
   }
 
-  void applyPendingIfDue(sequence::LogicalFrameIndex sequence) {
+  PR1_IRAM void applyPendingIfDue(sequence::LogicalFrameIndex sequence) {
     if (!pending_.valid || sequence < pending_.activation_sequence) return;
     current_.map = pending_.map;
     current_.map_version = pending_.map_version;

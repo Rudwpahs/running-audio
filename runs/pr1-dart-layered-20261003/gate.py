@@ -43,6 +43,16 @@ RX_VARIANTS.update({"Bf29": "-D PR1_AFH_DIAG_FIXED_CHANNEL=29", "Bf20": "-D PR1_
 # Gate C: adaptive channel map ON (both roles); everything else identical to final Gate B.
 RX_VARIANTS["C"] = "-D PR1_ENABLE_ADAPTIVE_MAP=1"
 TX_VARIANTS["C"] = "-D PR1_ENABLE_ADAPTIVE_MAP=1"
+# Gate C1: same flags as B / C, built from the C1 tree (control plane on core 0). Separate
+# image dirs keep the Gate C binaries intact.
+RX_VARIANTS["B1"] = ""
+TX_VARIANTS["B1"] = ""
+RX_VARIANTS["C1"] = "-D PR1_ENABLE_ADAPTIVE_MAP=1"
+TX_VARIANTS["C1"] = "-D PR1_ENABLE_ADAPTIVE_MAP=1"
+# Diagnostic (C1 cache test): B1 + rarely-run code every 600 frames on RX only.
+RX_VARIANTS["B1k"] = "-D PR1_DIAG_COLD_WORK_EVERY=600"
+TX_VARIANTS["B1k"] = ""
+ADAPTIVE_GATES = ("C", "C1", "C2")
 C_PROFILE = {"adaptive_layers_text": "channel_map"}  # Bt: TX settle diag; RX uses the plain B-rx image
 PLACEMENT = ("2026-10-03 operator photo placement_20261003.jpg: RX on desk top (antenna ~vertical, iron and "
              "bottles nearby), TX on white box below (antenna vertical). Unchanged for all gates.")
@@ -68,10 +78,10 @@ def image_name(role: str, gap: int | None, variant: str) -> str:
 def render_ini(role: str, gap: int | None, variant: str = "B") -> Path:
     text = (PROJECT / "platformio.ini").read_text(encoding="utf-8")
     if role == "tx":
-        extra = ("\n    " + TX_VARIANTS[variant]) if variant in TX_VARIANTS else ""
+        extra = ("\n    " + TX_VARIANTS[variant]) if TX_VARIANTS.get(variant) else ""
         text = text.replace("-D PR1_TX_GAP_US=5000", f"-D PR1_TX_GAP_US={gap}\n    -D PR1_ENABLE_AFH=1" + extra, 1)
     else:
-        extra = ("\n    " + RX_VARIANTS[variant]) if variant in RX_VARIANTS else ""
+        extra = ("\n    " + RX_VARIANTS[variant]) if RX_VARIANTS.get(variant) else ""
         text = text.replace("-D PR1_RUNTIME_ROLE=2", "-D PR1_RUNTIME_ROLE=2\n    -D PR1_ENABLE_AFH=1" + extra, 1)
     name = image_name(role, gap, variant)
     path = HERE / "generated" / (name + ".ini")
@@ -289,7 +299,7 @@ QE_KIND = {0: "proposed", 1: "committed", 2: "commit_late", 3: "expired", 4: "ac
            6: "tx_rejected", 7: "suspect", 8: "excluded", 9: "probe_result", 10: "reincluded", 11: "recovered"}
 
 
-def map_agreement(rxq: dict, txq: dict, relay: dict) -> dict:
+def map_agreement(rxq: dict, txq: dict, relay: dict, cut: int | None = None) -> dict:
     rx_act = [(a["v"], a["activation"]) for a in rxq["activations"]]
     tx_act = [(a["v"], a["activation"]) for a in txq["activations"]]
     rs, ts = rxq.get("summary", {}), txq.get("summary", {})
@@ -306,12 +316,19 @@ def map_agreement(rxq: dict, txq: dict, relay: dict) -> dict:
     }
     out["version_mismatch"] = (not out["activation_lists_equal"]) or (not out["final_map_equal"]) or bool(one_sided) \
         or relay["divergence"] > 0
+    # In-window view (C1+): only activations before the RX frame reached at the end of the
+    # measured window; post-run pulls stall one side and can leave later activations one-sided.
+    if cut is not None:
+        rw = [x for x in rx_act if x[1] < cut]; tw = [x for x in tx_act if x[1] < cut]
+        out["cut_logical"] = cut
+        out["in_window_activations_equal"] = rw == tw
+        out["in_window_version_mismatch"] = (rw != tw) or bool(one_sided) or relay["divergence"] > 0
     return out
 
 
-def cmd_run(gate: str, gap: int, target: int) -> None:
+def cmd_run(gate: str, gap: int, target: int, set_name: str | None = None, tag: str | None = None) -> None:
     run_id = f"{gate}-gap-{gap}us-{target}"
-    run_dir = HERE / f"gate-{gate}" / run_id
+    run_dir = (HERE / set_name if set_name else HERE / f"gate-{gate}") / (run_id + (f"-{tag}" if tag else ""))
     run_dir.mkdir(parents=True, exist_ok=True)
     if (run_dir / "result.json").exists() and json.loads((run_dir / "result.json").read_text())["derived"]["target_reached"]:
         print(f"SKIP {run_id} (complete)", flush=True)
@@ -326,8 +343,10 @@ def cmd_run(gate: str, gap: int, target: int) -> None:
         "frozen_baseline": dict(FROZEN_BASELINE),
         "rx_variant": RX_VARIANTS.get(gate),
         "feature_flags": {"PR1_ENABLE_AFH": 1 if gate != "A" else 0, "afh_map": "static all-40" if gate != "A" else None,
-                          "channel_quality": 1 if gate == "C" else 0, "fec": 0, "arq": 0, "phy_ladder": 0,
-                          "controller": 0, "control_plane": "usb_host_relay" if gate == "C" else None},
+                          "channel_quality": 1 if gate in ADAPTIVE_GATES else 0, "fec": 0, "arq": 0, "phy_ladder": 0,
+                          "controller": 0, "control_plane": ("usb_host_relay" + ("" if gate == "C" else ", serial/parse/format on core 0"))
+                          if gate in ADAPTIVE_GATES else None,
+                          "serial_core": 0 if gate in ("B1", "C1", "C2") else 1},
         "images": {"rx": rx_img, "tx": tx_img}, "placement": PLACEMENT,
         "files": {"rx_log": "rx.log", "tx_log": "tx.log"},
         "build_identity": ctl.collect_build_identity(PROJECT, source_root=REPO),
@@ -347,7 +366,7 @@ def cmd_run(gate: str, gap: int, target: int) -> None:
         ctl._drain_stale_input(rx); ctl._pulse_reset(rx)
         relay_stats = {"proposals": 0, "commits": 0, "divergence": 0, "tx_no_ack": 0, "bad_lines": 0, "relay_ms": [], "ids": {}}
         extra = {}
-        if gate == "C":
+        if gate in ADAPTIVE_GATES:
             extra = {"sleep_fn": make_relay(rx, tx, run_dir / "ctrl.log", relay_stats), "profile": C_PROFILE}
         result = ctl.capture_run_from_serial(meta, run_dir, rx, tx,
                                              initial_wait_s=1.08 * target * period_s + 1.0,
@@ -366,10 +385,10 @@ def cmd_run(gate: str, gap: int, target: int) -> None:
                 hop[role]["boot_map_version"] = meta_kv.get("afh_map_version")
             hop["schedule_fp_match"] = hop["rx"].get("boot_schedule_fp") == hop["tx"].get("boot_schedule_fp")
             result["hop"] = hop
-            if gate == "C":
+            if gate in ADAPTIVE_GATES:
                 rxq = parse_quality((run_dir / "rx.log").read_text(encoding="utf-8", errors="replace"))
                 txq = parse_quality((run_dir / "tx.log").read_text(encoding="utf-8", errors="replace"))
-                agree = map_agreement(rxq, txq, relay_stats)
+                agree = map_agreement(rxq, txq, relay_stats, hop["rx"].get("logical"))
                 kinds = {}
                 for e in rxq["events"]:
                     kinds[QE_KIND.get(e["kind"], e["kind"])] = kinds.get(QE_KIND.get(e["kind"], e["kind"]), 0) + 1
@@ -393,7 +412,7 @@ def cmd_run(gate: str, gap: int, target: int) -> None:
         q = result["quality"]; s = q["rx"].get("summary", {}); a = q["map_agreement"]
         line += (f" | C: map_v={s.get('map_version')} active={s.get('active')} min_active={s.get('min_active_seen')} "
                  f"events={q['rx_event_counts']} map_equal={a['final_map_equal']} act_lists_equal={a['activation_lists_equal']} "
-                 f"version_mismatch={a['version_mismatch']} emit_dropped={s.get('emit_dropped')} "
+                 f"version_mismatch={a['version_mismatch']} in_window_mismatch={a.get('in_window_version_mismatch')} emit_dropped={s.get('emit_dropped')} "
                  f"relay={ {k: v for k, v in q['relay'].items() if k not in ('relay_ms', 'ids')} }")
         if a["version_mismatch"]:
             line += " | FAIL: TX/RX map divergence (evidence kept in ctrl.log / result.json)"
@@ -424,7 +443,8 @@ def write_summary(run_dir: Path, result: dict, hop: dict) -> None:
 
 def cmd_summary() -> None:
     rows = []
-    for res in sorted(list(HERE.glob("gate-*/*/result.json")) + list(HERE.glob("gateC-interleave/*/result.json")) + list(HERE.glob("preC/*/result.json"))):
+    for res in sorted(list(HERE.glob("gate-*/*/result.json")) + list(HERE.glob("gateC-interleave/*/result.json")) + list(HERE.glob("preC/*/result.json"))
+                 + list(HERE.glob("gateC1-interleave/*/result.json")) + list(HERE.glob("smokeC1/*/result.json")) + list(HERE.glob("gateC2-interleave/*/result.json"))):
         if "partial" in res.parts: continue
         r = json.loads(res.read_text())
         if "metrics" not in r: continue
@@ -453,6 +473,6 @@ if __name__ == "__main__":
     if c == "build":
         cmd_build()
     elif c == "run":
-        cmd_run(sys.argv[2], int(sys.argv[3]), int(sys.argv[4]))
+        cmd_run(sys.argv[2], int(sys.argv[3]), int(sys.argv[4]), *(sys.argv[5:7]))
     elif c == "summary":
         cmd_summary()

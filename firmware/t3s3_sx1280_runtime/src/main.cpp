@@ -1,11 +1,15 @@
 #include <Arduino.h>
 
+#include <atomic>
 #include <cstring>
 
 #include "pr1_runtime_config.hpp"
 #include "pr1_safe_telemetry.hpp"
 
 #if PR1_RF_ENABLED
+#include "esp_rom_sys.h"
+#include "esp_timer.h"
+#include "hal/usb_serial_jtag_ll.h"
 #include "pr1_fixed_link_runtime.hpp"
 #include "pr1_sx1280_radiolib.hpp"
 #endif
@@ -62,6 +66,157 @@ pr1::runtime::FixedLinkRuntime g_runtime(
     1U);
 bool g_live_ready = false;
 
+// Gate C1 control plane (core 0). The USB-Serial/JTAG interrupt is allocated on the
+// core that calls Serial.begin(), so this task owns begin() and all control-line
+// I/O; the radio loop on core 1 only touches the record queues and the pull flag.
+namespace cp = pr1::runtime::ctrl;
+cp::Spsc<cp::In, 16> g_ctrl_in;    // core 0 -> core 1
+cp::Spsc<cp::Out, 32> g_ctrl_out;  // core 1 -> core 0
+std::atomic<std::uint32_t> g_pull{0};
+std::atomic<bool> g_cp_ready{false};
+std::atomic<bool> g_dumping{false};  // radio loop is printing a pull reply: hold control output
+std::atomic<bool> g_poll_mode{false};  // boot banner done: the control core owns the USB FIFOs
+struct ControlPlaneStats {
+  volatile int core = -1;
+  volatile std::uint32_t lines = 0;
+  volatile std::uint32_t parse_fail = 0;
+  volatile std::uint32_t in_dropped = 0;
+  volatile std::uint32_t out_lines = 0;
+  volatile std::uint32_t write_waits = 0;
+  volatile std::uint32_t stack_free = 0;
+  volatile std::uint32_t window_waits = 0;  // control-core passes skipped (RX window closed)
+  volatile std::uint32_t work_us_max = 0;   // longest USB work burst
+} g_cp;
+
+bool pushControlOut(const cp::Out& out) { return g_ctrl_out.push(out); }
+bool popControlIn(cp::In* in) { return g_ctrl_in.pop(in); }
+
+// Live-run USB I/O: polled FIFO access from IRAM (no HWCDC driver, no USB interrupt).
+// HWCDC (flash code, interrupt driven) is used only for the boot banner and the
+// post-run pull dumps; during the run its IN/OUT interrupts stay masked, so the host's
+// OUT data waits in the 64-byte hardware FIFO (host NAKed) until the control core reads it.
+constexpr std::uint32_t kUsbCtrlIntr =
+    USB_SERIAL_JTAG_INTR_SERIAL_IN_EMPTY | USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT;
+
+struct UsbLineState {
+  char line[160];
+  unsigned line_len = 0;
+  char text[224];
+  int text_len = 0;  // formatted line being written
+  int text_off = 0;  // bytes of it already in the IN FIFO
+};
+
+// Input: drain the OUT FIFO into lines, parse, queue. Pull chars are flagged.
+PR1_IRAM void pollUsbInput(UsbLineState& st) {
+  std::uint8_t buf[64];
+  const std::uint32_t n = usb_serial_jtag_ll_read_rxfifo(buf, sizeof(buf));
+  for (std::uint32_t i = 0; i < n; ++i) {
+    const char c = static_cast<char>(buf[i]);
+    // Single-char pulls (t/h/H) are served by the radio loop after the run.
+    if (st.line_len == 0 && (c == 't' || c == 'T' || c == 'h' || c == 'H')) {
+      g_pull.store(static_cast<std::uint32_t>(c));
+    } else if (c == '\n' || c == '\r') {
+      if (st.line_len > 0) {
+        st.line[st.line_len] = '\0';
+        st.line_len = 0;
+        ++g_cp.lines;
+        cp::In m{};
+        if (pr1::runtime::FixedLinkRuntime::kAdaptive && cp::parse(st.line, &m)) {
+          if (!g_ctrl_in.push(m)) ++g_cp.in_dropped;
+        } else {
+          ++g_cp.parse_fail;
+        }
+      }
+    } else if (st.line_len + 1 < sizeof(st.line)) {
+      st.line[st.line_len++] = c;
+    }
+  }
+}
+
+// Output: format the next record and push it into the IN FIFO (64 bytes per chunk).
+PR1_IRAM void pollUsbOutput(UsbLineState& st) {
+  if (st.text_len == 0) {
+    cp::Out o{};
+    while (st.text_len == 0 && g_ctrl_out.pop(&o)) {
+      const int n = cp::format(o, st.text, sizeof(st.text) - 2U);
+      if (n <= 0) continue;
+      st.text[n] = '\r';
+      st.text[n + 1] = '\n';
+      st.text_len = n + 2;
+      st.text_off = 0;
+    }
+    if (st.text_len == 0) return;
+  }
+  if (!usb_serial_jtag_ll_txfifo_writable()) {
+    ++g_cp.write_waits;
+    return;
+  }
+  const std::uint32_t w = usb_serial_jtag_ll_write_txfifo(
+      reinterpret_cast<const std::uint8_t*>(st.text + st.text_off), static_cast<std::uint32_t>(st.text_len - st.text_off));
+  usb_serial_jtag_ll_txfifo_flush();
+  st.text_off += static_cast<int>(w);
+  if (st.text_off >= st.text_len) {
+    st.text_len = 0;
+    st.text_off = 0;
+    ++g_cp.out_lines;
+  }
+}
+
+PR1_IRAM void controlLoop(bool gated_role) {
+  UsbLineState st{};
+  bool dump_mode = false;
+  std::uint32_t loops = 0;
+  for (;;) {
+    if (g_dumping.load() && st.text_len == 0) {
+      // Radio loop is printing through HWCDC (after any line in flight has finished):
+      // let its IN interrupt run; keep reading pulls.
+      if (!dump_mode) {
+        usb_serial_jtag_ll_ena_intr_mask(USB_SERIAL_JTAG_INTR_SERIAL_IN_EMPTY);
+        dump_mode = true;
+      }
+      pollUsbInput(st);
+      vTaskDelay(1);
+      continue;
+    }
+    if (dump_mode) {
+      usb_serial_jtag_ll_disable_intr_mask(USB_SERIAL_JTAG_INTR_SERIAL_IN_EMPTY);
+      dump_mode = false;
+    }
+    // RX: touch USB only inside the window the radio core publishes after re-arm.
+    if (!gated_role || g_runtime.controlWindowOpen()) {
+      const std::uint32_t t0 = static_cast<std::uint32_t>(esp_timer_get_time());
+      pollUsbInput(st);
+      pollUsbOutput(st);
+      const std::uint32_t work_us = static_cast<std::uint32_t>(esp_timer_get_time()) - t0;
+      if (work_us > g_cp.work_us_max) g_cp.work_us_max = work_us;
+    } else {
+      ++g_cp.window_waits;
+    }
+    if (!gated_role) {
+      vTaskDelay(1);
+      continue;
+    }
+    if (++loops >= 2000U) {
+      loops = 0;
+      g_cp.stack_free = uxTaskGetStackHighWaterMark(nullptr);
+      vTaskDelay(1);  // keep IDLE0 / the task watchdog fed
+      continue;
+    }
+    esp_rom_delay_us(20);  // CPU cycle-counter wait (ROM): no flash, timer or bus traffic
+  }
+}
+
+void controlTask(void*) {
+  Serial.begin(115200);
+  g_cp.core = xPortGetCoreID();
+  g_cp_ready.store(true);
+  const bool gated_role = pr1::runtime::runtimeRole() == pr1::runtime::RuntimeRole::Rx;
+  while (!g_poll_mode.load()) vTaskDelay(1);  // boot banner goes through HWCDC
+  usb_serial_jtag_ll_disable_intr_mask(kUsbCtrlIntr);
+  g_cp.stack_free = uxTaskGetStackHighWaterMark(nullptr);
+  controlLoop(gated_role);
+}
+
 void printAfhProfile();
 void printQuality();
 
@@ -77,16 +232,8 @@ void printLiveProfile() {
   // Gate C turns on exactly one adaptive layer: the AFH channel map.
   Serial.println(pr1::runtime::FixedLinkRuntime::kAdaptive ? "adaptive_layers=channel_map"
                                                            : "adaptive_layers=off");
+  Serial.printf("ctrl_plane_core=%d\n", static_cast<int>(g_cp.core));
   printAfhProfile();
-}
-
-// Non-blocking: if the USB CDC buffer cannot take the whole line, drop it (the
-// runtime counts drops) instead of stalling the radio loop.
-bool emitLine(const char* line) {
-  const int needed = static_cast<int>(std::strlen(line)) + 2;
-  if (Serial.availableForWrite() < needed) return false;
-  Serial.println(line);
-  return true;
 }
 
 // Gate B static AFH identity. The schedule fingerprint lets the host check that
@@ -165,6 +312,13 @@ void printHop() {
       Serial.printf(c == 0 ? "%lu" : ",%lu", static_cast<unsigned long>(h.channel_crc[c]));
     }
     Serial.println();
+    Serial.printf("PR1CP core=%d lines=%lu parse_fail=%lu in_dropped=%lu out_lines=%lu write_waits=%lu "
+                  "stack_free=%lu window_waits=%lu work_us_max=%lu\n",
+                  static_cast<int>(g_cp.core), static_cast<unsigned long>(g_cp.lines),
+                  static_cast<unsigned long>(g_cp.parse_fail), static_cast<unsigned long>(g_cp.in_dropped),
+                  static_cast<unsigned long>(g_cp.out_lines), static_cast<unsigned long>(g_cp.write_waits),
+                  static_cast<unsigned long>(g_cp.stack_free), static_cast<unsigned long>(g_cp.window_waits),
+                  static_cast<unsigned long>(g_cp.work_us_max));
     if constexpr (Runtime::kAdaptive) printQuality();
   } else {
     Serial.println("PR1H afh_enabled=0");
@@ -182,7 +336,7 @@ void printQuality() {
     Serial.printf(
         "PR1QS map_version=%u active=%u bits=%010llx pending=%u pending_v=%u pending_act=%llu "
         "min_active_seen=%u proposals=%lu commits=%lu commit_late=%lu expired=%lu activations=%lu "
-        "tx_rejects=%lu outcomes_dropped=%lu events=%lu emit_dropped=%lu activation_count=%lu ctrl_us_p99=%lu ctrl_us_max=%lu\n",
+        "tx_rejects=%lu outcomes_dropped=%lu events=%lu emit_dropped=%lu activation_count=%lu ctrl_us_p99=%lu ctrl_us_max=%lu ctrl_us_n=%u ctrl_us_p50=%lu ctrl_us_p95=%lu\n",
         static_cast<unsigned>(cur.map_version), static_cast<unsigned>(cur.map.activeCount()),
         static_cast<unsigned long long>(cur.map.bits), pend.valid ? 1U : 0U,
         static_cast<unsigned>(pend.map_version), static_cast<unsigned long long>(pend.activation_sequence),
@@ -192,7 +346,9 @@ void printQuality() {
         static_cast<unsigned long>(m.tx_rejects), static_cast<unsigned long>(m.outcomes_dropped),
         static_cast<unsigned long>(m.events_written), static_cast<unsigned long>(m.emit_dropped),
         static_cast<unsigned long>(m.activation_count),
-        static_cast<unsigned long>(m.ctrl_us.percentile(99)), static_cast<unsigned long>(m.ctrl_us.maxUs()));
+        static_cast<unsigned long>(m.ctrl_us.percentile(99)), static_cast<unsigned long>(m.ctrl_us.maxUs()),
+        static_cast<unsigned>(m.ctrl_us.size()), static_cast<unsigned long>(m.ctrl_us.percentile(50)),
+        static_cast<unsigned long>(m.ctrl_us.percentile(95)));
     for (std::uint32_t i = 0; i < m.activation_count && i < m.activation_log.size(); ++i) {
       const auto& a = m.activation_log[i];
       Serial.printf("PR1QA v=%u activation=%lu applied_at=%lu\n", static_cast<unsigned>(a.version),
@@ -263,15 +419,23 @@ void dumpHopRing() {
 }  // namespace
 
 void setup() {
+#if PR1_RF_ENABLED
+  // Serial.begin() runs inside the core-0 task so the USB interrupt lands on core 0.
+  xTaskCreatePinnedToCore(controlTask, "pr1_ctrl", 4096, nullptr, 2, nullptr, 0);
+  while (!g_cp_ready.load()) delay(1);
+#else
   Serial.begin(115200);
+#endif
   delay(250);
   printBootMetadata();
 
 #if PR1_RF_ENABLED
   printLiveProfile();
-  g_runtime.setLineSink(&emitLine);
+  g_runtime.setControlPlane(&pushControlOut, &popControlIn);
   g_live_ready = g_runtime.begin();
   Serial.println(g_live_ready ? "PR1_RUNTIME_LIVE_READY" : "PR1_RUNTIME_FAULT");
+  Serial.flush();
+  g_poll_mode.store(true);
 #else
   Serial.println("PR1_RUNTIME_SAFE_IDLE");
   printTelemetry(pr1::runtime::makeSafeTelemetrySnapshot());
@@ -290,30 +454,20 @@ void loop() {
   // Serial output is intentionally pull-based in live mode. Continuous
   // telemetry printing can itself create receiver-processing stalls and would
   // contaminate the IRQ/SPI/re-arm measurements we are trying to collect.
-  // Single-char pulls (t/h/H) are handled immediately; anything else is a
-  // newline-terminated control line for the Gate C bench control plane.
-  static char line[160];
-  static unsigned line_len = 0;
-  if (Serial.available() > 0) {
-    const char command = static_cast<char>(Serial.read());
-    if (line_len == 0 && (command == 't' || command == 'T')) {
+  // The core-0 control task reads the port; here only its pull flag is checked.
+  if (g_pull.load(std::memory_order_relaxed) != 0U) {
+    const char command = static_cast<char>(g_pull.exchange(0U));
+    g_dumping.store(true);
+    vTaskDelay(2);  // let a line already being written by the control task finish
+    if (command == 't' || command == 'T') {
       printTelemetry(g_runtime.metrics().snapshot());
-    } else if (line_len == 0 && command == 'h') {
+    } else if (command == 'h') {
       printHop();
-    } else if (line_len == 0 && command == 'H') {
+    } else if (command == 'H') {
       dumpHopRing();
-    } else if (pr1::runtime::FixedLinkRuntime::kAdaptive) {
-      // Control lines exist only in Gate C builds; Gate B ignores stray bytes as before.
-      if (command == '\n' || command == '\r') {
-        if (line_len > 0) {
-          line[line_len] = '\0';
-          g_runtime.onControlLine(line);
-          line_len = 0;
-        }
-      } else if (line_len + 1 < sizeof(line)) {
-        line[line_len++] = command;
-      }
     }
+    Serial.flush();
+    g_dumping.store(false);
   }
 #else
   delay(1000);

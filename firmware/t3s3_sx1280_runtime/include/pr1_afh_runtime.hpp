@@ -80,6 +80,16 @@ enum class HopEventKind : std::uint8_t {
   ResyncEnter = 6,
   Lock = 7,
   RxJump = 8,  // good packet while locked, but later than the expected frame (seq = frames skipped)
+  // Gate C1 timing diagnostics (seq = microseconds, saturated at 65535).
+  TxLate = 9,    // TX started > PR1_DIAG_TX_LATE_US after its gap ended
+  TxSlow = 10,   // blocking transmit took > PR1_DIAG_TX_SLOW_US longer than the run minimum
+  RxLate = 11,   // RX-done arrived > PR1_DIAG_RX_LATE_US after the frame grid (checked in idle)
+  RxSlowReady = 12,  // IRQ -> re-armed took > PR1_DIAG_RX_READY_US (checked in idle)
+  // Breakdown of the same slow frame: t_us = IRQ->SPI start, logical = SPI read,
+  // seq = SPI end->re-arm start (decode + follower), rssi = re-arm duration (all us).
+  RxSlowBreakdown = 13,
+  IdleOverlap = 14,  // an RX IRQ arrived during idle work: seq = work us, ch = work kind
+  ColdWork = 15,     // diagnostic only: cold (rarely run) code executed in idle, seq = us
 };
 
 struct HopEvent {

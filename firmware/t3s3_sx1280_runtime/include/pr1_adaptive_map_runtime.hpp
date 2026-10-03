@@ -12,6 +12,7 @@
 #include "../../common/pr1_afh.hpp"
 #include "../../common/pr1_channel_quality.hpp"
 #include "../../common/pr1_instrumentation.hpp"
+#include "../../common/pr1_placement.hpp"
 
 #ifndef PR1_ENABLE_ADAPTIVE_MAP
 #define PR1_ENABLE_ADAPTIVE_MAP 0
@@ -114,7 +115,7 @@ struct Telemetry {
   std::uint32_t tx_rejects = 0;
   std::uint8_t min_active_seen = afh::kChannelCount;
   std::uint32_t emit_dropped = 0;
-  instrumentation::DurationWindow<64> ctrl_us{};  // control-line handling time
+  instrumentation::DurationWindow<256> ctrl_us{};  // control-record handling time (radio core)
 
   // Separate small activation log so TX/RX agreement can be checked even if the
   // (RX-heavy) event list overflows.
@@ -126,7 +127,7 @@ struct Telemetry {
   static constexpr std::size_t kActivations = 32;
   std::array<Activation, kActivations> activation_log{};
   std::uint32_t activation_count = 0;
-  void logActivation(std::uint16_t version, std::uint64_t activation, std::uint64_t applied_at) {
+  PR1_IRAM void logActivation(std::uint16_t version, std::uint64_t activation, std::uint64_t applied_at) {
     if (activation_count < kActivations) {
       activation_log[activation_count] = {version, static_cast<std::uint32_t>(activation),
                                           static_cast<std::uint32_t>(applied_at)};
@@ -134,7 +135,7 @@ struct Telemetry {
     ++activation_count;
   }
 
-  void record(const Event& e) {
+  PR1_IRAM void record(const Event& e) {
     if (events_written < kEvents) events[events_written] = e;
     ++events_written;
   }
@@ -145,13 +146,13 @@ struct OutcomeQueue {
   std::array<Outcome, N> items{};
   std::uint32_t head = 0;
   std::uint32_t tail = 0;
-  bool push(const Outcome& o) {
+  PR1_IRAM bool push(const Outcome& o) {
     if (head - tail >= N) return false;
     items[head % N] = o;
     ++head;
     return true;
   }
-  bool pop(Outcome* out) {
+  PR1_IRAM bool pop(Outcome* out) {
     if (tail == head) return false;
     *out = items[tail % N];
     ++tail;
