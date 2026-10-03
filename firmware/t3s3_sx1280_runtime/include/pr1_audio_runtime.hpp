@@ -38,7 +38,12 @@ void task(void*) {
     i2s_set_pin(I2S_NUM_1,&p)!=ESP_OK || i2s_zero_dma_buffer(I2S_NUM_1)!=ESP_OK) {
    failed.store(true); ready.store(true); vTaskDelete(nullptr); return;
  }
- digitalWrite(38,HIGH); ready.store(true);
+#if PR1_AUDIO_AMP_OFF
+ digitalWrite(38,LOW);  // diagnostic: I2S runs, amplifier stays shut down
+#else
+ digitalWrite(38,HIGH);
+#endif
+ ready.store(true);
  static pr1::audio::Jitter jitter;
  static std::int16_t pcm[188], stereo[376];
  for(;;) {
