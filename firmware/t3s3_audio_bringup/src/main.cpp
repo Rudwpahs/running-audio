@@ -16,7 +16,7 @@
 #include <cmath>
 #include <cstdint>
 
-#include "pr1_ima_adpcm.hpp"
+#include "../../common/pr1_ima_adpcm.hpp"
 
 #if PR1_AUDIO_MODE_CLIP
 // data/clip.adpcm embedded by board_build.embed_files.

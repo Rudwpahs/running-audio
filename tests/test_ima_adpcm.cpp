@@ -5,7 +5,7 @@
 #include <cstdio>
 #include <vector>
 
-#include "../firmware/t3s3_audio_bringup/include/pr1_ima_adpcm.hpp"
+#include "../firmware/common/pr1_ima_adpcm.hpp"
 
 using namespace pr1::audio;
 
