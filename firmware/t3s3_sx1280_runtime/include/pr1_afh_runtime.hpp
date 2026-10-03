@@ -33,6 +33,19 @@
 #define PR1_AFH_INITIAL_TIMEOUT_US 20000
 #endif
 
+// Diagnostic: TX busy-wait after the frequency write, before transmit (us).
+#ifndef PR1_AFH_TX_SETTLE_US
+#define PR1_AFH_TX_SETTLE_US 0
+#endif
+
+// Diagnostic: hop logically but always program this channel index (-1 = off).
+#ifndef PR1_AFH_DIAG_FIXED_CHANNEL
+#define PR1_AFH_DIAG_FIXED_CHANNEL -1
+#endif
+#if PR1_AFH_DIAG_FIXED_CHANNEL >= 40
+#error "PR1_AFH_DIAG_FIXED_CHANNEL must be -1 or 0..39"
+#endif
+
 // Diagnostic: hop logically but always program 2404 MHz (see retune()).
 #ifndef PR1_AFH_DIAG_SAME_FREQ
 #define PR1_AFH_DIAG_SAME_FREQ 0

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "run_id": "A-gap-150us-10000",
-  "created_utc": "2026-10-02T23:53:55.922716Z",
+  "created_utc": "2026-10-03T00:48:18.895951Z",
   "gate": "A",
   "gap_us": 150,
   "target_packets": 10000,
@@ -16,6 +16,7 @@
     "sx1280_spi_hz": 2000000,
     "adaptive_layers": false
   },
+  "rx_variant": null,
   "feature_flags": {
     "PR1_ENABLE_AFH": 0,
     "afh_map": null,
@@ -30,13 +31,13 @@
       "key": "A:C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\rx\\rf_rx_compile",
       "image": "runs\\pr1-board-test\\build\\rx\\rf_rx_compile",
       "sha256": "3cfbf7c62f787298a8743fda41e71a6715c81c5f6c846c36da43a5b4fedd71a3",
-      "flashed_utc": "2026-10-02T16:06:11.234947Z"
+      "flashed_utc": "2026-10-03T00:48:14.151681Z"
     },
     "tx": {
       "key": "A:C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\tx-150us\\rf_tx_compile",
       "image": "runs\\pr1-board-test\\build\\tx-150us\\rf_tx_compile",
       "sha256": "4f990a2ba3f59ccd60787751c9a88dc7f7585078c3eb4e8498d3530ceaa02fa0",
-      "flashed_utc": "2026-10-02T16:07:37.822091Z"
+      "flashed_utc": "2026-10-03T00:48:18.895276Z"
     }
   },
   "placement": "2026-10-03 operator photo placement_20261003.jpg: RX on desk top (antenna ~vertical, iron and bottles nearby), TX on white box below (antenna vertical). Unchanged for all gates.",
@@ -45,7 +46,7 @@
     "tx_log": "tx.log"
   },
   "build_identity": {
-    "source_head_sha": "b874bdcb970378c07adbe051a4fb848b04df6bbd",
+    "source_head_sha": "1f7508da77d2011d90552ca837baf30ac9901cd5",
     "frozen_firmware_sha": "d1b7ec2b1130fd63fb0eb11fd900b0622766f14c",
     "git_dirty": true,
     "platformio_version": "unavailable: [WinError 2] \uc9c0\uc815\ub41c \ud30c\uc77c\uc744 \ucc3e\uc744 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4",

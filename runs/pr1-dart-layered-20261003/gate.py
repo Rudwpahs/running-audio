@@ -37,7 +37,9 @@ GAPS_B = [5000, 1000, 300, 150]
 RX_VARIANTS = {"Bm": "-D PR1_AFH_LOSS_MARGIN_MIN_US=1000\n    -D PR1_AFH_LOSS_MARGIN_MAX_US=1000",
                "Bs": "-D PR1_AFH_DIAG_SAME_FREQ=1"}
 # Variants that also need their own TX image (same flags on TX).
-TX_VARIANTS = {"Bs": "-D PR1_AFH_DIAG_SAME_FREQ=1"}
+TX_VARIANTS = {"Bs": "-D PR1_AFH_DIAG_SAME_FREQ=1", "Bt": "-D PR1_AFH_TX_SETTLE_US=200",
+               "Bf29": "-D PR1_AFH_DIAG_FIXED_CHANNEL=29", "Bf20": "-D PR1_AFH_DIAG_FIXED_CHANNEL=20"}
+RX_VARIANTS.update({"Bf29": "-D PR1_AFH_DIAG_FIXED_CHANNEL=29", "Bf20": "-D PR1_AFH_DIAG_FIXED_CHANNEL=20"})  # Bt: TX settle diag; RX uses the plain B-rx image
 PLACEMENT = ("2026-10-03 operator photo placement_20261003.jpg: RX on desk top (antenna ~vertical, iron and "
              "bottles nearby), TX on white box below (antenna vertical). Unchanged for all gates.")
 
@@ -259,8 +261,11 @@ def write_summary(run_dir: Path, result: dict, hop: dict) -> None:
 def cmd_summary() -> None:
     rows = []
     for res in sorted(HERE.glob("gate-*/*/result.json")):
-        r = json.loads(res.read_text()); m = r["metrics"]; h = r.get("hop", {})
-        rows.append({"gate": res.parent.parent.name[-1], "run_id": r["run_id"], "gap_us": r["gap_us"],
+        if "partial" in res.parts: continue
+        r = json.loads(res.read_text())
+        if "metrics" not in r: continue
+        m = r["metrics"]; h = r.get("hop", {})
+        rows.append({"gate": res.parent.parent.name.replace("gate-", ""), "dir": res.parent.name, "run_id": r["run_id"], "gap_us": r["gap_us"],
                      "packets": r["packet_count"], "missing": m["missing"], "loss_pct": round(100 * r["derived"]["loss_rate"], 4),
                      "crc_good": m["crc_good"], "crc_bad": m["crc_bad"], "rssi_dbm": m["rssi_dbm"],
                      "queue_depth": m["queue_depth"], "max_queue_depth": m["max_queue_depth"],

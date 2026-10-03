@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "run_id": "B-gap-150us-10000",
-  "created_utc": "2026-10-03T00:53:37.508579Z",
-  "gate": "B",
+  "run_id": "Bt-gap-150us-10000",
+  "created_utc": "2026-10-03T00:52:47.321348Z",
+  "gate": "Bt",
   "gap_us": 150,
   "target_packets": 10000,
   "phase": "revalidate",
@@ -28,16 +28,16 @@
   },
   "images": {
     "rx": {
-      "key": "B:C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-dart-layered-20261003\\build\\B-rx\\rf_rx_compile",
+      "key": "Bt:C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-dart-layered-20261003\\build\\B-rx\\rf_rx_compile",
       "image": "runs\\pr1-dart-layered-20261003\\build\\B-rx\\rf_rx_compile",
       "sha256": "e96de1f35afd654225fbaa9da39a0cc266b03c6cf069a0dded5df6a283b983af",
-      "flashed_utc": "2026-10-03T00:53:32.679660Z"
+      "flashed_utc": "2026-10-03T00:52:42.553158Z"
     },
     "tx": {
-      "key": "B:C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-dart-layered-20261003\\build\\B-tx-150us\\rf_tx_compile",
-      "image": "runs\\pr1-dart-layered-20261003\\build\\B-tx-150us\\rf_tx_compile",
-      "sha256": "0f6b84c871d2db0031b13280137582f925d40b803d3e21e12d46f01446263331",
-      "flashed_utc": "2026-10-03T00:53:37.507579Z"
+      "key": "Bt:C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-dart-layered-20261003\\build\\Bt-tx-150us\\rf_tx_compile",
+      "image": "runs\\pr1-dart-layered-20261003\\build\\Bt-tx-150us\\rf_tx_compile",
+      "sha256": "ac686b14b8cc1073d93767be16db1fb05f5fa2ae5480ca975dedbb2cc4c5192a",
+      "flashed_utc": "2026-10-03T00:52:47.321348Z"
     }
   },
   "placement": "2026-10-03 operator photo placement_20261003.jpg: RX on desk top (antenna ~vertical, iron and bottles nearby), TX on white box below (antenna vertical). Unchanged for all gates.",

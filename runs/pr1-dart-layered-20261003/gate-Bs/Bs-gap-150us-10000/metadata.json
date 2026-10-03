@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "run_id": "B-gap-150us-10000",
-  "created_utc": "2026-10-03T00:53:37.508579Z",
-  "gate": "B",
+  "run_id": "Bs-gap-150us-10000",
+  "created_utc": "2026-10-03T00:47:30.829174Z",
+  "gate": "Bs",
   "gap_us": 150,
   "target_packets": 10000,
   "phase": "revalidate",
@@ -16,7 +16,7 @@
     "sx1280_spi_hz": 2000000,
     "adaptive_layers": false
   },
-  "rx_variant": null,
+  "rx_variant": "-D PR1_AFH_DIAG_SAME_FREQ=1",
   "feature_flags": {
     "PR1_ENABLE_AFH": 1,
     "afh_map": "static all-40",
@@ -28,16 +28,16 @@
   },
   "images": {
     "rx": {
-      "key": "B:C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-dart-layered-20261003\\build\\B-rx\\rf_rx_compile",
-      "image": "runs\\pr1-dart-layered-20261003\\build\\B-rx\\rf_rx_compile",
-      "sha256": "e96de1f35afd654225fbaa9da39a0cc266b03c6cf069a0dded5df6a283b983af",
-      "flashed_utc": "2026-10-03T00:53:32.679660Z"
+      "key": "Bs:C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-dart-layered-20261003\\build\\Bs-rx\\rf_rx_compile",
+      "image": "runs\\pr1-dart-layered-20261003\\build\\Bs-rx\\rf_rx_compile",
+      "sha256": "61cb918e0cda0affb825bb86c8b15e7585ef55c221bfca06502a71f92fe6e289",
+      "flashed_utc": "2026-10-03T00:47:26.033658Z"
     },
     "tx": {
-      "key": "B:C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-dart-layered-20261003\\build\\B-tx-150us\\rf_tx_compile",
-      "image": "runs\\pr1-dart-layered-20261003\\build\\B-tx-150us\\rf_tx_compile",
-      "sha256": "0f6b84c871d2db0031b13280137582f925d40b803d3e21e12d46f01446263331",
-      "flashed_utc": "2026-10-03T00:53:37.507579Z"
+      "key": "Bs:C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-dart-layered-20261003\\build\\Bs-tx-150us\\rf_tx_compile",
+      "image": "runs\\pr1-dart-layered-20261003\\build\\Bs-tx-150us\\rf_tx_compile",
+      "sha256": "4671047b5cea224ec5761123ee0983d2777e5896de928a603483b2955d6d475b",
+      "flashed_utc": "2026-10-03T00:47:30.828169Z"
     }
   },
   "placement": "2026-10-03 operator photo placement_20261003.jpg: RX on desk top (antenna ~vertical, iron and bottles nearby), TX on white box below (antenna vertical). Unchanged for all gates.",

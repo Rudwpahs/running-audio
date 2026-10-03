@@ -111,6 +111,12 @@ class FixedLinkRuntime {
         next_tx_allowed_us_ = radio_.nowMicros() + profile_.tx_gap_us;
         return;
       }
+      if constexpr (PR1_AFH_TX_SETTLE_US > 0) {
+        // Diagnostic: idle after the frequency write before the blocking transmit.
+        const std::uint32_t settle_start_us = radio_.nowMicros();
+        while (radio_.nowMicros() - settle_start_us < static_cast<std::uint32_t>(PR1_AFH_TX_SETTLE_US)) {
+        }
+      }
     }
 
     metrics_.onTxQueued(radio_.nowMicros(), tx_sequence_);
@@ -212,10 +218,12 @@ class FixedLinkRuntime {
 
   bool retune(std::uint8_t channel) {
     const std::uint32_t start_us = radio_.nowMicros();
-#if PR1_AFH_DIAG_SAME_FREQ
+#if PR1_AFH_DIAG_SAME_FREQ || (PR1_AFH_DIAG_FIXED_CHANNEL >= 0)
     // Diagnostic only: run the full hop path (schedule + SetRfFrequency) but always
-    // program channel 0, separating "retune action" from "frequency diversity".
-    const bool ok = radio_.setFrequencyHz(afh::frequencyHz(0U));
+    // program one fixed channel, separating "retune action" from "which frequency".
+    constexpr std::uint8_t kDiagChannel =
+        PR1_AFH_DIAG_FIXED_CHANNEL >= 0 ? static_cast<std::uint8_t>(PR1_AFH_DIAG_FIXED_CHANNEL) : 0U;
+    const bool ok = radio_.setFrequencyHz(afh::frequencyHz(kDiagChannel));
 #else
     const bool ok = radio_.setFrequencyHz(afh::frequencyHz(channel));
 #endif
@@ -368,10 +376,13 @@ class FixedLinkRuntime {
                    afhrt::HopEventKind::ResyncEnter, 0});
       retune(park);
     } else {
-      const std::uint8_t next = timedChannelFor(hop_.logical);
-      hop_.record({now_us, static_cast<std::uint32_t>(hop_.logical),
-                   static_cast<std::uint16_t>(frames), next, afhrt::HopEventKind::TimeoutAdvance, 0});
-      retune(next);
+      // Event channel = the first frame that was missed (not the next channel), so
+      // per-channel loss can be binned directly from the log.
+      const std::uint64_t first_missed = hop_.logical - frames;
+      hop_.record({now_us, static_cast<std::uint32_t>(first_missed),
+                   static_cast<std::uint16_t>(frames), scheduler_.channelForSequence(first_missed),
+                   afhrt::HopEventKind::TimeoutAdvance, 0});
+      retune(timedChannelFor(hop_.logical));
     }
     if (!radio_.startReceive()) initialized_ = false;
   }

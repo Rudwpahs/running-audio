@@ -38,7 +38,7 @@ tx_gap_us=150
 packet_bytes=116
 adaptive_layers=off
 PR1_RUNTIME_LIVE_READY
-PR1T v=1 t_us=31202356 field=device_state value=2
-PR1T v=1 t_us=31202356 field=scheduler_misses value=0
-PR1T v=1 t_us=31202356 field=trace_overwrites value=31693
-PR1T v=1 t_us=31202356 field=capability_mask value=12
+PR1T v=1 t_us=31200234 field=device_state value=2
+PR1T v=1 t_us=31200234 field=scheduler_misses value=0
+PR1T v=1 t_us=31200234 field=trace_overwrites value=31702
+PR1T v=1 t_us=31200234 field=capability_mask value=12
