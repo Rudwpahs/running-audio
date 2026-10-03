@@ -1,0 +1,26 @@
+# board RX COM3 MAC e8:06:90:96:83:38 firmware.bin sha256 2857baa52189d327cfd89867e9390d0bff4145a3cbb9207ec7d03a14151f842c
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0x15 (USB_UART_CHIP_RESET),boot:0x18 (SPI_FAST_FLASH_BOOT)
+Saved PC:0x42024c1a
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce3808,len:0x44c
+load:0x403c9700,len:0xbd8
+load:0x403cc700,len:0x2a80
+entry 0x403c98d0
+PR1_AUDIO_BRINGUP
+audio_mode=tone tone_hz=440 amplitude=4096 sample_rate=32000 bits=16 channels=RIGHT_LEFT(mono dup) port=I2S1 bclk=40 lrclk=41 dout=39 sd=38 dma=8x160 apll=0 rf=off
+[AUDIO] MAX98357A I2S1 install=ESP_OK set_pin=ESP_OK zero=ESP_OK core=0
+commands: m = mute/unmute, s = stats
+[AUDIO] t_ms=2004 frames=43680 expected=64128 short_writes=0 errors=0 max_write_us=4991 playing=1
+[AUDIO] t_ms=4004 frames=107680 expected=128128 short_writes=0 errors=0 max_write_us=4991 playing=1
+[AUDIO] t_ms=6004 frames=171680 expected=192128 short_writes=0 errors=0 max_write_us=4991 playing=1
+[AUDIO] t_ms=8004 frames=235680 expected=256128 short_writes=0 errors=0 max_write_us=4991 playing=1
+[AUDIO] t_ms=10004 frames=299680 expected=320128 short_writes=0 errors=0 max_write_us=4991 playing=1
+[AUDIO] t_ms=12004 frames=363680 expected=384128 short_writes=0 errors=0 max_write_us=4991 playing=1
+[AUDIO] muted (zeros still streamed)
+[AUDIO] t_ms=14004 frames=427680 expected=448128 short_writes=0 errors=0 max_write_us=4991 playing=0
+[AUDIO] tone on
+[AUDIO] t_ms=16004 frames=491680 expected=512128 short_writes=0 errors=0 max_write_us=4991 playing=1
+[AUDIO] t_ms=18004 frames=555680 expected=576128 short_writes=0 errors=0 max_write_us=4991 playing=1
