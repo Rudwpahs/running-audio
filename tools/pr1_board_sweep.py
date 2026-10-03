@@ -165,7 +165,7 @@ def _validate_live_profile(
     _expect_int(meta, "coding_rate", expected["coding_rate"], source)
     _expect_int(meta, "output_dbm", expected["output_dbm"], source)
     _expect_int(meta, "packet_bytes", expected["packet_bytes"], source)
-    _expect_text(meta, "adaptive_layers", "off", source)
+    _expect_text(meta, "adaptive_layers", expected.get("adaptive_layers_text", "off"), source)
     if expected_gap_us is not None:
         _expect_int(meta, "tx_gap_us", expected_gap_us, source)
 

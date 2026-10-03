@@ -39,7 +39,11 @@ RX_VARIANTS = {"Bm": "-D PR1_AFH_LOSS_MARGIN_MIN_US=1000\n    -D PR1_AFH_LOSS_MA
 # Variants that also need their own TX image (same flags on TX).
 TX_VARIANTS = {"Bs": "-D PR1_AFH_DIAG_SAME_FREQ=1", "Bt": "-D PR1_AFH_TX_SETTLE_US=200",
                "Bf29": "-D PR1_AFH_DIAG_FIXED_CHANNEL=29", "Bf20": "-D PR1_AFH_DIAG_FIXED_CHANNEL=20"}
-RX_VARIANTS.update({"Bf29": "-D PR1_AFH_DIAG_FIXED_CHANNEL=29", "Bf20": "-D PR1_AFH_DIAG_FIXED_CHANNEL=20"})  # Bt: TX settle diag; RX uses the plain B-rx image
+RX_VARIANTS.update({"Bf29": "-D PR1_AFH_DIAG_FIXED_CHANNEL=29", "Bf20": "-D PR1_AFH_DIAG_FIXED_CHANNEL=20"})
+# Gate C: adaptive channel map ON (both roles); everything else identical to final Gate B.
+RX_VARIANTS["C"] = "-D PR1_ENABLE_ADAPTIVE_MAP=1"
+TX_VARIANTS["C"] = "-D PR1_ENABLE_ADAPTIVE_MAP=1"
+C_PROFILE = {"adaptive_layers_text": "channel_map"}  # Bt: TX settle diag; RX uses the plain B-rx image
 PLACEMENT = ("2026-10-03 operator photo placement_20261003.jpg: RX on desk top (antenna ~vertical, iron and "
              "bottles nearby), TX on white box below (antenna vertical). Unchanged for all gates.")
 
@@ -172,6 +176,139 @@ def parse_hop(lines: list[str]) -> dict:
     return out
 
 
+def make_relay(rx, tx, log_path: Path, stats: dict):
+    """Gate C bench control plane (two-phase), run as capture's sleep_fn.
+
+    RX PR1PROP -> host "MAP/PRB" -> TX validates (PR1ACK) -> host "ACK" -> RX commits
+    (PR1COMMIT) -> host "COMMIT" (RX ok) or "ABORT" (RX not ok) -> TX stages (PR1STAGED).
+    Any id that ends staged on only one side is a map/probe divergence and fails the run.
+    Every line is logged with host time to ctrl.log.
+    """
+    def relay_sleep(seconds: float) -> None:
+        end = time.monotonic() + seconds
+        rx_buf, tx_buf = bytearray(), bytearray()
+        old_rx, old_tx = rx.timeout, tx.timeout
+        rx.timeout, tx.timeout = 0.005, 0.005
+        ids = stats["ids"]
+        try:
+            with log_path.open("a", encoding="utf-8", buffering=1) as fh:
+                def log(src: str, text: str) -> None:
+                    fh.write(f"{time.monotonic():.4f} {src} {text}\n")
+
+                def kvs(text: str) -> dict:
+                    return dict(t.split("=", 1) for t in text.split()[1:] if "=" in t)
+
+                def tx_wait(prefix: str, ident: str, timeout: float = 0.5):
+                    t0 = time.monotonic()
+                    while time.monotonic() - t0 < timeout:
+                        tl = ctl._read_complete_line(tx, tx_buf)
+                        if tl:
+                            log("TX", tl)
+                            if tl.startswith(prefix) and kvs(tl).get("id") == ident:
+                                return tl, round(1000 * (time.monotonic() - t0), 2)
+                    return None, round(1000 * (time.monotonic() - t0), 2)
+
+                def send(dev, name: str, text: str) -> None:
+                    dev.write((text + "\n").encode()); dev.flush()
+                    log(name, text)
+
+                while time.monotonic() < end:
+                    tline = ctl._read_complete_line(tx, tx_buf)
+                    if tline:
+                        log("TX", tline)
+                    line = ctl._read_complete_line(rx, rx_buf)
+                    if not line:
+                        continue
+                    log("RX", line)
+                    try:
+                        kv = kvs(line)
+                        if line.startswith("PR1PROP"):
+                            ident = kv["id"]
+                            stats["proposals"] += 1
+                            if kv.get("type") == "map":
+                                cmd = (f"MAP id={ident} v={kv['v']} old={kv['old']} oldbits={kv['oldbits']} "
+                                       f"bits={kv['bits']} act={kv['act']}")
+                            else:
+                                cmd = f"PRB id={ident} ch={kv['ch']} at={kv['at']} v={kv['v']}"
+                            ids[ident] = {"type": kv.get("type"), "prop": line, "tx_valid": None,
+                                          "rx_commit": None, "tx_staged": None}
+                            send(tx, "HOST->TX", cmd)
+                            ack, ms = tx_wait("PR1ACK", ident)
+                            stats["relay_ms"].append(ms)
+                            ok = 1 if ack and kvs(ack).get("ok") == "1" else 0
+                            ids[ident]["tx_valid"] = ok
+                            if not ack:
+                                stats["tx_no_ack"] += 1
+                            send(rx, "HOST->RX", f"ACK id={ident} ok={ok}")
+                        elif line.startswith("PR1COMMIT"):
+                            ident = kv.get("id")
+                            stats["commits"] += 1
+                            entry = ids.setdefault(ident, {"type": None, "prop": None, "tx_valid": None,
+                                                           "rx_commit": None, "tx_staged": None})
+                            entry["rx_commit"] = kv.get("ok") == "1"
+                            if entry["rx_commit"]:
+                                send(tx, "HOST->TX", f"COMMIT id={ident}")
+                                st, _ = tx_wait("PR1STAGED", ident)
+                                entry["tx_staged"] = bool(st and kvs(st).get("ok") == "1")
+                                if not entry["tx_staged"]:
+                                    stats["divergence"] += 1  # RX staged, TX did not
+                            else:
+                                send(tx, "HOST->TX", f"ABORT id={ident}")
+                                tx_wait("PR1ABORTED", ident, 0.3)
+                                entry["tx_staged"] = False
+                    except (KeyError, ValueError) as exc:
+                        stats["bad_lines"] += 1
+                        log("HOST", f"unparsed line ({exc!r})")
+        finally:
+            rx.timeout, tx.timeout = old_rx, old_tx
+    return relay_sleep
+
+
+def _kv_line(ln: str) -> dict:
+    out = {}
+    for k, _, v in (t.partition("=") for t in ln.split()[1:]):
+        out[k] = v if k == "bits" else (int(v) if v.isdigit() else v)
+    return out
+
+
+def parse_quality(text: str) -> dict:
+    out: dict = {"channels": [], "events": [], "activations": []}
+    for ln in text.splitlines():
+        if ln.startswith("PR1QS "):
+            out["summary"] = _kv_line(ln)
+        elif ln.startswith("PR1QC "):
+            out["channels"].append(_kv_line(ln))
+        elif ln.startswith("PR1QE "):
+            out["events"].append(_kv_line(ln))
+        elif ln.startswith("PR1QA "):
+            out["activations"].append(_kv_line(ln))
+    return out
+
+
+QE_KIND = {0: "proposed", 1: "committed", 2: "commit_late", 3: "expired", 4: "activated", 5: "tx_staged",
+           6: "tx_rejected", 7: "suspect", 8: "excluded", 9: "probe_result", 10: "reincluded", 11: "recovered"}
+
+
+def map_agreement(rxq: dict, txq: dict, relay: dict) -> dict:
+    rx_act = [(a["v"], a["activation"]) for a in rxq["activations"]]
+    tx_act = [(a["v"], a["activation"]) for a in txq["activations"]]
+    rs, ts = rxq.get("summary", {}), txq.get("summary", {})
+    one_sided = [i for i, e in relay["ids"].items() if bool(e.get("rx_commit")) != bool(e.get("tx_staged"))]
+    out = {
+        "rx_activations": rx_act, "tx_activations": tx_act,
+        "activation_lists_equal": rx_act == tx_act,
+        "final_version_rx": rs.get("map_version"), "final_version_tx": ts.get("map_version"),
+        "final_bits_rx": rs.get("bits"), "final_bits_tx": ts.get("bits"),
+        "pending_rx": [rs.get("pending"), rs.get("pending_v"), rs.get("pending_act")],
+        "pending_tx": [ts.get("pending"), ts.get("pending_v"), ts.get("pending_act")],
+        "final_map_equal": rs.get("map_version") == ts.get("map_version") and rs.get("bits") == ts.get("bits"),
+        "one_sided_ids": one_sided,
+    }
+    out["version_mismatch"] = (not out["activation_lists_equal"]) or (not out["final_map_equal"]) or bool(one_sided) \
+        or relay["divergence"] > 0
+    return out
+
+
 def cmd_run(gate: str, gap: int, target: int) -> None:
     run_id = f"{gate}-gap-{gap}us-{target}"
     run_dir = HERE / f"gate-{gate}" / run_id
@@ -189,7 +326,8 @@ def cmd_run(gate: str, gap: int, target: int) -> None:
         "frozen_baseline": dict(FROZEN_BASELINE),
         "rx_variant": RX_VARIANTS.get(gate),
         "feature_flags": {"PR1_ENABLE_AFH": 1 if gate != "A" else 0, "afh_map": "static all-40" if gate != "A" else None,
-                          "channel_quality": 0, "fec": 0, "arq": 0, "phy_ladder": 0, "controller": 0},
+                          "channel_quality": 1 if gate == "C" else 0, "fec": 0, "arq": 0, "phy_ladder": 0,
+                          "controller": 0, "control_plane": "usb_host_relay" if gate == "C" else None},
         "images": {"rx": rx_img, "tx": tx_img}, "placement": PLACEMENT,
         "files": {"rx_log": "rx.log", "tx_log": "tx.log"},
         "build_identity": ctl.collect_build_identity(PROJECT, source_root=REPO),
@@ -207,9 +345,13 @@ def cmd_run(gate: str, gap: int, target: int) -> None:
     try:
         ctl._drain_stale_input(tx); ctl._pulse_reset(tx)
         ctl._drain_stale_input(rx); ctl._pulse_reset(rx)
+        relay_stats = {"proposals": 0, "commits": 0, "divergence": 0, "tx_no_ack": 0, "bad_lines": 0, "relay_ms": [], "ids": {}}
+        extra = {}
+        if gate == "C":
+            extra = {"sleep_fn": make_relay(rx, tx, run_dir / "ctrl.log", relay_stats), "profile": C_PROFILE}
         result = ctl.capture_run_from_serial(meta, run_dir, rx, tx,
                                              initial_wait_s=1.08 * target * period_s + 1.0,
-                                             settle_s=0.0, max_polls=100, poll_progress=False)
+                                             settle_s=0.0, max_polls=100, poll_progress=False, **extra)
         if gate != "A":
             with (run_dir / "rx.log").open("a", encoding="utf-8") as rfh, (run_dir / "tx.log").open("a", encoding="utf-8") as tfh:
                 hop["rx"] = parse_hop(pull(rx, rfh, b"h", None))
@@ -224,6 +366,15 @@ def cmd_run(gate: str, gap: int, target: int) -> None:
                 hop[role]["boot_map_version"] = meta_kv.get("afh_map_version")
             hop["schedule_fp_match"] = hop["rx"].get("boot_schedule_fp") == hop["tx"].get("boot_schedule_fp")
             result["hop"] = hop
+            if gate == "C":
+                rxq = parse_quality((run_dir / "rx.log").read_text(encoding="utf-8", errors="replace"))
+                txq = parse_quality((run_dir / "tx.log").read_text(encoding="utf-8", errors="replace"))
+                agree = map_agreement(rxq, txq, relay_stats)
+                kinds = {}
+                for e in rxq["events"]:
+                    kinds[QE_KIND.get(e["kind"], e["kind"])] = kinds.get(QE_KIND.get(e["kind"], e["kind"]), 0) + 1
+                result["quality"] = {"rx": rxq, "tx_summary": txq.get("summary"), "tx_events": txq["events"],
+                                     "map_agreement": agree, "relay": relay_stats, "rx_event_counts": kinds}
             (run_dir / "result.json").write_text(json.dumps(result, indent=2), encoding="utf-8")
     finally:
         tx.close(); rx.close()
@@ -238,6 +389,14 @@ def cmd_run(gate: str, gap: int, target: int) -> None:
                  f"timeouts={r.get('timeout_advances')} resync={r.get('resync_entries')} locks={r.get('locks')} "
                  f"rx_retune_p99={r.get('retune_us_p99')} tx_retune_p99={t.get('retune_us_p99')} "
                  f"period_est={r.get('period_est_us')}")
+    if "quality" in result:
+        q = result["quality"]; s = q["rx"].get("summary", {}); a = q["map_agreement"]
+        line += (f" | C: map_v={s.get('map_version')} active={s.get('active')} min_active={s.get('min_active_seen')} "
+                 f"events={q['rx_event_counts']} map_equal={a['final_map_equal']} act_lists_equal={a['activation_lists_equal']} "
+                 f"version_mismatch={a['version_mismatch']} emit_dropped={s.get('emit_dropped')} "
+                 f"relay={ {k: v for k, v in q['relay'].items() if k not in ('relay_ms', 'ids')} }")
+        if a["version_mismatch"]:
+            line += " | FAIL: TX/RX map divergence (evidence kept in ctrl.log / result.json)"
     print(line, flush=True)
     write_summary(run_dir, result, hop)
 

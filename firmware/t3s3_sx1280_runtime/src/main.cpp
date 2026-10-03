@@ -1,5 +1,7 @@
 #include <Arduino.h>
 
+#include <cstring>
+
 #include "pr1_runtime_config.hpp"
 #include "pr1_safe_telemetry.hpp"
 
@@ -61,6 +63,7 @@ pr1::runtime::FixedLinkRuntime g_runtime(
 bool g_live_ready = false;
 
 void printAfhProfile();
+void printQuality();
 
 void printLiveProfile() {
   const auto& profile = pr1::runtime::kFixedFlrcProfile;
@@ -71,8 +74,19 @@ void printLiveProfile() {
   Serial.printf("output_dbm=%d\n", static_cast<int>(profile.output_dbm));
   Serial.printf("tx_gap_us=%lu\n", static_cast<unsigned long>(profile.tx_gap_us));
   Serial.printf("packet_bytes=%u\n", static_cast<unsigned>(pr1::kDartPacketBytes));
-  Serial.println("adaptive_layers=off");
+  // Gate C turns on exactly one adaptive layer: the AFH channel map.
+  Serial.println(pr1::runtime::FixedLinkRuntime::kAdaptive ? "adaptive_layers=channel_map"
+                                                           : "adaptive_layers=off");
   printAfhProfile();
+}
+
+// Non-blocking: if the USB CDC buffer cannot take the whole line, drop it (the
+// runtime counts drops) instead of stalling the radio loop.
+bool emitLine(const char* line) {
+  const int needed = static_cast<int>(std::strlen(line)) + 2;
+  if (Serial.availableForWrite() < needed) return false;
+  Serial.println(line);
+  return true;
 }
 
 // Gate B static AFH identity. The schedule fingerprint lets the host check that
@@ -92,6 +106,19 @@ void printAfhProfile() {
                   static_cast<unsigned>(PR1_AFH_RESYNC_AFTER_MISSES));
     Serial.printf("afh_rendezvous_first=%u\n",
                   static_cast<unsigned>(scheduler.rendezvousChannel(0)));
+    Serial.printf("adaptive_map=%u\n", Runtime::kAdaptive ? 1U : 0U);
+    if constexpr (Runtime::kAdaptive) {
+      const auto& q = g_runtime.estimator().config();
+      Serial.printf("map_lead_frames=%u\n", static_cast<unsigned>(PR1_MAP_LEAD_FRAMES));
+      Serial.printf("map_guard_frames=%u\n", static_cast<unsigned>(PR1_MAP_GUARD_FRAMES));
+      Serial.printf(
+          "quality_cfg=fast_shift:%u,slow_shift:%u,suspect_q15:%u,exclude_q15:%u,recover_q15:%u,"
+          "suspect_losses:%u,exclude_losses:%u,recover_successes:%u,probe_ms:%lu-%lu,min_active:%u\n",
+          q.alpha_fast_shift, q.alpha_slow_shift, q.suspect_pdr_q15, q.exclude_pdr_q15,
+          q.recover_pdr_q15, q.suspect_losses, q.exclude_losses, q.recover_successes,
+          static_cast<unsigned long>(q.initial_probe_ms), static_cast<unsigned long>(q.max_probe_ms),
+          q.minimum_active_channels);
+    }
     Serial.print("afh_schedule_fp=");
     for (unsigned i = 0; i < 48; ++i) {
       Serial.printf(i == 0 ? "%u" : ",%u", static_cast<unsigned>(scheduler.channelForSequence(i)));
@@ -138,8 +165,64 @@ void printHop() {
       Serial.printf(c == 0 ? "%lu" : ",%lu", static_cast<unsigned long>(h.channel_crc[c]));
     }
     Serial.println();
+    if constexpr (Runtime::kAdaptive) printQuality();
   } else {
     Serial.println("PR1H afh_enabled=0");
+  }
+}
+
+// Gate C dump (end of run only): summary, per-channel estimator state, map/probe events.
+void printQuality() {
+  using Runtime = pr1::runtime::FixedLinkRuntime;
+  if constexpr (Runtime::kAdaptive) {
+    const auto& m = g_runtime.mapTelemetry();
+    const auto& est = g_runtime.estimator();
+    const auto& cur = g_runtime.hopScheduler().current();
+    const auto& pend = g_runtime.hopScheduler().pending();
+    Serial.printf(
+        "PR1QS map_version=%u active=%u bits=%010llx pending=%u pending_v=%u pending_act=%llu "
+        "min_active_seen=%u proposals=%lu commits=%lu commit_late=%lu expired=%lu activations=%lu "
+        "tx_rejects=%lu outcomes_dropped=%lu events=%lu emit_dropped=%lu activation_count=%lu\n",
+        static_cast<unsigned>(cur.map_version), static_cast<unsigned>(cur.map.activeCount()),
+        static_cast<unsigned long long>(cur.map.bits), pend.valid ? 1U : 0U,
+        static_cast<unsigned>(pend.map_version), static_cast<unsigned long long>(pend.activation_sequence),
+        static_cast<unsigned>(m.min_active_seen), static_cast<unsigned long>(m.proposals),
+        static_cast<unsigned long>(m.commits), static_cast<unsigned long>(m.commit_late),
+        static_cast<unsigned long>(m.expired), static_cast<unsigned long>(m.activations),
+        static_cast<unsigned long>(m.tx_rejects), static_cast<unsigned long>(m.outcomes_dropped),
+        static_cast<unsigned long>(m.events_written), static_cast<unsigned long>(m.emit_dropped),
+        static_cast<unsigned long>(m.activation_count));
+    for (std::uint32_t i = 0; i < m.activation_count && i < m.activation_log.size(); ++i) {
+      const auto& a = m.activation_log[i];
+      Serial.printf("PR1QA v=%u activation=%lu applied_at=%lu\n", static_cast<unsigned>(a.version),
+                    static_cast<unsigned long>(a.activation_lo), static_cast<unsigned long>(a.applied_at_lo));
+    }
+    for (unsigned c = 0; c < pr1::afh::kChannelCount; ++c) {
+      const auto& s = est.channel(static_cast<std::uint8_t>(c));
+      const auto& k = m.channels[c];
+      Serial.printf(
+          "PR1QC ch=%u mhz=%lu state=%u fast_q15=%u slow_q15=%u ok=%lu crc=%lu timeout=%lu "
+          "probe_ok=%lu probe_fail=%lu suspects=%u exclusions=%u reinclusions=%u last_excl_ms=%lu\n",
+          c, static_cast<unsigned long>(pr1::afh::frequencyHz(static_cast<std::uint8_t>(c)) / 1000000UL),
+          static_cast<unsigned>(s.state), s.pdr_fast_q15, s.pdr_slow_q15,
+          static_cast<unsigned long>(k.ok), static_cast<unsigned long>(k.crc),
+          static_cast<unsigned long>(k.timeout), static_cast<unsigned long>(k.probe_ok),
+          static_cast<unsigned long>(k.probe_fail), k.suspects, k.exclusions, k.reinclusions,
+          static_cast<unsigned long>(k.last_excluded_ms));
+    }
+    const std::uint32_t kept = m.events_written < m.events.size()
+                                   ? m.events_written
+                                   : static_cast<std::uint32_t>(m.events.size());
+    for (std::uint32_t i = 0; i < kept; ++i) {
+      const auto& e = m.events[i];
+      Serial.printf("PR1QE t_ms=%lu kind=%u logical=%lu target=%lu id=%u v=%u ch=%u value=%u bits=%010llx\n",
+                    static_cast<unsigned long>(e.t_ms), static_cast<unsigned>(e.kind),
+                    static_cast<unsigned long>(e.logical_lo), static_cast<unsigned long>(e.target_lo),
+                    static_cast<unsigned>(e.id), static_cast<unsigned>(e.version),
+                    static_cast<unsigned>(e.channel), static_cast<unsigned>(e.value),
+                    static_cast<unsigned long long>(e.bits));
+    }
+    Serial.println("PR1QE_END");
   }
 }
 
@@ -185,6 +268,7 @@ void setup() {
 
 #if PR1_RF_ENABLED
   printLiveProfile();
+  g_runtime.setLineSink(&emitLine);
   g_live_ready = g_runtime.begin();
   Serial.println(g_live_ready ? "PR1_RUNTIME_LIVE_READY" : "PR1_RUNTIME_FAULT");
 #else
@@ -205,14 +289,29 @@ void loop() {
   // Serial output is intentionally pull-based in live mode. Continuous
   // telemetry printing can itself create receiver-processing stalls and would
   // contaminate the IRQ/SPI/re-arm measurements we are trying to collect.
+  // Single-char pulls (t/h/H) are handled immediately; anything else is a
+  // newline-terminated control line for the Gate C bench control plane.
+  static char line[160];
+  static unsigned line_len = 0;
   if (Serial.available() > 0) {
     const char command = static_cast<char>(Serial.read());
-    if (command == 't' || command == 'T') {
+    if (line_len == 0 && (command == 't' || command == 'T')) {
       printTelemetry(g_runtime.metrics().snapshot());
-    } else if (command == 'h') {
+    } else if (line_len == 0 && command == 'h') {
       printHop();
-    } else if (command == 'H') {
+    } else if (line_len == 0 && command == 'H') {
       dumpHopRing();
+    } else if (pr1::runtime::FixedLinkRuntime::kAdaptive) {
+      // Control lines exist only in Gate C builds; Gate B ignores stray bytes as before.
+      if (command == '\n' || command == '\r') {
+        if (line_len > 0) {
+          line[line_len] = '\0';
+          g_runtime.onControlLine(line);
+          line_len = 0;
+        }
+      } else if (line_len + 1 < sizeof(line)) {
+        line[line_len++] = command;
+      }
     }
   }
 #else

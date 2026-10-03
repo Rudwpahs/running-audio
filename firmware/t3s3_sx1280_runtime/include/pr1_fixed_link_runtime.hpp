@@ -1,11 +1,15 @@
 #pragma once
 
 #include <array>
+#include <cinttypes>
 #include <cstddef>
 #include <cstdint>
+#include <cstdio>
+#include <cstring>
 
 #include "../../common/pr1_packet.hpp"
 #include "../../common/pr1_sequence.hpp"
+#include "pr1_adaptive_map_runtime.hpp"
 #include "pr1_afh_runtime.hpp"
 #include "pr1_live_metrics.hpp"
 #include "pr1_live_profile.hpp"
@@ -16,6 +20,8 @@ namespace pr1::runtime {
 class FixedLinkRuntime {
  public:
   static constexpr bool kAfhEnabled = afh::kEnabledByDefault;
+  static constexpr bool kAdaptive = kAfhEnabled && amap::kEnabled;
+  using LineSink = bool (*)(const char* line);
 
   FixedLinkRuntime(RadioPort& radio,
                    RuntimeRole role,
@@ -58,6 +64,26 @@ class FixedLinkRuntime {
   const LiveMetrics& metrics() const { return metrics_; }
   const afhrt::HopTelemetry& hopTelemetry() const { return hop_; }
   const afh::Scheduler& hopScheduler() const { return scheduler_; }
+  const amap::Telemetry& mapTelemetry() const { return amap_; }
+  const quality::Estimator& estimator() const { return estimator_; }
+  const amap::ProbeSlot& probeSlot() const { return probe_; }
+  void setLineSink(LineSink sink) { sink_ = sink; }
+
+  // Gate C bench control plane (USB/host relay). Lines are short ASCII commands.
+  void onControlLine(const char* line) {
+    if constexpr (kAdaptive) {
+      if (role_ == RuntimeRole::Tx) {
+        txControl(line);  // TX loop is not timing-critical for reception
+      } else if (role_ == RuntimeRole::Rx) {
+        // Never handle on the RX loop directly: defer to serviceQuality's safe window.
+        std::strncpy(rx_ctrl_line_, line, sizeof(rx_ctrl_line_) - 1U);
+        rx_ctrl_line_[sizeof(rx_ctrl_line_) - 1U] = '\0';
+        rx_ctrl_pending_ = true;
+      }
+    } else {
+      (void)line;
+    }
+  }
   bool initialized() const { return initialized_; }
 
  private:
@@ -105,7 +131,7 @@ class FixedLinkRuntime {
     if constexpr (kAfhEnabled) {
       // The radio is in standby here (begin / previous blocking transmit).
       const std::uint32_t compute_start_us = radio_.nowMicros();
-      tx_channel = scheduler_.channelForSequence(hop_.logical);
+      tx_channel = channelFor(hop_.logical);
       hop_.hop_compute_us.observe(radio_.nowMicros() - compute_start_us);
       if (!retune(tx_channel)) {
         next_tx_allowed_us_ = radio_.nowMicros() + profile_.tx_gap_us;
@@ -223,6 +249,43 @@ class FixedLinkRuntime {
 
   // --- AFH (Gate B) -------------------------------------------------------
 
+  // Channel for a logical frame on the live timeline (monotonic callers only:
+  // TX next frame, RX next expected frame). Applies a staged map at its activation
+  // frame (Gate C) and the probe override for the single reserved probe frame.
+  std::uint8_t channelFor(std::uint64_t logical) {
+    if constexpr (kAdaptive) {
+      if (scheduler_.pending().valid && logical >= scheduler_.pending().activation_sequence) {
+        prev_config_ = scheduler_.current();
+        prev_activation_ = scheduler_.pending().activation_sequence;
+        prev_valid_ = true;
+        scheduler_.applyPendingIfDue(logical);
+        ++amap_.activations;
+        amap_.logActivation(scheduler_.current().map_version, prev_activation_, logical);
+        const std::uint8_t active = scheduler_.current().map.activeCount();
+        if (active < amap_.min_active_seen) amap_.min_active_seen = active;
+        amap_.record({nowMs(), static_cast<std::uint32_t>(logical),
+                      static_cast<std::uint32_t>(prev_activation_), scheduler_.current().map.bits, 0U,
+                      scheduler_.current().map_version, 0U, active, amap::EventKind::Activated});
+      }
+      if (probe_.valid) {
+        if (logical == probe_.at) return probe_.channel;
+        if (logical > probe_.at && role_ == RuntimeRole::Tx) probe_.valid = false;
+      }
+    }
+    return scheduler_.channelForSequence(logical);
+  }
+
+  // Channel a past frame used (idle-time attribution only; never on the hot path).
+  std::uint8_t channelForPast(std::uint64_t logical) const {
+    if (prev_valid_ && logical < prev_activation_) {
+      const afh::Scheduler previous(prev_config_);
+      return previous.channelForSequence(logical);
+    }
+    return scheduler_.channelForSequence(logical);
+  }
+
+  std::uint32_t nowMs() const { return radio_.nowMicros() / 1000U; }
+
   bool retune(std::uint8_t channel) {
     const std::uint32_t start_us = radio_.nowMicros();
 #if PR1_AFH_DIAG_SAME_FREQ || (PR1_AFH_DIAG_FIXED_CHANNEL >= 0)
@@ -303,7 +366,7 @@ class FixedLinkRuntime {
 
   std::uint8_t timedChannelFor(std::uint64_t logical) {
     const std::uint32_t start_us = radio_.nowMicros();
-    const std::uint8_t channel = scheduler_.channelForSequence(logical);
+    const std::uint8_t channel = channelFor(logical);
     hop_.hop_compute_us.observe(radio_.nowMicros() - start_us);
     return channel;
   }
@@ -361,6 +424,14 @@ class FixedLinkRuntime {
       }
       hop_.record({irq_us, static_cast<std::uint32_t>(logical), raw, heard_channel,
                    afhrt::HopEventKind::RxOk, rssi});
+      if constexpr (kAdaptive) {
+        if (hop_.locked && logical > hop_.logical) {
+          for (std::uint64_t f = hop_.logical; f < logical && f < hop_.logical + 4U; ++f) {
+            queueOutcome(f, 255U, amap::OutcomeKind::Timeout, irq_us);
+          }
+        }
+        queueOutcome(logical, heard_channel, amap::OutcomeKind::Ok, irq_us);
+      }
       hop_.locked = true;
       hop_ever_heard_ = true;
       hop_.consecutive_timeouts = 0U;
@@ -382,6 +453,7 @@ class FixedLinkRuntime {
       if (period > 0U && last_rx_valid_) {
         const std::uint32_t since = irq_us - last_rx_irq_us_;
         const std::uint64_t slot = last_rx_logical_ + (since + period / 2U) / period;
+        if constexpr (kAdaptive) queueOutcome(slot, heard_channel, amap::OutcomeKind::Crc, irq_us);
         if (slot + 1U > hop_.logical) hop_.logical = slot + 1U;
       } else {
         ++hop_.logical;
@@ -393,10 +465,17 @@ class FixedLinkRuntime {
 
   // RX idle: if the predicted frame did not arrive, advance on the TX cadence.
   void serviceHopTimeout(std::uint32_t now_us) {
+    if constexpr (kAdaptive) {
+      if (!deadlineNear(now_us) && serviceQuality()) return;
+    }
     if (deferred_check_valid_) {
       // Idle loop, RX already armed: verify an off-expected packet against the schedule.
       deferred_check_valid_ = false;
-      if (scheduler_.channelForSequence(deferred_check_logical_) == deferred_check_channel_) {
+      if (channelForPast(deferred_check_logical_) == deferred_check_channel_ ||
+          (kAdaptive && ((deferred_check_logical_ == last_probe_at_ &&
+                          deferred_check_channel_ == last_probe_channel_) ||
+                         (probe_.valid && deferred_check_logical_ == probe_.at &&
+                          deferred_check_channel_ == probe_.channel)))) {
         ++hop_.schedule_agree;
       } else {
         ++hop_.schedule_disagree;
@@ -434,12 +513,299 @@ class FixedLinkRuntime {
       // Event channel = the first frame that was missed (not the next channel), so
       // per-channel loss can be binned directly from the log.
       const std::uint64_t first_missed = hop_.logical - frames;
+      if constexpr (kAdaptive) {
+        for (std::uint64_t f = first_missed; f < hop_.logical && f < first_missed + 4U; ++f) {
+          queueOutcome(f, 255U, amap::OutcomeKind::Timeout, now_us);
+        }
+      }
       hop_.record({now_us, static_cast<std::uint32_t>(first_missed),
-                   static_cast<std::uint16_t>(frames), scheduler_.channelForSequence(first_missed),
+                   static_cast<std::uint16_t>(frames), channelForPast(first_missed),
                    afhrt::HopEventKind::TimeoutAdvance, 0});
       retune(timedChannelFor(hop_.logical));
     }
     if (!radio_.startReceive()) initialized_ = false;
+  }
+
+  // --- Gate C: adaptive map (RX decides, host relays, both apply at frame N) -----
+
+  void queueOutcome(std::uint64_t logical, std::uint8_t channel, amap::OutcomeKind kind,
+                    std::uint32_t t_us) {
+    amap::Outcome o{};
+    o.logical_lo = static_cast<std::uint32_t>(logical);
+    o.t_ms = t_us / 1000U;
+    o.kind = kind;
+    o.probe = probe_.valid && logical == probe_.at;
+    o.channel = o.probe ? probe_.channel : channel;
+    if (!outcomes_.push(o)) ++amap_.outcomes_dropped;
+  }
+
+  // True unless the next expected RX-done is at least 400 us away. Idle work
+  // (estimator, proposals, control lines, prints) must never overlap the next
+  // reception: ~90 us of extra latency there caused a self-sustaining loss mode.
+  bool deadlineNear(std::uint32_t now_us) const {
+    if (!hop_deadline_valid_) return false;
+    const std::uint32_t expected_done = hop_deadline_us_ - lossMargin(hop_.period_est_us);
+    return static_cast<std::int32_t>(expected_done - now_us) < 400;
+  }
+
+  std::uint64_t logicalFromLo(std::uint32_t lo) const {
+    // Outcomes are at most a few frames old: rebuild the 64-bit frame near hop_.logical.
+    const std::uint64_t ref = hop_.logical;
+    const auto diff = static_cast<std::int32_t>(lo - static_cast<std::uint32_t>(ref));
+    return ref + static_cast<std::int64_t>(diff);
+  }
+
+  // Returns true if it did any work (one outcome or one proposal per call).
+  bool serviceQuality() {
+    if (rx_ctrl_pending_) {
+      rx_ctrl_pending_ = false;
+      rxControl(rx_ctrl_line_);
+      return true;
+    }
+    amap::Outcome o{};
+    if (outcomes_.pop(&o)) {
+      const std::uint64_t logical = logicalFromLo(o.logical_lo);
+      const std::uint8_t ch = o.channel == 255U ? channelForPast(logical) : o.channel;
+      if (ch >= afh::kChannelCount) return true;
+      const bool ok = o.kind == amap::OutcomeKind::Ok;
+      auto& c = amap_.channels[ch];
+      if (o.kind == amap::OutcomeKind::Ok) ++c.ok;
+      if (o.kind == amap::OutcomeKind::Crc) ++c.crc;
+      if (o.kind == amap::OutcomeKind::Timeout) ++c.timeout;
+      if (o.probe) {
+        ok ? ++c.probe_ok : ++c.probe_fail;
+        if (estimator_.observeProbe(ch, ok, o.t_ms)) {
+          const bool back = estimator_.channel(ch).state == quality::ChannelState::Active;
+          amap_.record({o.t_ms, o.logical_lo, o.logical_lo, 0U, 0U,
+                        scheduler_.current().map_version, ch, static_cast<std::uint8_t>(ok ? 1U : 0U),
+                        amap::EventKind::ProbeResult});
+          if (back) {
+            ++c.reinclusions;
+            amap_.record({o.t_ms, o.logical_lo, 0U, 0U, 0U, scheduler_.current().map_version, ch,
+                          estimator_.activeCount(), amap::EventKind::Reincluded});
+          }
+        }
+        if (logical >= probe_.at) {
+          last_probe_at_ = probe_.at;
+          last_probe_channel_ = probe_.channel;
+          probe_.valid = false;
+        }
+        return true;
+      }
+      const auto before = estimator_.channel(ch).state;
+      estimator_.observeData(ch, ok, o.t_ms);
+      const auto after = estimator_.channel(ch).state;
+      if (before != after) {
+        amap::EventKind kind = amap::EventKind::Suspect;
+        std::uint8_t value = 0U;
+        if (after == quality::ChannelState::Excluded) {
+          kind = amap::EventKind::Excluded;
+          value = estimator_.channel(ch).consecutive_losses >= estimator_.config().exclude_losses
+                      ? 1U : 2U;  // 1 losses, 2 pdr
+          ++c.exclusions;
+          c.last_excluded_ms = o.t_ms;
+        } else if (after == quality::ChannelState::Active) {
+          kind = amap::EventKind::Recovered;
+        } else {
+          ++c.suspects;
+        }
+        amap_.record({o.t_ms, o.logical_lo, 0U, 0U, 0U, scheduler_.current().map_version, ch, value, kind});
+      }
+      return true;
+    }
+    return maybePropose();
+  }
+
+  void emit(const char* line) {
+    if (sink_ == nullptr || !sink_(line)) ++amap_.emit_dropped;
+  }
+
+  void abandonProposal(const char* reason) {
+    char out[120];
+    std::snprintf(out, sizeof(out), "PR1COMMIT id=%u ok=0 tx_ok=0 in_time=0 reason=%s rx_logical=%" PRIu64,
+                  static_cast<unsigned>(proposal_.id), reason, hop_.logical);
+    proposal_.type = amap::ProposalType::None;
+    next_proposal_ms_ = nowMs() + 1000U;  // back off after any failed proposal
+    emit(out);
+  }
+
+  bool maybePropose() {
+    if (probe_.valid && hop_.logical > probe_.at + 16U) {
+      // The probe frame's outcome never reached the queue (e.g. a long stall):
+      // count it as a failed probe so the estimator backs off and probing continues.
+      if (estimator_.observeProbe(probe_.channel, false, nowMs())) {
+        ++amap_.channels[probe_.channel].probe_fail;
+        amap_.record({nowMs(), static_cast<std::uint32_t>(probe_.at), static_cast<std::uint32_t>(probe_.at),
+                      0U, probe_.id, scheduler_.current().map_version, probe_.channel, 0U,
+                      amap::EventKind::ProbeResult});
+      }
+      last_probe_at_ = probe_.at;
+      last_probe_channel_ = probe_.channel;
+      probe_.valid = false;
+      return true;
+    }
+    if (proposal_.type != amap::ProposalType::None) {
+      // Never commit after the guard: an expired proposal is dropped on the RX side.
+      if (proposal_.activation <= hop_.logical + PR1_MAP_GUARD_FRAMES) {
+        ++amap_.expired;
+        amap_.record({nowMs(), static_cast<std::uint32_t>(hop_.logical),
+                      static_cast<std::uint32_t>(proposal_.activation), proposal_.bits, proposal_.id,
+                      proposal_.version, proposal_.channel, 0U, amap::EventKind::Expired});
+        abandonProposal("expired");
+        return true;
+      }
+      return false;
+    }
+    if (!hop_.locked || scheduler_.pending().valid) return false;
+    const std::uint32_t now_ms = nowMs();
+    if (static_cast<std::int32_t>(now_ms - next_proposal_ms_) < 0) return false;
+    const afh::ChannelMap desired = estimator_.activeMap();
+    const afh::ScheduleConfig& cur = scheduler_.current();
+    char line[200];
+    if (desired.bits != cur.map.bits && desired.isValid()) {
+      proposal_ = {amap::ProposalType::Map, ++next_id_, static_cast<std::uint16_t>(cur.map_version + 1U),
+                   desired.bits, hop_.logical + PR1_MAP_LEAD_FRAMES, 0U};
+      std::snprintf(line, sizeof(line),
+                    "PR1PROP id=%u type=map v=%u old=%u bits=%010" PRIx64 " oldbits=%010" PRIx64
+                    " act=%" PRIu64 " rx_logical=%" PRIu64 " active=%u",
+                    static_cast<unsigned>(proposal_.id), static_cast<unsigned>(proposal_.version),
+                    static_cast<unsigned>(cur.map_version), proposal_.bits, cur.map.bits,
+                    proposal_.activation, hop_.logical, static_cast<unsigned>(desired.activeCount()));
+    } else if (!probe_.valid) {
+      std::uint8_t ch = 0U;
+      if (!estimator_.nextProbeChannel(now_ms, &ch)) return false;
+      proposal_ = {amap::ProposalType::Probe, ++next_id_, cur.map_version, 0U,
+                   hop_.logical + PR1_MAP_LEAD_FRAMES / 2U, ch};
+      std::snprintf(line, sizeof(line),
+                    "PR1PROP id=%u type=probe ch=%u at=%" PRIu64 " v=%u rx_logical=%" PRIu64,
+                    static_cast<unsigned>(proposal_.id), static_cast<unsigned>(ch), proposal_.activation,
+                    static_cast<unsigned>(cur.map_version), hop_.logical);
+    } else {
+      return false;
+    }
+    ++amap_.proposals;
+    amap_.record({now_ms, static_cast<std::uint32_t>(hop_.logical),
+                  static_cast<std::uint32_t>(proposal_.activation), proposal_.bits, proposal_.id,
+                  proposal_.version, proposal_.channel, static_cast<std::uint8_t>(proposal_.type),
+                  amap::EventKind::Proposed});
+    emit(line);
+    return true;
+  }
+
+  // Host relays the TX acknowledgement: "ACK id=<id> ok=<0|1>".
+  void rxControl(const char* line) {
+    unsigned id = 0U, ok = 0U;
+    char out[120];
+    if (std::sscanf(line, "ACK id=%u ok=%u", &id, &ok) != 2) return;
+    if (proposal_.type == amap::ProposalType::None || id != proposal_.id) {
+      std::snprintf(out, sizeof(out), "PR1COMMIT id=%u ok=0 tx_ok=%u in_time=0 reason=unknown_id", id, ok);
+      emit(out);
+      return;
+    }
+    const bool in_time = hop_.locked && proposal_.activation > hop_.logical + PR1_MAP_GUARD_FRAMES;
+    bool committed = false;
+    if (ok != 0U && in_time) {
+      if (proposal_.type == amap::ProposalType::Map) {
+        afh::ChannelMap map{};
+        map.bits = proposal_.bits;
+        committed = scheduler_.stageMap(proposal_.version, map, proposal_.activation);
+      } else {
+        committed = estimator_.beginProbe(proposal_.channel, nowMs());
+        if (committed) probe_ = {true, proposal_.id, proposal_.activation, proposal_.channel};
+      }
+    }
+    if (committed) {
+      ++amap_.commits;
+    } else if (ok != 0U) {
+      ++amap_.commit_late;  // TX staged but RX did not: the host must fail the run
+    }
+    amap_.record({nowMs(), static_cast<std::uint32_t>(hop_.logical),
+                  static_cast<std::uint32_t>(proposal_.activation), proposal_.bits, proposal_.id,
+                  proposal_.version, proposal_.channel, static_cast<std::uint8_t>(ok),
+                  committed ? amap::EventKind::Committed : amap::EventKind::CommitLate});
+    std::snprintf(out, sizeof(out), "PR1COMMIT id=%u ok=%u tx_ok=%u in_time=%u rx_logical=%" PRIu64,
+                  static_cast<unsigned>(proposal_.id), committed ? 1U : 0U, ok, in_time ? 1U : 0U,
+                  hop_.logical);
+    proposal_.type = amap::ProposalType::None;
+    if (!committed) next_proposal_ms_ = nowMs() + 1000U;
+    emit(out);
+  }
+
+  // Host -> TX (two-phase):
+  //   "MAP id=<id> v=<ver> old=<ver> oldbits=<hex> bits=<hex> act=<frame>"  validate only
+  //   "PRB id=<id> ch=<c> at=<frame> v=<ver>"                                validate only
+  //   "COMMIT id=<id>"  stage the validated candidate (only after the RX committed)
+  //   "ABORT id=<id>"   drop it
+  void txControl(const char* line) {
+    unsigned id = 0U, v = 0U, old_v = 0U, ch = 0U;
+    unsigned long long bits = 0ULL, old_bits = 0ULL, act = 0ULL;
+    char out[140];
+    const char* reason = "parse";
+    bool ok = false;
+    if (std::sscanf(line, "MAP id=%u v=%u old=%u oldbits=%llx bits=%llx act=%llu", &id, &v, &old_v,
+                    &old_bits, &bits, &act) == 6) {
+      afh::ChannelMap map{};
+      map.bits = bits;
+      const auto& cur = scheduler_.current();
+      if (cur.map_version != old_v || cur.map.bits != old_bits) {
+        reason = "base_mismatch";
+      } else if (v != static_cast<unsigned>(cur.map_version) + 1U || scheduler_.pending().valid) {
+        reason = "version";
+      } else if (!map.isValid()) {
+        reason = "invalid";
+      } else if (act <= hop_.logical + PR1_MAP_GUARD_FRAMES) {
+        reason = "late";
+      } else {
+        candidate_ = {amap::ProposalType::Map, static_cast<std::uint16_t>(id), static_cast<std::uint16_t>(v),
+                      bits, act, 0U};
+        ok = true;
+        reason = "validated";
+      }
+      std::snprintf(out, sizeof(out), "PR1ACK id=%u ok=%u reason=%s tx_logical=%" PRIu64, id, ok ? 1U : 0U,
+                    reason, hop_.logical);
+    } else if (std::sscanf(line, "PRB id=%u ch=%u at=%llu v=%u", &id, &ch, &act, &v) == 4) {
+      if (probe_.valid) {
+        reason = "busy";
+      } else if (ch >= afh::kChannelCount || act <= hop_.logical + PR1_MAP_GUARD_FRAMES / 2U) {
+        reason = "late";
+      } else {
+        candidate_ = {amap::ProposalType::Probe, static_cast<std::uint16_t>(id), static_cast<std::uint16_t>(v),
+                      0U, act, static_cast<std::uint8_t>(ch)};
+        ok = true;
+        reason = "validated";
+      }
+      std::snprintf(out, sizeof(out), "PR1ACK id=%u ok=%u reason=%s tx_logical=%" PRIu64, id, ok ? 1U : 0U,
+                    reason, hop_.logical);
+    } else if (std::sscanf(line, "COMMIT id=%u", &id) == 1) {
+      if (candidate_.type == amap::ProposalType::None || candidate_.id != id) {
+        reason = "unknown_id";
+      } else if (candidate_.type == amap::ProposalType::Map) {
+        afh::ChannelMap map{};
+        map.bits = candidate_.bits;
+        ok = candidate_.activation > hop_.logical &&
+             scheduler_.stageMap(candidate_.version, map, candidate_.activation);
+        reason = ok ? "staged" : "stage_failed";
+      } else {
+        ok = !probe_.valid && candidate_.activation > hop_.logical;
+        if (ok) probe_ = {true, candidate_.id, candidate_.activation, candidate_.channel};
+        reason = ok ? "probe_reserved" : "probe_late";
+      }
+      amap_.record({nowMs(), static_cast<std::uint32_t>(hop_.logical),
+                    static_cast<std::uint32_t>(candidate_.activation), candidate_.bits, candidate_.id,
+                    candidate_.version, candidate_.channel, static_cast<std::uint8_t>(candidate_.type),
+                    ok ? amap::EventKind::TxStaged : amap::EventKind::TxRejected});
+      ok ? ++amap_.commits : ++amap_.tx_rejects;
+      candidate_.type = amap::ProposalType::None;
+      std::snprintf(out, sizeof(out), "PR1STAGED id=%u ok=%u reason=%s tx_logical=%" PRIu64, id, ok ? 1U : 0U,
+                    reason, hop_.logical);
+    } else if (std::sscanf(line, "ABORT id=%u", &id) == 1) {
+      const bool had = candidate_.type != amap::ProposalType::None && candidate_.id == id;
+      if (had) candidate_.type = amap::ProposalType::None;
+      std::snprintf(out, sizeof(out), "PR1ABORTED id=%u had=%u", id, had ? 1U : 0U);
+    } else {
+      return;
+    }
+    emit(out);
   }
 
   RadioPort& radio_;
@@ -459,6 +825,23 @@ class FixedLinkRuntime {
   std::uint32_t hop_deadline_us_ = 0U;
   bool hop_deadline_valid_ = false;
   bool hop_acquired_ = false;
+  // Gate C state (unused unless PR1_ENABLE_ADAPTIVE_MAP=1).
+  quality::Estimator estimator_{};
+  amap::Telemetry amap_{};
+  amap::OutcomeQueue<64> outcomes_{};
+  amap::Proposal proposal_{};
+  amap::ProbeSlot probe_{};
+  std::uint16_t next_id_ = 0U;
+  afh::ScheduleConfig prev_config_{};
+  std::uint64_t prev_activation_ = 0U;
+  bool prev_valid_ = false;
+  std::uint64_t last_probe_at_ = ~0ULL;
+  std::uint8_t last_probe_channel_ = 0U;
+  LineSink sink_ = nullptr;
+  amap::Proposal candidate_{};            // TX: validated, not yet committed
+  std::uint32_t next_proposal_ms_ = 0U;   // RX: proposal backoff
+  char rx_ctrl_line_[160] = {};
+  volatile bool rx_ctrl_pending_ = false;
   bool acq_anchor_valid_ = false;
   std::uint16_t acq_raw_ = 0U;
   std::uint32_t acq_irq_us_ = 0U;
