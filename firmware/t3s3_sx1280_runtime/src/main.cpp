@@ -156,6 +156,18 @@ void dumpHopRing() {
                     static_cast<unsigned long>(e.logical_lo), static_cast<unsigned>(e.raw_sequence),
                     static_cast<unsigned>(e.channel), static_cast<int>(e.rssi_dbm));
     }
+    const std::uint32_t kept = h.anomalies_written < h.anomalies.size()
+                                   ? h.anomalies_written
+                                   : static_cast<std::uint32_t>(h.anomalies.size());
+    Serial.printf("PR1HA_BEGIN total=%lu kept=%lu\n", static_cast<unsigned long>(h.anomalies_written),
+                  static_cast<unsigned long>(kept));
+    for (std::uint32_t i = 0; i < kept; ++i) {
+      const auto& e = h.anomalies[i];
+      Serial.printf("PR1HA t_us=%lu kind=%u logical=%lu seq=%u ch=%u rssi=%d\n",
+                    static_cast<unsigned long>(e.t_us), static_cast<unsigned>(e.kind),
+                    static_cast<unsigned long>(e.logical_lo), static_cast<unsigned>(e.raw_sequence),
+                    static_cast<unsigned>(e.channel), static_cast<int>(e.rssi_dbm));
+    }
     Serial.println("PR1HE_END");
   }
 }

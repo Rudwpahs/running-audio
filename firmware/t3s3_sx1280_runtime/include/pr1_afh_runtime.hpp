@@ -89,9 +89,19 @@ struct HopTelemetry {
   std::array<HopEvent, kRingSize> ring{};
   std::uint32_t ring_written = 0;
 
+  // Anomalies only (timeouts, resync, lock, CRC, duplicates): small enough to keep a
+  // whole short run, so early-run losses are not overwritten by later RxOk/TxSent.
+  static constexpr std::size_t kAnomalySize = 160;
+  std::array<HopEvent, kAnomalySize> anomalies{};
+  std::uint32_t anomalies_written = 0;
+
   void record(const HopEvent& event) {
     ring[ring_written % kRingSize] = event;
     ++ring_written;
+    if (event.kind != HopEventKind::TxSent && event.kind != HopEventKind::RxOk) {
+      if (anomalies_written < kAnomalySize) anomalies[anomalies_written] = event;
+      ++anomalies_written;
+    }
   }
 };
 

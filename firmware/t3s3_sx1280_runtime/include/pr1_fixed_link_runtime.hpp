@@ -243,12 +243,16 @@ class FixedLinkRuntime {
     return m < 150U ? 150U : (m > 400U ? 400U : m);
   }
 
-  void armDeadlineAfter(std::uint32_t done_us) {
-    if (hop_.period_est_us == 0U) {
+  // Deadline for the expected frame hop_.logical, on the grid anchored at the last
+  // good RX-done. A CRC-bad (possibly truncated) packet never moves the anchor.
+  void armGridDeadline() {
+    const std::uint32_t period = hop_.period_est_us;
+    if (period == 0U || !last_rx_valid_ || hop_.logical <= last_rx_logical_) {
       hop_deadline_valid_ = false;  // no cadence yet: wait on this channel instead
       return;
     }
-    hop_deadline_us_ = done_us + hop_.period_est_us + lossMargin(hop_.period_est_us);
+    const auto frames = static_cast<std::uint32_t>(hop_.logical - last_rx_logical_);
+    hop_deadline_us_ = last_rx_irq_us_ + frames * period + lossMargin(period);
     hop_deadline_valid_ = true;
   }
 
@@ -311,10 +315,18 @@ class FixedLinkRuntime {
                    0});
       // Parked, or a non-CRC read error: re-arm on the same channel.
       if (!hop_.locked || result != RadioReadResult::CrcError) return;
-      // A CRC-bad packet on the expected channel was the expected frame: follow the TX.
-      ++hop_.logical;
+      // Place the CRC-bad packet on the frame grid by time (it may be a truncated or
+      // early-ending reception) and continue after that slot; never re-anchor on it.
+      const std::uint32_t period = hop_.period_est_us;
+      if (period > 0U && last_rx_valid_) {
+        const std::uint32_t since = irq_us - last_rx_irq_us_;
+        const std::uint64_t slot = last_rx_logical_ + (since + period / 2U) / period;
+        if (slot + 1U > hop_.logical) hop_.logical = slot + 1U;
+      } else {
+        ++hop_.logical;
+      }
     }
-    armDeadlineAfter(irq_us);
+    armGridDeadline();
     retune(timedChannelFor(hop_.logical));
   }
 
@@ -332,7 +344,7 @@ class FixedLinkRuntime {
     // them at once so a loop stall cannot leave the follower behind the TX.
     const std::uint32_t frames = 1U + (now_us - hop_deadline_us_) / period;
     hop_.logical += frames;
-    hop_deadline_us_ += frames * period;
+    armGridDeadline();
     hop_.timeout_advances += frames;
     hop_.consecutive_timeouts += frames;
     if (hop_.consecutive_timeouts > hop_.max_consecutive_timeouts) {
