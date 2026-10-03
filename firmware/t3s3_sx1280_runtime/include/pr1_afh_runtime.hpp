@@ -79,6 +79,7 @@ enum class HopEventKind : std::uint8_t {
   TimeoutAdvance = 5,
   ResyncEnter = 6,
   Lock = 7,
+  RxJump = 8,  // good packet while locked, but later than the expected frame (seq = frames skipped)
 };
 
 struct HopEvent {

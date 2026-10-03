@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "run_id": "B-gap-5000us-100",
+  "created_utc": "2026-10-03T00:16:51.480233Z",
+  "gate": "B",
+  "gap_us": 5000,
+  "target_packets": 100,
+  "phase": "revalidate",
+  "firmware_sha": "d1b7ec2b1130fd63fb0eb11fd900b0622766f14c",
+  "frozen_baseline": {
+    "frequency_mhz": 2404.0,
+    "bitrate_kbps": 1300,
+    "coding_rate": 3,
+    "output_dbm": 0,
+    "packet_bytes": 116,
+    "sx1280_spi_hz": 2000000,
+    "adaptive_layers": false
+  },
+  "feature_flags": {
+    "PR1_ENABLE_AFH": 1,
+    "afh_map": "static all-40",
+    "channel_quality": 0,
+    "fec": 0,
+    "arq": 0,
+    "phy_ladder": 0,
+    "controller": 0
+  },
+  "images": {
+    "rx": {
+      "key": "B:C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-dart-layered-20261003\\build\\B-rx\\rf_rx_compile",
+      "image": "runs\\pr1-dart-layered-20261003\\build\\B-rx\\rf_rx_compile",
+      "sha256": "e96de1f35afd654225fbaa9da39a0cc266b03c6cf069a0dded5df6a283b983af",
+      "flashed_utc": "2026-10-03T00:16:46.649192Z"
+    },
+    "tx": {
+      "key": "B:C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-dart-layered-20261003\\build\\B-tx-5000us\\rf_tx_compile",
+      "image": "runs\\pr1-dart-layered-20261003\\build\\B-tx-5000us\\rf_tx_compile",
+      "sha256": "b494d646d10190e3d50846e019258d8ec1e20e8eb8f5422507c3776ee0562725",
+      "flashed_utc": "2026-10-03T00:16:51.480233Z"
+    }
+  },
+  "placement": "2026-10-03 operator photo placement_20261003.jpg: RX on desk top (antenna ~vertical, iron and bottles nearby), TX on white box below (antenna vertical). Unchanged for all gates.",
+  "files": {
+    "rx_log": "rx.log",
+    "tx_log": "tx.log"
+  },
+  "build_identity": {
+    "source_head_sha": "593c16c0c94cf80a83820474bbccb2b616d577ba",
+    "frozen_firmware_sha": "d1b7ec2b1130fd63fb0eb11fd900b0622766f14c",
+    "git_dirty": true,
+    "platformio_version": "unavailable: [WinError 2] \uc9c0\uc815\ub41c \ud30c\uc77c\uc744 \ucc3e\uc744 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4",
+    "platformio_ini_sha256": "6f79f96979b96bf460260b1c13cdf85e16b6d647f183232e921e72e0bde094a3",
+    "controller_file_sha256": "a186d7d36550731d495b2fa646e2512764b07438fdfc6b9dcd10329dc701a4c4"
+  },
+  "notes": "issue #52 layered activation"
+}

@@ -291,14 +291,16 @@ class FixedLinkRuntime {
                      afhrt::HopEventKind::RxOther, rssi});
         return;
       }
-      // Tuned to the expected frame's channel by construction when locked and on time;
-      // otherwise check the heard frame against the schedule explicitly.
+      // Tuned to the expected frame's channel by construction when locked and on time.
+      // Any other case is checked against the schedule later, from the idle loop: a
+      // schedule computation here (~45 us) costs the next preamble at a 150 us gap.
       const bool on_expected = hop_.locked && logical == hop_.logical;
-      const std::uint8_t predicted = on_expected ? heard_channel : timedChannelFor(logical);
-      if (predicted == heard_channel) {
+      if (on_expected) {
         ++hop_.schedule_agree;
       } else {
-        ++hop_.schedule_disagree;
+        deferred_check_valid_ = true;
+        deferred_check_logical_ = logical;
+        deferred_check_channel_ = heard_channel;
       }
       ++hop_.channel_ok[heard_channel];
       if (hop_.locked && last_rx_valid_ && logical > last_rx_logical_ &&
@@ -308,6 +310,15 @@ class FixedLinkRuntime {
         hop_.period_est_us = hop_.period_est_us == 0U
                                  ? sample
                                  : hop_.period_est_us - hop_.period_est_us / 8U + sample / 8U;
+      }
+      if (hop_.locked && logical > hop_.logical) {
+        // Frames between the expected one and this packet were lost without a
+        // timeout or CRC event; log them so per-run loss can be fully attributed.
+        // Channel of the skipped frames is reconstructed offline from the schedule
+        // (255 = not computed on the hot path).
+        hop_.record({irq_us, static_cast<std::uint32_t>(hop_.logical),
+                     static_cast<std::uint16_t>(logical - hop_.logical), 255U,
+                     afhrt::HopEventKind::RxJump, rssi});
       }
       if (!hop_.locked) {
         ++hop_.locks;
@@ -348,6 +359,16 @@ class FixedLinkRuntime {
 
   // RX idle: if the predicted frame did not arrive, advance on the TX cadence.
   void serviceHopTimeout(std::uint32_t now_us) {
+    if (deferred_check_valid_) {
+      // Idle loop, RX already armed: verify an off-expected packet against the schedule.
+      deferred_check_valid_ = false;
+      if (scheduler_.channelForSequence(deferred_check_logical_) == deferred_check_channel_) {
+        ++hop_.schedule_agree;
+      } else {
+        ++hop_.schedule_disagree;
+      }
+      return;
+    }
     if (!hop_.locked || !hop_deadline_valid_ || !deadlineReached(now_us, hop_deadline_us_)) return;
     if (!radio_.standby()) {
       ++hop_.standby_failures;
@@ -403,6 +424,9 @@ class FixedLinkRuntime {
   bool last_rx_valid_ = false;
   std::uint32_t hop_deadline_us_ = 0U;
   bool hop_deadline_valid_ = false;
+  bool deferred_check_valid_ = false;
+  std::uint64_t deferred_check_logical_ = 0U;
+  std::uint8_t deferred_check_channel_ = 0U;
   std::uint32_t resync_slot_ = 0U;
   std::array<std::uint8_t, pr1::kRadioPayloadMaxBytes> tx_buffer_{};
   std::array<std::uint8_t, pr1::kRadioPayloadMaxBytes> rx_buffer_{};
