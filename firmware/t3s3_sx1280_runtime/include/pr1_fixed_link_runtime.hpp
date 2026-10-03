@@ -129,6 +129,7 @@ class FixedLinkRuntime {
     // is serviced in tick(), so at most one receive-complete event is pending.
     self->rx_irq_timestamp_us_ = timestamp_us;
     self->rx_pending_ = true;
+    self->ctrl_window_open_.store(false, std::memory_order_release);  // post-read path starts
   }
 
   static bool deadlineReached(std::uint32_t now_us, std::uint32_t due_us) {
@@ -181,8 +182,8 @@ class FixedLinkRuntime {
     }
 
     metrics_.onTxQueued(radio_.nowMicros(), tx_sequence_);
-    metrics_.onTxStart(radio_.nowMicros(), tx_sequence_);
     const std::uint32_t tx_start_us = radio_.nowMicros();
+    metrics_.onTxStart(tx_start_us, tx_sequence_);
     const bool sent = radio_.transmit(tx_buffer_.data(), packet_len);
     const std::uint32_t tx_attempt_done_us = radio_.nowMicros();
     if constexpr (kAfhEnabled) {

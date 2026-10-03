@@ -75,7 +75,8 @@ cp::Spsc<cp::Out, 32> g_ctrl_out;  // core 1 -> core 0
 std::atomic<std::uint32_t> g_pull{0};
 std::atomic<bool> g_cp_ready{false};
 std::atomic<bool> g_dumping{false};  // radio loop is printing a pull reply: hold control output
-std::atomic<bool> g_poll_mode{false};  // boot banner done: the control core owns the USB FIFOs
+std::atomic<bool> g_poll_mode{false};
+std::atomic<bool> g_dump_ready{false};  // control core released the IN FIFO to HWCDC  // boot banner done: the control core owns the USB FIFOs
 struct ControlPlaneStats {
   volatile int core = -1;
   volatile std::uint32_t lines = 0;
@@ -88,8 +89,26 @@ struct ControlPlaneStats {
   volatile std::uint32_t work_us_max = 0;   // longest USB work burst
 } g_cp;
 
-bool pushControlOut(const cp::Out& out) { return g_ctrl_out.push(out); }
-bool popControlIn(cp::In* in) { return g_ctrl_in.pop(in); }
+PR1_IRAM bool pushControlOut(const cp::Out& out) { return g_ctrl_out.push(out); }
+
+// HWCDC::flush() waits forever if no host is reading; drain for at most `ms` instead.
+void drainSerial(std::uint32_t ms) {
+  // Done when the free space stops changing for 5 ms (drained, or nobody reading).
+  const std::uint32_t t0 = millis();
+  int last = -1;
+  int stable = 0;
+  do {
+    delay(1);
+    const int room = Serial.availableForWrite();
+    if (room == last) {
+      if (++stable >= 5) break;
+    } else {
+      stable = 0;
+      last = room;
+    }
+  } while (millis() - t0 < ms);
+}
+PR1_IRAM bool popControlIn(cp::In* in) { return g_ctrl_in.pop(in); }
 
 // Live-run USB I/O: polled FIFO access from IRAM (no HWCDC driver, no USB interrupt).
 // HWCDC (flash code, interrupt driven) is used only for the boot banner and the
@@ -127,7 +146,7 @@ PR1_IRAM void pollUsbInput(UsbLineState& st) {
           ++g_cp.parse_fail;
         }
       }
-    } else if (st.line_len + 1 < sizeof(st.line)) {
+    } else if (pr1::runtime::FixedLinkRuntime::kAdaptive && st.line_len + 1 < sizeof(st.line)) {
       st.line[st.line_len++] = c;
     }
   }
@@ -167,20 +186,29 @@ PR1_IRAM void controlLoop(bool gated_role) {
   bool dump_mode = false;
   std::uint32_t loops = 0;
   for (;;) {
-    if (g_dumping.load() && st.text_len == 0) {
-      // Radio loop is printing through HWCDC (after any line in flight has finished):
-      // let its IN interrupt run; keep reading pulls.
+    if (g_dumping.load()) {
+      if (st.text_len != 0) {
+        pollUsbOutput(st);  // radio loop is idle-waiting: finish the line, no window
+        esp_rom_delay_us(20);
+        continue;
+      }
+      // Radio loop prints through HWCDC: let its IN interrupt run; keep reading pulls.
       if (!dump_mode) {
         usb_serial_jtag_ll_ena_intr_mask(USB_SERIAL_JTAG_INTR_SERIAL_IN_EMPTY);
         dump_mode = true;
+        g_dump_ready.store(true);
       }
       pollUsbInput(st);
       vTaskDelay(1);
       continue;
     }
     if (dump_mode) {
+      // Let HWCDC finish sending what is still in its ring (post-run only), then take
+      // the FIFO back. Host bytes meanwhile wait in the OUT FIFO (OUT interrupt masked).
+      vTaskDelay(300);
       usb_serial_jtag_ll_disable_intr_mask(USB_SERIAL_JTAG_INTR_SERIAL_IN_EMPTY);
       dump_mode = false;
+      g_dump_ready.store(false);
     }
     // RX: touch USB only inside the window the radio core publishes after re-arm.
     if (!gated_role || g_runtime.controlWindowOpen()) {
@@ -212,7 +240,8 @@ void controlTask(void*) {
   g_cp_ready.store(true);
   const bool gated_role = pr1::runtime::runtimeRole() == pr1::runtime::RuntimeRole::Rx;
   while (!g_poll_mode.load()) vTaskDelay(1);  // boot banner goes through HWCDC
-  usb_serial_jtag_ll_disable_intr_mask(kUsbCtrlIntr);
+  vTaskDelay(300);                            // let HWCDC finish sending it
+  usb_serial_jtag_ll_disable_intr_mask(kUsbCtrlIntr | USB_SERIAL_JTAG_INTR_BUS_RESET);
   g_cp.stack_free = uxTaskGetStackHighWaterMark(nullptr);
   controlLoop(gated_role);
 }
@@ -434,7 +463,7 @@ void setup() {
   g_runtime.setControlPlane(&pushControlOut, &popControlIn);
   g_live_ready = g_runtime.begin();
   Serial.println(g_live_ready ? "PR1_RUNTIME_LIVE_READY" : "PR1_RUNTIME_FAULT");
-  Serial.flush();
+  drainSerial(300);
   g_poll_mode.store(true);
 #else
   Serial.println("PR1_RUNTIME_SAFE_IDLE");
@@ -458,7 +487,8 @@ void loop() {
   if (g_pull.load(std::memory_order_relaxed) != 0U) {
     const char command = static_cast<char>(g_pull.exchange(0U));
     g_dumping.store(true);
-    vTaskDelay(2);  // let a line already being written by the control task finish
+    // Wait (bounded) until the control core has finished any line in flight.
+    for (int i = 0; i < 50 && !g_dump_ready.load(); ++i) vTaskDelay(1);
     if (command == 't' || command == 'T') {
       printTelemetry(g_runtime.metrics().snapshot());
     } else if (command == 'h') {
@@ -466,7 +496,7 @@ void loop() {
     } else if (command == 'H') {
       dumpHopRing();
     }
-    Serial.flush();
+    drainSerial(300);
     g_dumping.store(false);
   }
 #else
