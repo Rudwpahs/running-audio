@@ -9,8 +9,8 @@ load:0x403c9700,len:0xbd8
 load:0x403cc700,len:0x2a80
 entry 0x403c98d0
 PR1_RUNTIME_BOOT
-runtime_profile=phase1-fixed-flrc-tx
-runtime_role=tx
+runtime_profile=phase1-fixed-flrc-rx
+runtime_role=rx
 board_family=LILYGO T3-S3-MVSRBoard
 board_reference_revision=V1.1 upstream reference
 radio_target=SX1280
@@ -38,7 +38,18 @@ tx_gap_us=5000
 packet_bytes=116
 adaptive_layers=off
 PR1_RUNTIME_LIVE_READY
-PR1T v=1 t_us=9963218 field=device_state value=2
-PR1T v=1 t_us=9963218 field=scheduler_misses value=0
-PR1T v=1 t_us=9963218 field=trace_overwrites value=3505
-PR1T v=1 t_us=9963218 field=capability_mask value=12
+PR1T v=1 t_us=20925230 field=device_state value=2
+PR1T v=1 t_us=20925230 field=rssi_dbm value=-46
+PR1T v=1 t_us=20925230 field=crc_good value=7049
+PR1T v=1 t_us=20925230 field=crc_bad value=1
+PR1T v=1 t_us=20925230 field=missing value=2
+PR1T v=1 t_us=20925230 field=queue_depth value=0
+PR1T v=1 t_us=20925230 field=max_queue_depth value=1
+PR1T v=1 t_us=20925230 field=irq_to_spi_us value=13
+PR1T v=1 t_us=20925230 field=spi_duration_us value=1244
+PR1T v=1 t_us=20925230 field=rx_processing_us value=1246
+PR1T v=1 t_us=20925230 field=spi_end_to_rearm_start_us value=137
+PR1T v=1 t_us=20925230 field=rx_rearm_us value=421
+PR1T v=1 t_us=20925230 field=irq_to_rx_ready_us value=1799
+PR1T v=1 t_us=20925230 field=trace_overwrites value=63322
+PR1T v=1 t_us=20925230 field=capability_mask value=12

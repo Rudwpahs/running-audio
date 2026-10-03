@@ -154,9 +154,9 @@ class FixedLinkRuntime {
     const std::uint32_t spi_end_us = radio_.nowMicros();
     metrics_.onSpiEnd(spi_end_us, label_sequence);
 
-    bool hop_heard_logical = false;
-    std::uint64_t hop_heard = 0U;
+    bool hop_decoded = false;
     std::uint16_t hop_raw = 0U;
+    std::int16_t hop_rssi = 0;
     if (read_result == RadioReadResult::CrcError) {
       metrics_.onRxCrcFail(spi_end_us, label_sequence);
     } else if (read_result == RadioReadResult::Ok) {
@@ -168,22 +168,19 @@ class FixedLinkRuntime {
           decoded.header.sample_rate == pr1::kDartSampleRateHz &&
           decoded.header.payload_len == pr1::kDartTargetOpusPayloadBytes) {
         const std::uint32_t packet_done_us = radio_.nowMicros();
-        metrics_.onRxPacket(packet_done_us, decoded.header.sequence, radio_.rssiDbm());
-        const bool accepted = observeSequence(decoded.header.sequence);
+        const std::int16_t rssi = radio_.rssiDbm();
+        metrics_.onRxPacket(packet_done_us, decoded.header.sequence, rssi);
+        observeSequence(decoded.header.sequence);
         if constexpr (kAfhEnabled) {
-          if (accepted) {
-            // Hop timeline: logical = first raw sequence heard + unwrapped offset.
-            // Assumes RX acquires before the TX's first 16-bit wrap (Gate B scope).
-            hop_heard_logical = true;
-            hop_heard = hop_raw_base_ + sequence_unwrapper_.latest();
-            hop_raw = decoded.header.sequence;
-          }
+          hop_decoded = true;
+          hop_raw = decoded.header.sequence;
+          hop_rssi = rssi;
         }
       }
     }
 
     if constexpr (kAfhEnabled) {
-      followAfterRx(read_result, hop_heard_logical, hop_heard, hop_raw, irq_timestamp_us);
+      followAfterRx(read_result, hop_decoded, hop_raw, hop_rssi, irq_timestamp_us);
     }
 
     const std::uint32_t rearm_start_us = radio_.nowMicros();
@@ -195,23 +192,20 @@ class FixedLinkRuntime {
     if (!rearmed) initialized_ = false;
   }
 
-  // Returns true when the packet became the newest logical frame.
-  bool observeSequence(std::uint16_t raw_sequence) {
+  void observeSequence(std::uint16_t raw_sequence) {
     if (!sequence_unwrapper_.initialized()) {
       sequence_unwrapper_.reset(raw_sequence, 0U);
-      hop_raw_base_ = raw_sequence;
       metrics_.onMissing(0U);
-      return true;
+      return;
     }
 
     const auto preview = sequence_unwrapper_.preview(raw_sequence);
-    if (preview.status != pr1::sequence::UnwrapStatus::Ok || !preview.forward) return false;
+    if (preview.status != pr1::sequence::UnwrapStatus::Ok || !preview.forward) return;
 
     const auto latest = sequence_unwrapper_.latest();
     const auto gap = preview.index > latest ? preview.index - latest - 1U : 0U;
     metrics_.onMissing(static_cast<std::uint32_t>(gap));
     sequence_unwrapper_.acceptForward(preview);
-    return true;
   }
 
   // --- AFH (Gate B) -------------------------------------------------------
@@ -229,27 +223,68 @@ class FixedLinkRuntime {
     return true;
   }
 
-  void scheduleNextDeadline(std::uint32_t from_us) {
-    const std::uint32_t period = hop_.period_est_us;
-    const std::uint32_t timeout =
-        period > 0U ? period + period / 2U : static_cast<std::uint32_t>(PR1_AFH_INITIAL_TIMEOUT_US);
-    hop_deadline_us_ = from_us + timeout;
+  // Hop logical frame for a heard wire sequence: the value congruent to `raw`
+  // (mod 2^16) nearest to the expected frame, so 16-bit wraps and outages up to
+  // +/-32767 frames keep TX and RX on the same timeline. Before anything was
+  // heard the TX timeline is assumed to start at 0 (RX reset after TX boot).
+  std::uint64_t hopLogicalFor(std::uint16_t raw) const {
+    if (!hop_ever_heard_) return raw;
+    const std::uint64_t ref = hop_.logical;
+    const auto diff = static_cast<std::int16_t>(raw - static_cast<std::uint16_t>(ref));
+    if (diff < 0 && static_cast<std::uint64_t>(-static_cast<std::int32_t>(diff)) > ref) return raw;
+    return ref + static_cast<std::int64_t>(diff);
+  }
+
+  // Margin after the predicted RX-done time before declaring the frame lost.
+  // Must stay well below the on-air idle time so the retune lands before the
+  // next preamble (P - airtime ~1.9 ms at 150 us gap).
+  static std::uint32_t lossMargin(std::uint32_t period) {
+    const std::uint32_t m = period / 8U;
+    return m < 150U ? 150U : (m > 400U ? 400U : m);
+  }
+
+  void armDeadlineAfter(std::uint32_t done_us) {
+    if (hop_.period_est_us == 0U) {
+      hop_deadline_valid_ = false;  // no cadence yet: wait on this channel instead
+      return;
+    }
+    hop_deadline_us_ = done_us + hop_.period_est_us + lossMargin(hop_.period_est_us);
+    hop_deadline_valid_ = true;
+  }
+
+  std::uint8_t timedChannelFor(std::uint64_t logical) {
+    const std::uint32_t start_us = radio_.nowMicros();
+    const std::uint8_t channel = scheduler_.channelForSequence(logical);
+    hop_.hop_compute_us.observe(radio_.nowMicros() - start_us);
+    return channel;
   }
 
   // Called after every receive-complete, with the radio in standby (readData).
-  void followAfterRx(RadioReadResult result, bool heard, std::uint64_t logical,
-                     std::uint16_t raw, std::uint32_t irq_us) {
+  void followAfterRx(RadioReadResult result, bool decoded, std::uint16_t raw, std::int16_t rssi,
+                     std::uint32_t irq_us) {
     const std::uint8_t heard_channel = hop_.current_channel;
-    if (heard) {
-      const std::uint8_t predicted = scheduler_.channelForSequence(logical);
+    if (decoded) {
+      const std::uint64_t logical = hopLogicalFor(raw);
+      if (hop_.locked && logical < hop_.logical) {
+        // Duplicate / older frame: keep channel and deadline unchanged.
+        hop_.record({irq_us, static_cast<std::uint32_t>(logical), raw, heard_channel,
+                     afhrt::HopEventKind::RxOther, rssi});
+        return;
+      }
+      // Tuned to the expected frame's channel by construction when locked and on time;
+      // otherwise check the heard frame against the schedule explicitly.
+      const bool on_expected = hop_.locked && logical == hop_.logical;
+      const std::uint8_t predicted = on_expected ? heard_channel : timedChannelFor(logical);
       if (predicted == heard_channel) {
         ++hop_.schedule_agree;
       } else {
         ++hop_.schedule_disagree;
       }
       ++hop_.channel_ok[heard_channel];
-      if (hop_.locked && last_rx_irq_valid_ && logical == last_rx_logical_ + 1U) {
-        const std::uint32_t sample = irq_us - last_rx_irq_us_;
+      if (hop_.locked && last_rx_valid_ && logical > last_rx_logical_ &&
+          logical - last_rx_logical_ <= 4U) {
+        const std::uint32_t sample =
+            (irq_us - last_rx_irq_us_) / static_cast<std::uint32_t>(logical - last_rx_logical_);
         hop_.period_est_us = hop_.period_est_us == 0U
                                  ? sample
                                  : hop_.period_est_us - hop_.period_est_us / 8U + sample / 8U;
@@ -257,15 +292,16 @@ class FixedLinkRuntime {
       if (!hop_.locked) {
         ++hop_.locks;
         hop_.record({irq_us, static_cast<std::uint32_t>(logical), raw, heard_channel,
-                     afhrt::HopEventKind::Lock, radio_.rssiDbm()});
+                     afhrt::HopEventKind::Lock, rssi});
       }
       hop_.record({irq_us, static_cast<std::uint32_t>(logical), raw, heard_channel,
-                   afhrt::HopEventKind::RxOk, radio_.rssiDbm()});
+                   afhrt::HopEventKind::RxOk, rssi});
       hop_.locked = true;
+      hop_ever_heard_ = true;
       hop_.consecutive_timeouts = 0U;
       last_rx_logical_ = logical;
       last_rx_irq_us_ = irq_us;
-      last_rx_irq_valid_ = true;
+      last_rx_valid_ = true;
       hop_.logical = logical + 1U;
     } else {
       if (result == RadioReadResult::CrcError) ++hop_.channel_crc[heard_channel];
@@ -273,32 +309,38 @@ class FixedLinkRuntime {
                    result == RadioReadResult::CrcError ? afhrt::HopEventKind::RxCrc
                                                        : afhrt::HopEventKind::RxOther,
                    0});
-      if (!hop_.locked) return;  // stay parked; re-arm on the same channel
-      // The corrupted packet was most likely the expected frame; follow the TX.
+      // Parked, or a non-CRC read error: re-arm on the same channel.
+      if (!hop_.locked || result != RadioReadResult::CrcError) return;
+      // A CRC-bad packet on the expected channel was the expected frame: follow the TX.
       ++hop_.logical;
     }
-    scheduleNextDeadline(irq_us);
-    const std::uint32_t compute_start_us = radio_.nowMicros();
-    const std::uint8_t next = scheduler_.channelForSequence(hop_.logical);
-    hop_.hop_compute_us.observe(radio_.nowMicros() - compute_start_us);
-    retune(next);
+    armDeadlineAfter(irq_us);
+    retune(timedChannelFor(hop_.logical));
   }
 
   // RX idle: if the predicted frame did not arrive, advance on the TX cadence.
   void serviceHopTimeout(std::uint32_t now_us) {
-    if (!hop_.locked || !deadlineReached(now_us, hop_deadline_us_)) return;
+    if (!hop_.locked || !hop_deadline_valid_ || !deadlineReached(now_us, hop_deadline_us_)) return;
     if (!radio_.standby()) {
       ++hop_.standby_failures;
       initialized_ = false;
       return;
     }
-    ++hop_.timeout_advances;
-    ++hop_.consecutive_timeouts;
+    if (rx_pending_) return;  // a packet completed meanwhile: serviceRx reads it from standby
+    const std::uint32_t period = hop_.period_est_us;
+    // Every frame whose predicted RX-done (+margin) has passed is lost; jump past all of
+    // them at once so a loop stall cannot leave the follower behind the TX.
+    const std::uint32_t frames = 1U + (now_us - hop_deadline_us_) / period;
+    hop_.logical += frames;
+    hop_deadline_us_ += frames * period;
+    hop_.timeout_advances += frames;
+    hop_.consecutive_timeouts += frames;
     if (hop_.consecutive_timeouts > hop_.max_consecutive_timeouts) {
       hop_.max_consecutive_timeouts = hop_.consecutive_timeouts;
     }
     if (hop_.consecutive_timeouts > static_cast<std::uint32_t>(PR1_AFH_RESYNC_AFTER_MISSES)) {
       hop_.locked = false;
+      hop_deadline_valid_ = false;
       ++hop_.resync_entries;
       ++resync_slot_;
       const std::uint8_t park = scheduler_.rendezvousChannel(resync_slot_);
@@ -306,14 +348,9 @@ class FixedLinkRuntime {
                    afhrt::HopEventKind::ResyncEnter, 0});
       retune(park);
     } else {
-      ++hop_.logical;
-      const std::uint32_t period =
-          hop_.period_est_us > 0U ? hop_.period_est_us
-                                  : static_cast<std::uint32_t>(PR1_AFH_INITIAL_TIMEOUT_US);
-      hop_deadline_us_ += period;
-      const std::uint8_t next = scheduler_.channelForSequence(hop_.logical);
-      hop_.record({now_us, static_cast<std::uint32_t>(hop_.logical), 0U, next,
-                   afhrt::HopEventKind::TimeoutAdvance, 0});
+      const std::uint8_t next = timedChannelFor(hop_.logical);
+      hop_.record({now_us, static_cast<std::uint32_t>(hop_.logical),
+                   static_cast<std::uint16_t>(frames), next, afhrt::HopEventKind::TimeoutAdvance, 0});
       retune(next);
     }
     if (!radio_.startReceive()) initialized_ = false;
@@ -329,11 +366,12 @@ class FixedLinkRuntime {
   LiveMetrics metrics_{};
   afh::Scheduler scheduler_{afhrt::staticScheduleConfig()};
   afhrt::HopTelemetry hop_{};
-  std::uint64_t hop_raw_base_ = 0U;
+  bool hop_ever_heard_ = false;
   std::uint64_t last_rx_logical_ = 0U;
   std::uint32_t last_rx_irq_us_ = 0U;
-  bool last_rx_irq_valid_ = false;
+  bool last_rx_valid_ = false;
   std::uint32_t hop_deadline_us_ = 0U;
+  bool hop_deadline_valid_ = false;
   std::uint32_t resync_slot_ = 0U;
   std::array<std::uint8_t, pr1::kRadioPayloadMaxBytes> tx_buffer_{};
   std::array<std::uint8_t, pr1::kRadioPayloadMaxBytes> rx_buffer_{};

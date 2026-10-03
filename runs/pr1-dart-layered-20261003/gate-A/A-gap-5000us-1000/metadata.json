@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "run_id": "A-gap-5000us-1000",
-  "created_utc": "2026-10-02T16:07:20.302095Z",
+  "created_utc": "2026-10-02T23:55:09.704444Z",
   "gate": "A",
   "gap_us": 5000,
   "target_packets": 1000,
@@ -36,7 +36,7 @@
       "key": "A:C:\\Users\\USER\\Projects\\running-audio\\runs\\pr1-board-test\\build\\tx-5000us\\rf_tx_compile",
       "image": "runs\\pr1-board-test\\build\\tx-5000us\\rf_tx_compile",
       "sha256": "0cf98491fdb5b38a4311d6a120827642329d6070561529ec5bef9ceb72cabf90",
-      "flashed_utc": "2026-10-02T16:07:14.026187Z"
+      "flashed_utc": "2026-10-02T23:55:04.841501Z"
     }
   },
   "placement": "2026-10-03 operator photo placement_20261003.jpg: RX on desk top (antenna ~vertical, iron and bottles nearby), TX on white box below (antenna vertical). Unchanged for all gates.",
@@ -45,7 +45,7 @@
     "tx_log": "tx.log"
   },
   "build_identity": {
-    "source_head_sha": "ca644fbd234a5e923b7c4557f4bcc4028d35fdae",
+    "source_head_sha": "b874bdcb970378c07adbe051a4fb848b04df6bbd",
     "frozen_firmware_sha": "d1b7ec2b1130fd63fb0eb11fd900b0622766f14c",
     "git_dirty": true,
     "platformio_version": "unavailable: [WinError 2] \uc9c0\uc815\ub41c \ud30c\uc77c\uc744 \ucc3e\uc744 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4",

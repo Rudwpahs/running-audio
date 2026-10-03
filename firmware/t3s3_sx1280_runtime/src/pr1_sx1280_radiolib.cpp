@@ -51,6 +51,11 @@ RadioReadResult Sx1280RadioLibPort::readPacket(std::uint8_t* out,
   const std::size_t packet_length = radio_.getPacketLength();
   if (packet_length == 0U || packet_length > capacity) {
     *length = 0U;
+#if PR1_ENABLE_AFH
+    // readData() (which enters standby) is skipped here; the AFH follower
+    // retunes next, and SetRfFrequency requires standby.
+    radio_.standby();
+#endif
     return RadioReadResult::Error;
   }
 
