@@ -285,6 +285,13 @@ void printAfhProfile() {
     Serial.printf("adaptive_map=%u\n", Runtime::kAdaptive ? 1U : 0U);
     if constexpr (Runtime::kAdaptive) {
       const auto& q = g_runtime.estimator().config();
+      Serial.printf("c3_cfg=strike_shift:%u,strike_base_ms:%lu,strike_cap_ms:%lu,strike_decay_ms:%lu,"
+                    "neighbor_radius:%u,neighbor_min_bad:%u,neighbor_bad_slow_q15:%u,neighbor_direct_fast_q15:%u,"
+                    "probe_window:%u,probation:%u\n",
+                    q.strike_backoff_max_shift, static_cast<unsigned long>(q.strike_probe_ms),
+                    static_cast<unsigned long>(q.strike_max_probe_ms), static_cast<unsigned long>(q.strike_decay_ms),
+                    q.neighbor_radius, q.neighbor_min_bad, q.neighbor_bad_slow_q15, q.neighbor_direct_fast_q15,
+                    q.reinstate_probe_window, q.probation_visits);
       Serial.printf("map_lead_frames=%u\n", static_cast<unsigned>(PR1_MAP_LEAD_FRAMES));
       Serial.printf("map_guard_frames=%u\n", static_cast<unsigned>(PR1_MAP_GUARD_FRAMES));
       Serial.printf(

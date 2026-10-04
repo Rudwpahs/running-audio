@@ -57,6 +57,31 @@ inline quality::Config qualityConfig() {
 #ifdef PR1_Q_PROBE_MAX_MS
   c.max_probe_ms = PR1_Q_PROBE_MAX_MS;
 #endif
+  // Gate C3 knobs (all default-off in pr1_channel_quality.hpp).
+#ifdef PR1_Q_STRIKE_BACKOFF_MAX_SHIFT
+  c.strike_backoff_max_shift = PR1_Q_STRIKE_BACKOFF_MAX_SHIFT;
+#endif
+#ifdef PR1_Q_STRIKE_PROBE_MS
+  c.strike_probe_ms = PR1_Q_STRIKE_PROBE_MS;
+#endif
+#ifdef PR1_Q_STRIKE_MAX_PROBE_MS
+  c.strike_max_probe_ms = PR1_Q_STRIKE_MAX_PROBE_MS;
+#endif
+#ifdef PR1_Q_STRIKE_DECAY_MS
+  c.strike_decay_ms = PR1_Q_STRIKE_DECAY_MS;
+#endif
+#ifdef PR1_Q_NEIGHBOR_RADIUS
+  c.neighbor_radius = PR1_Q_NEIGHBOR_RADIUS;
+#endif
+#ifdef PR1_Q_NEIGHBOR_MIN_BAD
+  c.neighbor_min_bad = PR1_Q_NEIGHBOR_MIN_BAD;
+#endif
+#ifdef PR1_Q_NEIGHBOR_BAD_SLOW_Q15
+  c.neighbor_bad_slow_q15 = PR1_Q_NEIGHBOR_BAD_SLOW_Q15;
+#endif
+#ifdef PR1_Q_NEIGHBOR_DIRECT_FAST_Q15
+  c.neighbor_direct_fast_q15 = PR1_Q_NEIGHBOR_DIRECT_FAST_Q15;
+#endif
   return c;
 }
 

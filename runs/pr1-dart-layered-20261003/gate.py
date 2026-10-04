@@ -59,7 +59,22 @@ C2_FLAGS = ("-D PR1_ENABLE_ADAPTIVE_MAP=1\n    -D PR1_Q_EXCLUDE_PDR_Q15=22937\n 
             "\n    -D PR1_MAP_MIN_INTERVAL_MS=5000")
 RX_VARIANTS["C2"] = C2_FLAGS
 TX_VARIANTS["C2"] = C2_FLAGS
-ADAPTIVE_GATES = ("C", "C1", "C2")
+# Gate C3: C2 values + strike memory (re-exclusion back-off) + neighbour corroboration, selected by
+# the offline replay (analysis/c3_sweep.py, C3_REPLAY_NOTES.md). Two arms go to the board:
+#   C3n2  neighbour rule needs 2 bad neighbours (replay -48.8 % recent / -53.0 % current session)
+#   C3n3  needs 1 bad neighbour (replay -51.8 % / -56.4 %, more single-loss neighbour exclusions)
+def _c3_flags(min_bad: int) -> str:
+    return (C2_FLAGS + "\n    -D PR1_Q_STRIKE_BACKOFF_MAX_SHIFT=2\n    -D PR1_Q_STRIKE_PROBE_MS=25600"
+            "\n    -D PR1_Q_STRIKE_MAX_PROBE_MS=102400\n    -D PR1_Q_STRIKE_DECAY_MS=120000"
+            f"\n    -D PR1_Q_NEIGHBOR_RADIUS=2\n    -D PR1_Q_NEIGHBOR_MIN_BAD={min_bad}"
+            "\n    -D PR1_Q_NEIGHBOR_BAD_SLOW_Q15=0\n    -D PR1_Q_NEIGHBOR_DIRECT_FAST_Q15=26869")
+
+
+for _name, _min_bad in (("C3n2", 2), ("C3n3", 1)):
+    RX_VARIANTS[_name] = _c3_flags(_min_bad)
+    TX_VARIANTS[_name] = _c3_flags(_min_bad)
+
+ADAPTIVE_GATES = ("C", "C1", "C2", "C3n2", "C3n3")
 C_PROFILE = {"adaptive_layers_text": "channel_map"}  # Bt: TX settle diag; RX uses the plain B-rx image
 PLACEMENT = ("2026-10-03 operator photo placement_20261003.jpg: RX on desk top (antenna ~vertical, iron and "
              "bottles nearby), TX on white box below (antenna vertical). Unchanged for all gates.")
@@ -353,7 +368,7 @@ def cmd_run(gate: str, gap: int, target: int, set_name: str | None = None, tag: 
                           "channel_quality": 1 if gate in ADAPTIVE_GATES else 0, "fec": 0, "arq": 0, "phy_ladder": 0,
                           "controller": 0, "control_plane": ("usb_host_relay" + ("" if gate == "C" else ", serial/parse/format on core 0"))
                           if gate in ADAPTIVE_GATES else None,
-                          "serial_core": 0 if gate in ("B1", "C1", "C2") else 1},
+                          "serial_core": 0 if gate in ("B1", "C1", "C2", "C3n2", "C3n3") else 1},
         "images": {"rx": rx_img, "tx": tx_img}, "placement": PLACEMENT,
         "files": {"rx_log": "rx.log", "tx_log": "tx.log"},
         "build_identity": ctl.collect_build_identity(PROJECT, source_root=REPO),
@@ -452,7 +467,8 @@ def cmd_summary() -> None:
     rows = []
     for res in sorted(list(HERE.glob("gate-*/*/result.json")) + list(HERE.glob("gateC-interleave/*/result.json")) + list(HERE.glob("preC/*/result.json"))
                  + list(HERE.glob("gateC1-interleave/*/result.json")) + list(HERE.glob("smokeC1/*/result.json")) + list(HERE.glob("gateC2-interleave/*/result.json"))
-                 + list(HERE.glob("gate-C2/*/result.json"))):
+                 + list(HERE.glob("gate-C2/*/result.json")) + list(HERE.glob("gateC3-interleave/*/result.json"))
+                 + list(HERE.glob("gate-C3/*/result.json"))):
         if "partial" in res.parts: continue
         r = json.loads(res.read_text())
         if "metrics" not in r: continue
