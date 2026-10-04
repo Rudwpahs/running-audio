@@ -6,9 +6,26 @@ using namespace pr1::audio;
 std::array<std::uint8_t,100> block(std::uint16_t s) {
  std::array<std::uint8_t,100> b{}; b[0]=s; b[1]=s>>8; return b;
 }
+// ClipSource emits the scrambled on-air payload; tests look at the descrambled block.
+struct Plain {
+ ClipSource& src;
+ bool fill(std::uint32_t now,std::uint8_t* out,std::size_t n) {
+  if(!src.fill(now,out,n)) return false;
+  whiten(out,out);
+  return true;
+ }
+};
 int main() {
+ {
+  // Scrambling: involution, and a silent block has no long constant run on air.
+  std::array<std::uint8_t,100> z{}, w{}, back{}; whiten(z.data(),w.data()); whiten(w.data(),back.data());
+  assert(back==z); unsigned run=0,maxrun=0;
+  for(unsigned i=1;i<100;i++){ run=(w[i]==w[i-1])?run+1:0; if(run>maxrun) maxrun=run; }
+  assert(maxrun<3); unsigned ones=0; for(auto v:w) ones+=__builtin_popcount(v);
+  assert(ones>300 && ones<500);
+ }
  std::array<std::uint8_t,200> clip{}; clip[100+2]=123;
- ClipSource source(clip.data(),clip.size()); std::array<std::uint8_t,100> out{};
+ ClipSource source_raw(clip.data(),clip.size()); Plain source{source_raw}; std::array<std::uint8_t,100> out{};
  assert(source.fill(0xfffffff0U,out.data(),100)); assert(out[0]==0);
  assert(source.fill(0xfffffff0U+5874U,out.data(),100)); assert(out[0]==0);
  assert(source.fill(0xfffffff0U+5875U,out.data(),100)); assert(out[0]==1 && out[2]==123);
@@ -16,7 +33,7 @@ int main() {
  {
   // Finite repeats: after N plays the source sends silent, decodable blocks with running seq.
   std::array<std::uint8_t,200> c2{}; c2[2]=55; c2[100+2]=66;
-  ClipSource twice(c2.data(),c2.size(),2); std::array<std::uint8_t,100> o{};
+  ClipSource twice_raw(c2.data(),c2.size(),2); Plain twice{twice_raw}; std::array<std::uint8_t,100> o{};
   assert(twice.fill(0,o.data(),100) && o[2]==55);
   assert(twice.fill(3*5875U,o.data(),100) && o[0]==3 && o[2]==66);   // second play
   assert(twice.fill(4*5875U,o.data(),100) && o[0]==4 && o[2]==0 && o[4]==0);

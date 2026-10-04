@@ -1,0 +1,28 @@
+[
+  {
+    "run": 1,
+    "arm": "C",
+    "env": "plain_rx",
+    "crc_good": 20599,
+    "crc_bad": 18,
+    "missing": 36,
+    "rssi_dbm": -48,
+    "irq_to_rx_ready_us_p99": null,
+    "audio": null,
+    "loss_pct": 0.174,
+    "crc_bad_pct": 0.087
+  },
+  {
+    "run": 2,
+    "arm": "C",
+    "env": "plain_rx",
+    "crc_good": 20616,
+    "crc_bad": 11,
+    "missing": 27,
+    "rssi_dbm": -48,
+    "irq_to_rx_ready_us_p99": null,
+    "audio": null,
+    "loss_pct": 0.131,
+    "crc_bad_pct": 0.053
+  }
+]

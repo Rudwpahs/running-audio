@@ -22,7 +22,7 @@ std::atomic<std::uint32_t> errors{0}, short_writes{0}, max_decode_us{0}, startup
 std::atomic<bool> ready{false}, failed{false};
 PR1_IRAM void receive(const std::uint8_t* p,std::size_t n) {
  if(n!=100) return;
- Block b; for(unsigned i=0;i<100;i++) b.data[i]=p[i];
+ Block b; pr1::audio::whiten(p,b.data.data());  // descramble while copying
  if(!queue.push(b)) dropped.fetch_add(1,std::memory_order_relaxed);
 }
 void task(void*) {

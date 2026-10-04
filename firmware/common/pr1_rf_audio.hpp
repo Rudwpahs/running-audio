@@ -4,6 +4,28 @@
 #include <cstring>
 #include "pr1_ima_adpcm.hpp"
 namespace pr1::audio {
+// Payload scrambling (audio layer only; the radio PHY is unchanged). The FLRC link runs
+// without whitening, and audio payloads contain long constant runs (a silent block is 94
+// zero bytes), which measurably raised CRC errors. TX XORs the 100-byte payload with this
+// fixed mask and RX removes it. Mask = 16-bit LFSR (x^16+x^14+x^13+x^11+1), seed 0xACE1.
+constexpr std::array<std::uint8_t, kBlockBytes> makeWhitenMask() {
+  std::array<std::uint8_t, kBlockBytes> m{};
+  std::uint16_t lfsr = 0xACE1U;
+  for (std::size_t i = 0; i < kBlockBytes; ++i) {
+    std::uint8_t byte = 0;
+    for (int b = 0; b < 8; ++b) {
+      const std::uint16_t bit = ((lfsr >> 0) ^ (lfsr >> 2) ^ (lfsr >> 3) ^ (lfsr >> 5)) & 1U;
+      lfsr = static_cast<std::uint16_t>((lfsr >> 1) | (bit << 15));
+      byte = static_cast<std::uint8_t>((byte << 1) | (lfsr & 1U));
+    }
+    m[i] = byte;
+  }
+  return m;
+}
+PR1_AUDIO_DRAM static const std::array<std::uint8_t, kBlockBytes> kWhitenMask = makeWhitenMask();
+PR1_AUDIO_IRAM inline void whiten(const std::uint8_t* in, std::uint8_t* out) {
+  for (std::size_t i = 0; i < kBlockBytes; ++i) out[i] = static_cast<std::uint8_t>(in[i] ^ kWhitenMask[i]);
+}
 // Audio time is independent of RF packet sequence / post-transmit gap.
 class ClipSource {
  public:
@@ -20,6 +42,7 @@ class ClipSource {
     if (finished(block)) std::memset(out,0,kBlockBytes);  // predictor 0, index 0, codes 0 = silence
     else std::memcpy(out,data_+(block%blocks_)*kBlockBytes,kBlockBytes);
     out[0]=static_cast<std::uint8_t>(block); out[1]=static_cast<std::uint8_t>(block>>8);
+    whiten(out,out);  // on-air payload is scrambled; Jitter::push() gets the descrambled block
     return true;
   }
  private:

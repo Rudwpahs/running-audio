@@ -1,0 +1,78 @@
+[
+  {
+    "run": 1,
+    "arm": "C",
+    "env": "plain_rx",
+    "crc_good": 15847,
+    "crc_bad": 71,
+    "missing": 87,
+    "rssi_dbm": -47,
+    "irq_to_rx_ready_us_p99": null,
+    "audio": null,
+    "loss_pct": 0.546,
+    "crc_bad_pct": 0.446
+  },
+  {
+    "run": 2,
+    "arm": "A",
+    "env": "audio_rx",
+    "crc_good": 15130,
+    "crc_bad": 792,
+    "missing": 806,
+    "rssi_dbm": -48,
+    "irq_to_rx_ready_us_p99": null,
+    "audio": {
+      "frames": "1905756",
+      "missing_blocks": "253",
+      "duplicates": "5247",
+      "late": "0",
+      "invalid": "0",
+      "resets": "0",
+      "queue_dropped": "0",
+      "startup_blocks": "7",
+      "write_errors": "0",
+      "short_writes": "0",
+      "max_decode_us": "46"
+    },
+    "loss_pct": 5.058,
+    "crc_bad_pct": 4.97
+  },
+  {
+    "run": 3,
+    "arm": "C",
+    "env": "plain_rx",
+    "crc_good": 15709,
+    "crc_bad": 228,
+    "missing": 258,
+    "rssi_dbm": -48,
+    "irq_to_rx_ready_us_p99": null,
+    "audio": null,
+    "loss_pct": 1.616,
+    "crc_bad_pct": 1.428
+  },
+  {
+    "run": 4,
+    "arm": "A",
+    "env": "audio_rx",
+    "crc_good": 15652,
+    "crc_bad": 248,
+    "missing": 285,
+    "rssi_dbm": -48,
+    "irq_to_rx_ready_us_p99": null,
+    "audio": {
+      "frames": "1905756",
+      "missing_blocks": "68",
+      "duplicates": "5585",
+      "late": "0",
+      "invalid": "0",
+      "resets": "0",
+      "queue_dropped": "0",
+      "startup_blocks": "7",
+      "write_errors": "0",
+      "short_writes": "0",
+      "max_decode_us": "47"
+    },
+    "loss_pct": 1.788,
+    "crc_bad_pct": 1.556
+  }
+]
