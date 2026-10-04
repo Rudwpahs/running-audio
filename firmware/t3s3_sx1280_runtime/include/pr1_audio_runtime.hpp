@@ -12,7 +12,10 @@ extern const std::uint8_t clip_end[] asm("_binary_data_clip_adpcm_end");
 #ifndef PR1_AUDIO_REPEATS
 #define PR1_AUDIO_REPEATS 2  // plays twice after TX power-on, then silence (reset TX to replay)
 #endif
-pr1::audio::ClipSource source(clip_start,clip_end-clip_start,PR1_AUDIO_REPEATS);
+#ifndef PR1_AUDIO_DIVERSITY_BLOCKS
+#define PR1_AUDIO_DIVERSITY_BLOCKS 0  // 0 = every packet carries the newest block
+#endif
+pr1::audio::ClipSource source(clip_start,clip_end-clip_start,PR1_AUDIO_REPEATS,PR1_AUDIO_DIVERSITY_BLOCKS);
 bool fill(std::uint32_t now,std::uint8_t* p,std::size_t n) { return source.fill(now,p,n); }
 #else
 struct Block { std::array<std::uint8_t,100> data{}; };

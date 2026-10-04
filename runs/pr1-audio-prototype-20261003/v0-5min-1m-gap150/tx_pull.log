@@ -1,0 +1,4 @@
+PR1T v=1 t_us=334175795 field=device_state value=2
+PR1T v=1 t_us=334175795 field=scheduler_misses value=1
+PR1T v=1 t_us=334175795 field=trace_overwrites value=345764
+PR1T v=1 t_us=334175795 field=capability_mask value=12

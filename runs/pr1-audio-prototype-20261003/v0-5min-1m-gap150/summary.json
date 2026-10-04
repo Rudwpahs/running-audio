@@ -1,0 +1,42 @@
+{
+  "out_dir": "v0-5min-1m-gap150",
+  "seconds_requested": 330.0,
+  "seconds_elapsed": 338.1,
+  "tx_env": "audio_tx150_5min",
+  "rx_env": "audio_rx",
+  "image_sha256": {
+    "rx": "aeb2685215079552b33691ca4857f9b4fa143d20487d3b1a098d8c42e28a716e",
+    "tx": "5db453cb17b3217ca7d9b27a60230fc03e3bf273949f262be1a5cfaf402b2cf5"
+  },
+  "note": "1 m bench, gap 150 us, time-diverse repetition (4 blocks), fade concealment, clock melody x22",
+  "rf": {
+    "crc_good": 112873,
+    "crc_bad": 816,
+    "missing": 1028,
+    "rssi_dbm": -51,
+    "irq_to_rx_ready_us_p99": null,
+    "spi_duration_us_p99": null,
+    "rx_rearm_us_p99": null,
+    "loss_pct": 0.903
+  },
+  "tx": {
+    "scheduler_misses": 1,
+    "tx_done": null,
+    "tx_started": null
+  },
+  "audio": {
+    "frames": 10666556,
+    "missing_blocks": 1,
+    "duplicates": 56790,
+    "late": 0,
+    "invalid": 0,
+    "resets": 0,
+    "queue_dropped": 0,
+    "startup_blocks": 658,
+    "write_errors": 0,
+    "short_writes": 0,
+    "max_decode_us": 48,
+    "concealed_pct": 0.002,
+    "i2s_seconds": 333.3
+  }
+}

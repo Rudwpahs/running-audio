@@ -1,0 +1,15 @@
+PR1T v=1 t_us=60154230 field=device_state value=2
+PR1T v=1 t_us=60154230 field=rssi_dbm value=-55
+PR1T v=1 t_us=60154230 field=crc_good value=20335
+PR1T v=1 t_us=60154230 field=crc_bad value=236
+PR1T v=1 t_us=60154230 field=missing value=275
+PR1T v=1 t_us=60154230 field=queue_depth value=0
+PR1T v=1 t_us=60154230 field=max_queue_depth value=1
+PR1T v=1 t_us=60154230 field=irq_to_spi_us value=5
+PR1T v=1 t_us=60154230 field=spi_duration_us value=1246
+PR1T v=1 t_us=60154230 field=rx_processing_us value=1248
+PR1T v=1 t_us=60154230 field=spi_end_to_rearm_start_us value=136
+PR1T v=1 t_us=60154230 field=rx_rearm_us value=420
+PR1T v=1 t_us=60154230 field=irq_to_rx_ready_us value=1792
+PR1T v=1 t_us=60154230 field=trace_overwrites value=185019
+PR1T v=1 t_us=60154230 field=capability_mask value=12

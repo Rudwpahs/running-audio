@@ -74,5 +74,24 @@ int main() {
   for(unsigned i=0;i<6;i++){ b=block(s++); n.push(b.data()); }
   n.render(pcm.data()); b=block(50); assert(!n.push(b.data())); assert(n.late==1 && n.resets==0);
  }
+ {
+  // Time-diverse repetition: alternate newest block / block from 4 blocks earlier.
+  std::array<std::uint8_t,100*16> c3{}; for(unsigned k=0;k<16;k++) c3[k*100+2]=static_cast<std::uint8_t>(k+1);
+  ClipSource div_raw(c3.data(),c3.size(),0,4); Plain div{div_raw}; std::array<std::uint8_t,100> o{};
+  unsigned seen[16]={};
+  for(unsigned n=0;n<24;n++) {               // two packets per block period
+    assert(div.fill(n*2938U,o.data(),100)); assert(o[2]==o[0]+1); ++seen[o[0]];
+  }
+  for(unsigned k=4;k<8;k++) assert(seen[k]==2);  // newest copy + the copy 4 blocks later
+  for(unsigned k=0;k<4;k++) assert(seen[k]==3);  // start-up: no older block exists yet
+  // Concealment: a missing block ramps to zero without a step and the next block fades in.
+  Jitter pl; std::uint16_t s2=10; std::array<std::int16_t,188> p{};
+  for(unsigned i=0;i<6;i++){ auto bb=block(s2++); bb[2]=0x10; bb[3]=0x27; pl.push(bb.data()); }  // predictor 10000
+  for(unsigned i=0;i<6;i++) assert(pl.render(p.data()));
+  const std::int16_t last=p[187]; assert(!pl.render(p.data()));
+  assert(p[0]==last && p[Jitter::kFade]==0 && p[187]==0);
+  auto bb=block(s2+1); bb[2]=0x10; bb[3]=0x27; pl.push(bb.data());  // s2 was lost, s2+1 arrives
+  assert(pl.render(p.data())); assert(p[0]==0 && p[187]!=0);    // fades in from zero
+ }
  std::cout << "test_rf_audio: PASS\n";
 }

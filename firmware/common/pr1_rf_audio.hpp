@@ -31,14 +31,20 @@ class ClipSource {
  public:
   // repeats = how many times the clip plays after start (0 = loop forever). After that the
   // source keeps sending valid silent blocks, so the link and the playout clock stay up.
-  ClipSource(const std::uint8_t* data, std::size_t bytes, std::uint32_t repeats = 0)
-      : data_(data), blocks_(bytes/kBlockBytes), repeats_(repeats) {}
+  // delay_blocks > 0 enables time-diverse repetition: every other packet carries the block
+  // from delay_blocks earlier instead of the newest one, so the two copies of a block are
+  // ~delay_blocks * 5.9 ms apart and one interference burst rarely removes both. Needs about
+  // two packets per block (gap 150 us) and delay_blocks < Jitter::kPrefill.
+  ClipSource(const std::uint8_t* data, std::size_t bytes, std::uint32_t repeats = 0, std::uint32_t delay_blocks = 0)
+      : data_(data), blocks_(bytes/kBlockBytes), repeats_(repeats), delay_(delay_blocks) {}
   bool finished(std::uint64_t block) const { return repeats_ != 0 && block >= static_cast<std::uint64_t>(blocks_) * repeats_; }
   bool fill(std::uint32_t now, std::uint8_t* out, std::size_t size) {
     if (!blocks_ || size!=kBlockBytes) return false;
     if (!started_) { last_=now; started_=true; }
     elapsed_ += static_cast<std::uint32_t>(now-last_); last_=now;
-    const std::uint64_t block=elapsed_/5875U;
+    std::uint64_t block=elapsed_/5875U;
+    older_ = !older_;
+    if (delay_ != 0 && older_ && block >= delay_) block -= delay_;
     if (finished(block)) std::memset(out,0,kBlockBytes);  // predictor 0, index 0, codes 0 = silence
     else std::memcpy(out,data_+(block%blocks_)*kBlockBytes,kBlockBytes);
     out[0]=static_cast<std::uint8_t>(block); out[1]=static_cast<std::uint8_t>(block>>8);
@@ -46,13 +52,13 @@ class ClipSource {
     return true;
   }
  private:
-  const std::uint8_t* data_; std::size_t blocks_; std::uint32_t repeats_;
+  const std::uint8_t* data_; std::size_t blocks_; std::uint32_t repeats_, delay_; bool older_=false;
   bool started_=false; std::uint32_t last_=0; std::uint64_t elapsed_=0;
 };
 // Single consumer owns this buffer; SPSC transport is outside it.
 class Jitter {
  public:
-  static constexpr unsigned kCapacity=32, kPrefill=6, kLateResync=32;
+  static constexpr unsigned kCapacity=32, kPrefill=6, kLateResync=32, kFade=64;
   bool push(const std::uint8_t* b) {
     if(b[4]>88) { ++invalid; return false; }
     const auto seq=parseHeader(b).seq;
@@ -79,11 +85,19 @@ class Jitter {
     if(!playing_) { std::memset(out,0,kSamplesPerBlock*sizeof(*out)); ++startup; return false; }
     auto& slot=slots_[expected_%kCapacity]; bool ok=slot.valid && slot.seq==expected_;
     if(ok) {
-      ok=decodeBlock(slot.data.data(),out); slot.valid=false; --queued_;
-      std::memcpy(last_.data(),out,kSamplesPerBlock*sizeof(*out)); ++decoded;
+      ok=decodeBlock(slot.data.data(),out); slot.valid=false; --queued_; ++decoded;
+    }
+    if(ok) {
+      // After a concealed block, fade the first samples in (no step at the block edge).
+      if(concealed_) for(unsigned i=0;i<kFade;i++) out[i]=static_cast<std::int16_t>(out[i]*static_cast<int>(i)/static_cast<int>(kFade));
+      concealed_=false; tail_=out[kSamplesPerBlock-1];
     } else {
+      // Missing block: ramp the last output sample to zero, then silence. (Repeating the
+      // previous block made an audible buzz/click at every loss.)
       ++missing;
-      for(unsigned i=0;i<kSamplesPerBlock;i++) { last_[i]=static_cast<std::int16_t>(last_[i]*3/4); out[i]=last_[i]; }
+      for(unsigned i=0;i<kSamplesPerBlock;i++)
+        out[i]= i<kFade ? static_cast<std::int16_t>(tail_*static_cast<int>(kFade-i)/static_cast<int>(kFade)) : 0;
+      concealed_=true; tail_=0;
     }
     ++expected_; return ok;
   }
@@ -92,9 +106,9 @@ class Jitter {
   struct Slot { std::array<std::uint8_t,kBlockBytes> data{}; std::uint16_t seq=0; bool valid=false; };
   void anchor(std::uint16_t seq) {
     for(auto& slot:slots_) slot.valid=false;
-    last_.fill(0); expected_=seq; queued_=0; anchored_=true; playing_=false; late_run_=0;
+    tail_=0; concealed_=true; expected_=seq; queued_=0; anchored_=true; playing_=false; late_run_=0;
   }
-  std::array<Slot,kCapacity> slots_{}; std::array<std::int16_t,kSamplesPerBlock> last_{};
+  std::array<Slot,kCapacity> slots_{}; std::int16_t tail_=0; bool concealed_=true;
   std::uint16_t expected_=0; unsigned queued_=0, late_run_=0; bool anchored_=false, playing_=false;
 };
 }

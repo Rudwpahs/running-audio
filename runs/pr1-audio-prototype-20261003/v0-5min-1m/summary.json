@@ -1,0 +1,42 @@
+{
+  "out_dir": "v0-5min-1m",
+  "seconds_requested": 330.0,
+  "seconds_elapsed": 338.1,
+  "tx_env": "audio_tx_5min",
+  "rx_env": "audio_rx",
+  "image_sha256": {
+    "rx": "8657fed4c87ff676c8100c47bdf09c6e16bc0e3e04e1f04a072490648687c3d2",
+    "tx": "feb21c89e00ce37bfea2ff4bf47619022e88b9803e8bbf809a4f20320c117d3a"
+  },
+  "note": "1 m bench placement, clock melody x22 (5 min 9 s) then silence",
+  "rf": {
+    "crc_good": 87073,
+    "crc_bad": 766,
+    "missing": 960,
+    "rssi_dbm": -60,
+    "irq_to_rx_ready_us_p99": null,
+    "spi_duration_us_p99": null,
+    "rx_rearm_us_p99": null,
+    "loss_pct": 1.091
+  },
+  "tx": {
+    "scheduler_misses": 1,
+    "tx_done": null,
+    "tx_started": null
+  },
+  "audio": {
+    "frames": 10682912,
+    "missing_blocks": 254,
+    "duplicates": 31229,
+    "late": 0,
+    "invalid": 0,
+    "resets": 0,
+    "queue_dropped": 0,
+    "startup_blocks": 732,
+    "write_errors": 0,
+    "short_writes": 0,
+    "max_decode_us": 45,
+    "concealed_pct": 0.453,
+    "i2s_seconds": 333.8
+  }
+}
