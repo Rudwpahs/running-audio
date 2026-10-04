@@ -1,0 +1,1096 @@
+{
+  "runs": [
+    {
+      "run": "B1-gap-150us-10000-i1",
+      "gate": "B1",
+      "packets": 11050,
+      "missing": 667,
+      "loss_pct": 6.0362,
+      "crc": 509,
+      "timeout_frames": 46,
+      "jump_frames": 0,
+      "anomalies_total": 729,
+      "anomalies_kept": 160,
+      "anomaly_list_truncated": true,
+      "ctrl_events": 0,
+      "lost_near_ctrl": 0,
+      "activations": 0,
+      "lost_near_activation": 0,
+      "rx_slow_ready": 0,
+      "rx_slow_ready_then_lost": 0,
+      "tx_slow_transmits": 0,
+      "sched_miss": 1,
+      "irq_to_ready_p99": 1899,
+      "spi_p99": 1243,
+      "rearm_p99": 422,
+      "spi_end_to_rearm_p99": 233,
+      "rx_ctrl_us": null,
+      "tx_ctrl_us": null,
+      "core0_rx": {
+        "core": 0,
+        "lines": 0,
+        "parse_fail": 0,
+        "in_dropped": 0,
+        "out_lines": 0,
+        "write_waits": 0,
+        "stack_free": 2996,
+        "window_waits": 1317285,
+        "work_us_max": 8
+      },
+      "core0_tx": {
+        "core": 0,
+        "lines": 0,
+        "parse_fail": 0,
+        "in_dropped": 0,
+        "out_lines": 0,
+        "write_waits": 0,
+        "stack_free": 3312,
+        "window_waits": 0,
+        "work_us_max": 2
+      },
+      "map_versions": null,
+      "min_active": null,
+      "final_active": null,
+      "exclusions": null,
+      "reinclusions": null,
+      "probe_results": null,
+      "recovered": null,
+      "events_truncated": null,
+      "in_window_version_mismatch": null,
+      "post_run_version_mismatch": null,
+      "relay": null
+    },
+    {
+      "run": "C1-gap-150us-10000-i2",
+      "gate": "C1",
+      "packets": 11170,
+      "missing": 225,
+      "loss_pct": 2.0143,
+      "crc": 136,
+      "timeout_frames": 54,
+      "jump_frames": 0,
+      "anomalies_total": 242,
+      "anomalies_kept": 160,
+      "anomaly_list_truncated": true,
+      "ctrl_events": 112,
+      "lost_near_ctrl": 3,
+      "activations": 4,
+      "lost_near_activation": 0,
+      "rx_slow_ready": 0,
+      "rx_slow_ready_then_lost": 0,
+      "tx_slow_transmits": 1,
+      "sched_miss": 1,
+      "irq_to_ready_p99": 1884,
+      "spi_p99": 1249,
+      "rearm_p99": 423,
+      "spi_end_to_rearm_p99": 226,
+      "rx_ctrl_us": {
+        "ctrl_us_n": 33,
+        "ctrl_us_p50": 5,
+        "ctrl_us_p95": 6,
+        "ctrl_us_p99": 6,
+        "ctrl_us_max": 6
+      },
+      "tx_ctrl_us": {
+        "ctrl_us_n": 66,
+        "ctrl_us_p50": 3,
+        "ctrl_us_p95": 5,
+        "ctrl_us_p99": 6,
+        "ctrl_us_max": 6
+      },
+      "core0_rx": {
+        "core": 0,
+        "lines": 33,
+        "parse_fail": 0,
+        "in_dropped": 0,
+        "out_lines": 67,
+        "write_waits": 66,
+        "stack_free": 2948,
+        "window_waits": 1334698,
+        "work_us_max": 37
+      },
+      "core0_tx": {
+        "core": 0,
+        "lines": 66,
+        "parse_fail": 0,
+        "in_dropped": 0,
+        "out_lines": 66,
+        "write_waits": 0,
+        "stack_free": 3312,
+        "window_waits": 0,
+        "work_us_max": 46
+      },
+      "map_versions": 5,
+      "min_active": 12,
+      "final_active": 12,
+      "exclusions": null,
+      "reinclusions": 0,
+      "probe_results": 0,
+      "recovered": 0,
+      "events_truncated": true,
+      "in_window_version_mismatch": null,
+      "post_run_version_mismatch": null,
+      "relay": null
+    },
+    {
+      "run": "C3n2-gap-150us-10000-i3",
+      "gate": "C3n2",
+      "packets": 11278,
+      "missing": 257,
+      "loss_pct": 2.2788,
+      "crc": 177,
+      "timeout_frames": 40,
+      "jump_frames": 0,
+      "anomalies_total": 275,
+      "anomalies_kept": 160,
+      "anomaly_list_truncated": true,
+      "ctrl_events": 63,
+      "lost_near_ctrl": 2,
+      "activations": 5,
+      "lost_near_activation": 1,
+      "rx_slow_ready": 0,
+      "rx_slow_ready_then_lost": 0,
+      "tx_slow_transmits": 0,
+      "sched_miss": 1,
+      "irq_to_ready_p99": 1882,
+      "spi_p99": 1249,
+      "rearm_p99": 421,
+      "spi_end_to_rearm_p99": 225,
+      "rx_ctrl_us": {
+        "ctrl_us_n": 18,
+        "ctrl_us_p50": 5,
+        "ctrl_us_p95": 7,
+        "ctrl_us_p99": 7,
+        "ctrl_us_max": 7
+      },
+      "tx_ctrl_us": {
+        "ctrl_us_n": 36,
+        "ctrl_us_p50": 3,
+        "ctrl_us_p95": 5,
+        "ctrl_us_p99": 7,
+        "ctrl_us_max": 7
+      },
+      "core0_rx": {
+        "core": 0,
+        "lines": 18,
+        "parse_fail": 0,
+        "in_dropped": 0,
+        "out_lines": 37,
+        "write_waits": 46,
+        "stack_free": 2948,
+        "window_waits": 1344994,
+        "work_us_max": 38
+      },
+      "core0_tx": {
+        "core": 0,
+        "lines": 36,
+        "parse_fail": 0,
+        "in_dropped": 0,
+        "out_lines": 36,
+        "write_waits": 0,
+        "stack_free": 3220,
+        "window_waits": 0,
+        "work_us_max": 47
+      },
+      "map_versions": 6,
+      "min_active": 12,
+      "final_active": 12,
+      "exclusions": 26,
+      "reinclusions": 0,
+      "probe_results": 1,
+      "recovered": 47,
+      "events_truncated": true,
+      "in_window_version_mismatch": false,
+      "post_run_version_mismatch": false,
+      "relay": {
+        "proposals": 18,
+        "commits": 18,
+        "divergence": 0,
+        "tx_no_ack": 0,
+        "bad_lines": 0
+      }
+    },
+    {
+      "run": "C3n3-gap-150us-10000-i4",
+      "gate": "C3n3",
+      "packets": 11383,
+      "missing": 284,
+      "loss_pct": 2.4949,
+      "crc": 157,
+      "timeout_frames": 41,
+      "jump_frames": 0,
+      "anomalies_total": null,
+      "anomalies_kept": null,
+      "anomaly_list_truncated": null,
+      "ctrl_events": 95,
+      "lost_near_ctrl": 1,
+      "activations": 3,
+      "lost_near_activation": 0,
+      "rx_slow_ready": 0,
+      "rx_slow_ready_then_lost": 0,
+      "tx_slow_transmits": 1,
+      "sched_miss": 1,
+      "irq_to_ready_p99": 1883,
+      "spi_p99": 1248,
+      "rearm_p99": 422,
+      "spi_end_to_rearm_p99": 226,
+      "rx_ctrl_us": {
+        "ctrl_us_n": 27,
+        "ctrl_us_p50": 5,
+        "ctrl_us_p95": 5,
+        "ctrl_us_p99": 7,
+        "ctrl_us_max": 7
+      },
+      "tx_ctrl_us": {
+        "ctrl_us_n": 54,
+        "ctrl_us_p50": 3,
+        "ctrl_us_p95": 5,
+        "ctrl_us_p99": 7,
+        "ctrl_us_max": 7
+      },
+      "core0_rx": {
+        "core": 0,
+        "lines": 27,
+        "parse_fail": 0,
+        "in_dropped": 0,
+        "out_lines": 55,
+        "write_waits": 39,
+        "stack_free": 2948,
+        "window_waits": 1356839,
+        "work_us_max": 38
+      },
+      "core0_tx": {
+        "core": 0,
+        "lines": 54,
+        "parse_fail": 0,
+        "in_dropped": 0,
+        "out_lines": 54,
+        "write_waits": 0,
+        "stack_free": 3220,
+        "window_waits": 0,
+        "work_us_max": 47
+      },
+      "map_versions": 4,
+      "min_active": 12,
+      "final_active": 12,
+      "exclusions": null,
+      "reinclusions": 0,
+      "probe_results": 0,
+      "recovered": 0,
+      "events_truncated": true,
+      "in_window_version_mismatch": null,
+      "post_run_version_mismatch": null,
+      "relay": null
+    },
+    {
+      "run": "B1-gap-150us-10000-i5",
+      "gate": "B1",
+      "packets": 11166,
+      "missing": 959,
+      "loss_pct": 8.5886,
+      "crc": 787,
+      "timeout_frames": 26,
+      "jump_frames": 0,
+      "anomalies_total": null,
+      "anomalies_kept": null,
+      "anomaly_list_truncated": null,
+      "ctrl_events": 0,
+      "lost_near_ctrl": 0,
+      "activations": 0,
+      "lost_near_activation": 0,
+      "rx_slow_ready": 0,
+      "rx_slow_ready_then_lost": 0,
+      "tx_slow_transmits": 0,
+      "sched_miss": 1,
+      "irq_to_ready_p99": 1899,
+      "spi_p99": 1250,
+      "rearm_p99": 421,
+      "spi_end_to_rearm_p99": 241,
+      "rx_ctrl_us": null,
+      "tx_ctrl_us": null,
+      "core0_rx": {
+        "core": 0,
+        "lines": 0,
+        "parse_fail": 0,
+        "in_dropped": 0,
+        "out_lines": 0,
+        "write_waits": 0,
+        "stack_free": 2996,
+        "window_waits": 1331885,
+        "work_us_max": 8
+      },
+      "core0_tx": {
+        "core": 0,
+        "lines": 0,
+        "parse_fail": 0,
+        "in_dropped": 0,
+        "out_lines": 0,
+        "write_waits": 0,
+        "stack_free": 3312,
+        "window_waits": 0,
+        "work_us_max": 2
+      },
+      "map_versions": null,
+      "min_active": null,
+      "final_active": null,
+      "exclusions": null,
+      "reinclusions": null,
+      "probe_results": null,
+      "recovered": null,
+      "events_truncated": null,
+      "in_window_version_mismatch": null,
+      "post_run_version_mismatch": null,
+      "relay": null
+    },
+    {
+      "run": "C1-gap-150us-10000-i6",
+      "gate": "C1",
+      "packets": 11400,
+      "missing": 204,
+      "loss_pct": 1.7895,
+      "crc": 142,
+      "timeout_frames": 32,
+      "jump_frames": 0,
+      "anomalies_total": 218,
+      "anomalies_kept": 160,
+      "anomaly_list_truncated": true,
+      "ctrl_events": 116,
+      "lost_near_ctrl": 3,
+      "activations": 5,
+      "lost_near_activation": 1,
+      "rx_slow_ready": 0,
+      "rx_slow_ready_then_lost": 0,
+      "tx_slow_transmits": 1,
+      "sched_miss": 1,
+      "irq_to_ready_p99": 1883,
+      "spi_p99": 1250,
+      "rearm_p99": 422,
+      "spi_end_to_rearm_p99": 226,
+      "rx_ctrl_us": {
+        "ctrl_us_n": 33,
+        "ctrl_us_p50": 5,
+        "ctrl_us_p95": 5,
+        "ctrl_us_p99": 7,
+        "ctrl_us_max": 7
+      },
+      "tx_ctrl_us": {
+        "ctrl_us_n": 66,
+        "ctrl_us_p50": 3,
+        "ctrl_us_p95": 5,
+        "ctrl_us_p99": 7,
+        "ctrl_us_max": 7
+      },
+      "core0_rx": {
+        "core": 0,
+        "lines": 33,
+        "parse_fail": 0,
+        "in_dropped": 0,
+        "out_lines": 66,
+        "write_waits": 43,
+        "stack_free": 2948,
+        "window_waits": 1361382,
+        "work_us_max": 38
+      },
+      "core0_tx": {
+        "core": 0,
+        "lines": 66,
+        "parse_fail": 0,
+        "in_dropped": 0,
+        "out_lines": 66,
+        "write_waits": 0,
+        "stack_free": 3312,
+        "window_waits": 0,
+        "work_us_max": 47
+      },
+      "map_versions": 6,
+      "min_active": 12,
+      "final_active": 12,
+      "exclusions": 28,
+      "reinclusions": 0,
+      "probe_results": 8,
+      "recovered": 24,
+      "events_truncated": true,
+      "in_window_version_mismatch": false,
+      "post_run_version_mismatch": false,
+      "relay": {
+        "proposals": 33,
+        "commits": 33,
+        "divergence": 0,
+        "tx_no_ack": 0,
+        "bad_lines": 0
+      }
+    },
+    {
+      "run": "C3n2-gap-150us-10000-i7",
+      "gate": "C3n2",
+      "packets": 11188,
+      "missing": 275,
+      "loss_pct": 2.458,
+      "crc": 206,
+      "timeout_frames": 22,
+      "jump_frames": 0,
+      "anomalies_total": 291,
+      "anomalies_kept": 160,
+      "anomaly_list_truncated": true,
+      "ctrl_events": 81,
+      "lost_near_ctrl": 0,
+      "activations": 4,
+      "lost_near_activation": 1,
+      "rx_slow_ready": 0,
+      "rx_slow_ready_then_lost": 0,
+      "tx_slow_transmits": 0,
+      "sched_miss": 1,
+      "irq_to_ready_p99": 1881,
+      "spi_p99": 1249,
+      "rearm_p99": 422,
+      "spi_end_to_rearm_p99": 225,
+      "rx_ctrl_us": {
+        "ctrl_us_n": 23,
+        "ctrl_us_p50": 5,
+        "ctrl_us_p95": 5,
+        "ctrl_us_p99": 6,
+        "ctrl_us_max": 6
+      },
+      "tx_ctrl_us": {
+        "ctrl_us_n": 46,
+        "ctrl_us_p50": 3,
+        "ctrl_us_p95": 5,
+        "ctrl_us_p99": 10,
+        "ctrl_us_max": 10
+      },
+      "core0_rx": {
+        "core": 0,
+        "lines": 23,
+        "parse_fail": 0,
+        "in_dropped": 0,
+        "out_lines": 46,
+        "write_waits": 58,
+        "stack_free": 2852,
+        "window_waits": 1336402,
+        "work_us_max": 38
+      },
+      "core0_tx": {
+        "core": 0,
+        "lines": 46,
+        "parse_fail": 0,
+        "in_dropped": 0,
+        "out_lines": 46,
+        "write_waits": 0,
+        "stack_free": 3312,
+        "window_waits": 0,
+        "work_us_max": 47
+      },
+      "map_versions": 5,
+      "min_active": 12,
+      "final_active": 12,
+      "exclusions": 28,
+      "reinclusions": 0,
+      "probe_results": 0,
+      "recovered": 27,
+      "events_truncated": true,
+      "in_window_version_mismatch": false,
+      "post_run_version_mismatch": false,
+      "relay": {
+        "proposals": 23,
+        "commits": 23,
+        "divergence": 0,
+        "tx_no_ack": 0,
+        "bad_lines": 0
+      }
+    },
+    {
+      "run": "C3n3-gap-150us-10000-i8",
+      "gate": "C3n3",
+      "packets": 11252,
+      "missing": 256,
+      "loss_pct": 2.2752,
+      "crc": 180,
+      "timeout_frames": 27,
+      "jump_frames": 0,
+      "anomalies_total": 275,
+      "anomalies_kept": 160,
+      "anomaly_list_truncated": true,
+      "ctrl_events": 80,
+      "lost_near_ctrl": 0,
+      "activations": 4,
+      "lost_near_activation": 1,
+      "rx_slow_ready": 0,
+      "rx_slow_ready_then_lost": 0,
+      "tx_slow_transmits": 1,
+      "sched_miss": 1,
+      "irq_to_ready_p99": 1883,
+      "spi_p99": 1249,
+      "rearm_p99": 422,
+      "spi_end_to_rearm_p99": 225,
+      "rx_ctrl_us": {
+        "ctrl_us_n": 23,
+        "ctrl_us_p50": 5,
+        "ctrl_us_p95": 5,
+        "ctrl_us_p99": 6,
+        "ctrl_us_max": 6
+      },
+      "tx_ctrl_us": {
+        "ctrl_us_n": 46,
+        "ctrl_us_p50": 3,
+        "ctrl_us_p95": 5,
+        "ctrl_us_p99": 6,
+        "ctrl_us_max": 6
+      },
+      "core0_rx": {
+        "core": 0,
+        "lines": 23,
+        "parse_fail": 0,
+        "in_dropped": 0,
+        "out_lines": 46,
+        "write_waits": 50,
+        "stack_free": 2948,
+        "window_waits": 1341967,
+        "work_us_max": 36
+      },
+      "core0_tx": {
+        "core": 0,
+        "lines": 46,
+        "parse_fail": 0,
+        "in_dropped": 0,
+        "out_lines": 46,
+        "write_waits": 0,
+        "stack_free": 3312,
+        "window_waits": 0,
+        "work_us_max": 47
+      },
+      "map_versions": 5,
+      "min_active": 12,
+      "final_active": 12,
+      "exclusions": 28,
+      "reinclusions": 0,
+      "probe_results": 8,
+      "recovered": 42,
+      "events_truncated": true,
+      "in_window_version_mismatch": false,
+      "post_run_version_mismatch": false,
+      "relay": {
+        "proposals": 23,
+        "commits": 23,
+        "divergence": 0,
+        "tx_no_ack": 0,
+        "bad_lines": 0
+      }
+    },
+    {
+      "run": "B1-gap-150us-10000-i9",
+      "gate": "B1",
+      "packets": 11065,
+      "missing": 994,
+      "loss_pct": 8.9833,
+      "crc": 810,
+      "timeout_frames": 25,
+      "jump_frames": 0,
+      "anomalies_total": null,
+      "anomalies_kept": null,
+      "anomaly_list_truncated": null,
+      "ctrl_events": 0,
+      "lost_near_ctrl": 0,
+      "activations": 0,
+      "lost_near_activation": 0,
+      "rx_slow_ready": 0,
+      "rx_slow_ready_then_lost": 0,
+      "tx_slow_transmits": 0,
+      "sched_miss": 1,
+      "irq_to_ready_p99": 1890,
+      "spi_p99": 1241,
+      "rearm_p99": 414,
+      "spi_end_to_rearm_p99": 233,
+      "rx_ctrl_us": null,
+      "tx_ctrl_us": null,
+      "core0_rx": {
+        "core": 0,
+        "lines": 0,
+        "parse_fail": 0,
+        "in_dropped": 0,
+        "out_lines": 0,
+        "write_waits": 0,
+        "stack_free": 2996,
+        "window_waits": 1331562,
+        "work_us_max": 8
+      },
+      "core0_tx": {
+        "core": 0,
+        "lines": 0,
+        "parse_fail": 0,
+        "in_dropped": 0,
+        "out_lines": 0,
+        "write_waits": 0,
+        "stack_free": 3312,
+        "window_waits": 0,
+        "work_us_max": 2
+      },
+      "map_versions": null,
+      "min_active": null,
+      "final_active": null,
+      "exclusions": null,
+      "reinclusions": null,
+      "probe_results": null,
+      "recovered": null,
+      "events_truncated": null,
+      "in_window_version_mismatch": null,
+      "post_run_version_mismatch": null,
+      "relay": null
+    },
+    {
+      "run": "C1-gap-150us-10000-i10",
+      "gate": "C1",
+      "packets": 11210,
+      "missing": 220,
+      "loss_pct": 1.9625,
+      "crc": 147,
+      "timeout_frames": 44,
+      "jump_frames": 0,
+      "anomalies_total": 240,
+      "anomalies_kept": 160,
+      "anomaly_list_truncated": true,
+      "ctrl_events": 109,
+      "lost_near_ctrl": 1,
+      "activations": 5,
+      "lost_near_activation": 0,
+      "rx_slow_ready": 0,
+      "rx_slow_ready_then_lost": 0,
+      "tx_slow_transmits": 1,
+      "sched_miss": 1,
+      "irq_to_ready_p99": 1884,
+      "spi_p99": 1250,
+      "rearm_p99": 421,
+      "spi_end_to_rearm_p99": 226,
+      "rx_ctrl_us": {
+        "ctrl_us_n": 33,
+        "ctrl_us_p50": 5,
+        "ctrl_us_p95": 6,
+        "ctrl_us_p99": 7,
+        "ctrl_us_max": 7
+      },
+      "tx_ctrl_us": {
+        "ctrl_us_n": 66,
+        "ctrl_us_p50": 3,
+        "ctrl_us_p95": 5,
+        "ctrl_us_p99": 13,
+        "ctrl_us_max": 13
+      },
+      "core0_rx": {
+        "core": 0,
+        "lines": 33,
+        "parse_fail": 0,
+        "in_dropped": 0,
+        "out_lines": 66,
+        "write_waits": 42,
+        "stack_free": 2852,
+        "window_waits": 1338470,
+        "work_us_max": 37
+      },
+      "core0_tx": {
+        "core": 0,
+        "lines": 66,
+        "parse_fail": 0,
+        "in_dropped": 0,
+        "out_lines": 66,
+        "write_waits": 0,
+        "stack_free": 3312,
+        "window_waits": 0,
+        "work_us_max": 46
+      },
+      "map_versions": 6,
+      "min_active": 12,
+      "final_active": 12,
+      "exclusions": 28,
+      "reinclusions": 0,
+      "probe_results": 7,
+      "recovered": 29,
+      "events_truncated": true,
+      "in_window_version_mismatch": false,
+      "post_run_version_mismatch": false,
+      "relay": {
+        "proposals": 33,
+        "commits": 33,
+        "divergence": 0,
+        "tx_no_ack": 0,
+        "bad_lines": 0
+      }
+    },
+    {
+      "run": "C3n2-gap-150us-10000-i11",
+      "gate": "C3n2",
+      "packets": 11207,
+      "missing": 209,
+      "loss_pct": 1.8649,
+      "crc": 139,
+      "timeout_frames": 45,
+      "jump_frames": 0,
+      "anomalies_total": 224,
+      "anomalies_kept": 160,
+      "anomaly_list_truncated": true,
+      "ctrl_events": 64,
+      "lost_near_ctrl": 0,
+      "activations": 5,
+      "lost_near_activation": 0,
+      "rx_slow_ready": 0,
+      "rx_slow_ready_then_lost": 0,
+      "tx_slow_transmits": 0,
+      "sched_miss": 1,
+      "irq_to_ready_p99": 1883,
+      "spi_p99": 1249,
+      "rearm_p99": 421,
+      "spi_end_to_rearm_p99": 226,
+      "rx_ctrl_us": {
+        "ctrl_us_n": 19,
+        "ctrl_us_p50": 5,
+        "ctrl_us_p95": 7,
+        "ctrl_us_p99": 7,
+        "ctrl_us_max": 7
+      },
+      "tx_ctrl_us": {
+        "ctrl_us_n": 38,
+        "ctrl_us_p50": 3,
+        "ctrl_us_p95": 5,
+        "ctrl_us_p99": 6,
+        "ctrl_us_max": 6
+      },
+      "core0_rx": {
+        "core": 0,
+        "lines": 19,
+        "parse_fail": 0,
+        "in_dropped": 0,
+        "out_lines": 38,
+        "write_waits": 46,
+        "stack_free": 2884,
+        "window_waits": 1333566,
+        "work_us_max": 38
+      },
+      "core0_tx": {
+        "core": 0,
+        "lines": 38,
+        "parse_fail": 0,
+        "in_dropped": 0,
+        "out_lines": 38,
+        "write_waits": 0,
+        "stack_free": 3312,
+        "window_waits": 0,
+        "work_us_max": 47
+      },
+      "map_versions": 6,
+      "min_active": 12,
+      "final_active": 12,
+      "exclusions": 28,
+      "reinclusions": 0,
+      "probe_results": 8,
+      "recovered": 39,
+      "events_truncated": true,
+      "in_window_version_mismatch": false,
+      "post_run_version_mismatch": false,
+      "relay": {
+        "proposals": 19,
+        "commits": 19,
+        "divergence": 0,
+        "tx_no_ack": 0,
+        "bad_lines": 0
+      }
+    },
+    {
+      "run": "C3n3-gap-150us-10000-i12",
+      "gate": "C3n3",
+      "packets": 11171,
+      "missing": 250,
+      "loss_pct": 2.2379,
+      "crc": 165,
+      "timeout_frames": 33,
+      "jump_frames": 0,
+      "anomalies_total": 265,
+      "anomalies_kept": 160,
+      "anomaly_list_truncated": true,
+      "ctrl_events": 90,
+      "lost_near_ctrl": 1,
+      "activations": 3,
+      "lost_near_activation": 0,
+      "rx_slow_ready": 0,
+      "rx_slow_ready_then_lost": 0,
+      "tx_slow_transmits": 0,
+      "sched_miss": 1,
+      "irq_to_ready_p99": 1882,
+      "spi_p99": 1249,
+      "rearm_p99": 421,
+      "spi_end_to_rearm_p99": 225,
+      "rx_ctrl_us": {
+        "ctrl_us_n": 27,
+        "ctrl_us_p50": 5,
+        "ctrl_us_p95": 7,
+        "ctrl_us_p99": 12,
+        "ctrl_us_max": 12
+      },
+      "tx_ctrl_us": {
+        "ctrl_us_n": 54,
+        "ctrl_us_p50": 3,
+        "ctrl_us_p95": 5,
+        "ctrl_us_p99": 6,
+        "ctrl_us_max": 6
+      },
+      "core0_rx": {
+        "core": 0,
+        "lines": 27,
+        "parse_fail": 0,
+        "in_dropped": 0,
+        "out_lines": 54,
+        "write_waits": 49,
+        "stack_free": 2852,
+        "window_waits": 1336701,
+        "work_us_max": 38
+      },
+      "core0_tx": {
+        "core": 0,
+        "lines": 54,
+        "parse_fail": 0,
+        "in_dropped": 0,
+        "out_lines": 54,
+        "write_waits": 0,
+        "stack_free": 3220,
+        "window_waits": 0,
+        "work_us_max": 47
+      },
+      "map_versions": 4,
+      "min_active": 12,
+      "final_active": 12,
+      "exclusions": 28,
+      "reinclusions": 0,
+      "probe_results": 5,
+      "recovered": 23,
+      "events_truncated": true,
+      "in_window_version_mismatch": false,
+      "post_run_version_mismatch": false,
+      "relay": {
+        "proposals": 27,
+        "commits": 27,
+        "divergence": 0,
+        "tx_no_ack": 0,
+        "bad_lines": 0
+      }
+    }
+  ],
+  "pooled": {
+    "B1": {
+      "missing": 2620,
+      "packets": 33281,
+      "crc": 2106,
+      "timeout_frames": 97,
+      "jump_frames": 0,
+      "ctrl_events": 0,
+      "lost_near_ctrl": 0,
+      "lost_near_activation": 0,
+      "loss_pct": 7.8724
+    },
+    "C1": {
+      "missing": 649,
+      "packets": 33780,
+      "crc": 425,
+      "timeout_frames": 130,
+      "jump_frames": 0,
+      "ctrl_events": 337,
+      "lost_near_ctrl": 7,
+      "lost_near_activation": 1,
+      "loss_pct": 1.9213
+    },
+    "C3n2": {
+      "missing": 741,
+      "packets": 33673,
+      "crc": 522,
+      "timeout_frames": 107,
+      "jump_frames": 0,
+      "ctrl_events": 208,
+      "lost_near_ctrl": 2,
+      "lost_near_activation": 2,
+      "loss_pct": 2.2006
+    },
+    "C3n3": {
+      "missing": 790,
+      "packets": 33806,
+      "crc": 502,
+      "timeout_frames": 101,
+      "jump_frames": 0,
+      "ctrl_events": 265,
+      "lost_near_ctrl": 2,
+      "lost_near_activation": 1,
+      "loss_pct": 2.3369
+    }
+  },
+  "tests": {
+    "C1_vs_B1": {
+      "missing": {
+        "z": -35.78,
+        "diff_pp": -5.951,
+        "ci95_pp": [
+          -6.275,
+          -5.627
+        ],
+        "relative_pct": -75.6
+      },
+      "crc": {
+        "z": -34.45,
+        "diff_pp": -5.07,
+        "ci95_pp": [
+          -5.357,
+          -4.782
+        ],
+        "relative_pct": -80.1
+      },
+      "timeout_frames": {
+        "z": 2.08,
+        "diff_pp": 0.093,
+        "ci95_pp": [
+          0.006,
+          0.181
+        ],
+        "relative_pct": 32.0
+      }
+    },
+    "C3n2_vs_B1": {
+      "missing": {
+        "z": -33.61,
+        "diff_pp": -5.672,
+        "ci95_pp": [
+          -6.001,
+          -5.343
+        ],
+        "relative_pct": -72.0
+      },
+      "crc": {
+        "z": -31.83,
+        "diff_pp": -4.778,
+        "ci95_pp": [
+          -5.071,
+          -4.485
+        ],
+        "relative_pct": -75.5
+      },
+      "timeout_frames": {
+        "z": 0.62,
+        "diff_pp": 0.026,
+        "ci95_pp": [
+          -0.057,
+          0.11
+        ],
+        "relative_pct": 9.0
+      }
+    },
+    "C3n3_vs_B1": {
+      "missing": {
+        "z": -32.64,
+        "diff_pp": -5.535,
+        "ci95_pp": [
+          -5.867,
+          -5.204
+        ],
+        "relative_pct": -70.3
+      },
+      "crc": {
+        "z": -32.45,
+        "diff_pp": -4.843,
+        "ci95_pp": [
+          -5.135,
+          -4.551
+        ],
+        "relative_pct": -76.5
+      },
+      "timeout_frames": {
+        "z": 0.17,
+        "diff_pp": 0.007,
+        "ci95_pp": [
+          -0.075,
+          0.089
+        ],
+        "relative_pct": 2.5
+      }
+    },
+    "C3n2_vs_C1": {
+      "missing": {
+        "z": 2.55,
+        "diff_pp": 0.279,
+        "ci95_pp": [
+          0.065,
+          0.494
+        ],
+        "relative_pct": 14.5
+      },
+      "crc": {
+        "z": 3.22,
+        "diff_pp": 0.292,
+        "ci95_pp": [
+          0.114,
+          0.47
+        ],
+        "relative_pct": 23.2
+      },
+      "timeout_frames": {
+        "z": -1.47,
+        "diff_pp": -0.067,
+        "ci95_pp": [
+          -0.156,
+          0.022
+        ],
+        "relative_pct": -17.4
+      }
+    },
+    "C3n3_vs_C1": {
+      "missing": {
+        "z": 3.74,
+        "diff_pp": 0.416,
+        "ci95_pp": [
+          0.198,
+          0.633
+        ],
+        "relative_pct": 21.6
+      },
+      "crc": {
+        "z": 2.53,
+        "diff_pp": 0.227,
+        "ci95_pp": [
+          0.051,
+          0.402
+        ],
+        "relative_pct": 18.0
+      },
+      "timeout_frames": {
+        "z": -1.92,
+        "diff_pp": -0.086,
+        "ci95_pp": [
+          -0.174,
+          0.002
+        ],
+        "relative_pct": -22.4
+      }
+    },
+    "C3n3_vs_C3n2": {
+      "missing": {
+        "z": 1.19,
+        "diff_pp": 0.136,
+        "ci95_pp": [
+          -0.088,
+          0.361
+        ],
+        "relative_pct": 6.2
+      },
+      "crc": {
+        "z": -0.69,
+        "diff_pp": -0.065,
+        "ci95_pp": [
+          -0.25,
+          0.119
+        ],
+        "relative_pct": -4.2
+      },
+      "timeout_frames": {
+        "z": -0.45,
+        "diff_pp": -0.019,
+        "ci95_pp": [
+          -0.103,
+          0.065
+        ],
+        "relative_pct": -6.0
+      }
+    }
+  }
+}

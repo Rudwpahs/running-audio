@@ -102,7 +102,7 @@ def analyse(d: Path) -> dict:
     q = r.get("quality", {})
     agree = q.get("map_agreement", {})
     rx_events = q.get("rx_event_counts", {})
-    is_c1 = gate in ("B1", "C1", "C2")
+    is_c1 = gate in ("B1", "C1", "C2", "C3n2", "C3n3")
     row = {
         "run": d.name, "gate": gate, "packets": r["packet_count"], "missing": m["missing"],
         "loss_pct": round(100 * m["missing"] / r["packet_count"], 4), "crc": m["crc_bad"],
@@ -158,7 +158,8 @@ def main():
         pooled[g]["loss_pct"] = round(100 * pooled[g]["missing"] / pooled[g]["packets"], 4)
         print(g, pooled[g])
     tests = {}
-    for a, b in (("C1", "B1"), ("C", "B1"), ("C1", "C"), ("C2", "B1"), ("C2", "C1")):
+    for a, b in (("C1", "B1"), ("C", "B1"), ("C1", "C"), ("C2", "B1"), ("C2", "C1"), ("C3n2", "B1"),
+                 ("C3n3", "B1"), ("C3n2", "C1"), ("C3n3", "C1"), ("C3n3", "C3n2")):
         if a in pooled and b in pooled:
             pa, pb = pooled[a], pooled[b]
             out = {}
