@@ -135,6 +135,10 @@ PR1_IRAM void pollUsbInput(UsbLineState& st) {
     // Single-char pulls (t/h/H) are served by the radio loop after the run.
     if (st.line_len == 0 && (c == 't' || c == 'T' || c == 'h' || c == 'H')) {
       g_pull.store(static_cast<std::uint32_t>(c));
+#if PR1_AUDIO_RF && PR1_RUNTIME_ROLE == PR1_RUNTIME_ROLE_TX
+    } else if (st.line_len == 0 && c == 'p') {
+      rf_audio::requestPlay();  // explicit play command (the TX is silent until it arrives)
+#endif
     } else if (c == '\n' || c == '\r') {
       if (st.line_len > 0) {
         st.line[st.line_len] = '\0';
@@ -221,6 +225,9 @@ PR1_IRAM void controlLoop(bool gated_role) {
     } else {
       ++g_cp.window_waits;
     }
+#if PR1_AUDIO_RF && PR1_RUNTIME_ROLE == PR1_RUNTIME_ROLE_TX
+    rf_audio::pollButton();
+#endif
     if (!gated_role) {
       vTaskDelay(1);
       continue;
@@ -464,7 +471,8 @@ void setup() {
   g_runtime.setControlPlane(&pushControlOut, &popControlIn);
 #if PR1_AUDIO_RF
   const bool audio_ok=rf_audio::setup(g_runtime);
-  Serial.printf("PR1_AUDIO_RF init=%u sample_rate=32000 samples_per_block=188 block_us=5875 pins=40,41,39,38\n",audio_ok?1U:0U);
+  Serial.printf("PR1_AUDIO_RF init=%u sample_rate=32000 samples_per_block=188 block_us=5875 pins=40,41,39,38 manual_start=%u\n",audio_ok?1U:0U,
+                (unsigned)(PR1_RUNTIME_ROLE == PR1_RUNTIME_ROLE_TX ? PR1_AUDIO_MANUAL_START : 0));
   g_live_ready = audio_ok && g_runtime.begin();
 #else
   g_live_ready = g_runtime.begin();

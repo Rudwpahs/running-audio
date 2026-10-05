@@ -1,8 +1,13 @@
 #pragma once
 #include <driver/i2s.h>
+#include <hal/gpio_ll.h>
+#include <soc/gpio_struct.h>
 #include "../../common/pr1_rf_audio.hpp"
 #ifndef PR1_AUDIO_RF
 #define PR1_AUDIO_RF 0
+#endif
+#ifndef PR1_AUDIO_MANUAL_START
+#define PR1_AUDIO_MANUAL_START 1  // 1 = silent until play(): USB char 'p' or the BOOT button (GPIO0)
 #endif
 #if PR1_AUDIO_RF
 namespace rf_audio {
@@ -15,8 +20,20 @@ extern const std::uint8_t clip_end[] asm("_binary_data_clip_adpcm_end");
 #ifndef PR1_AUDIO_DIVERSITY_BLOCKS
 #define PR1_AUDIO_DIVERSITY_BLOCKS 0  // 0 = every packet carries the newest block
 #endif
-pr1::audio::ClipSource source(clip_start,clip_end-clip_start,PR1_AUDIO_REPEATS,PR1_AUDIO_DIVERSITY_BLOCKS);
+pr1::audio::ClipSource source(clip_start,clip_end-clip_start,PR1_AUDIO_REPEATS,PR1_AUDIO_DIVERSITY_BLOCKS,PR1_AUDIO_MANUAL_START!=0);
 bool fill(std::uint32_t now,std::uint8_t* p,std::size_t n) { return source.fill(now,p,n); }
+inline void requestPlay() { source.play(); }
+// BOOT button, polled from the control core (IRAM, no flash access): a press = play once.
+// Needs 30 ms of stable low, then re-arms only after release.
+PR1_IRAM void pollButton() {
+ static std::uint8_t low_ms_ticks=0; static bool armed=true; static std::uint32_t last_us=0;
+ const std::uint32_t now=static_cast<std::uint32_t>(esp_timer_get_time());
+ if(now-last_us<5000U) return; last_us=now;
+ const bool low=gpio_ll_get_level(&GPIO,GPIO_NUM_0)==0;
+ if(!low) { low_ms_ticks=0; armed=true; return; }
+ if(low_ms_ticks<255) ++low_ms_ticks;
+ if(armed && low_ms_ticks>=6) { armed=false; source.play(); }
+}
 #else
 struct Block { std::array<std::uint8_t,100> data{}; };
 pr1::runtime::ctrl::Spsc<Block,32> queue;
@@ -74,6 +91,7 @@ void print() {
 #endif
 bool setup(pr1::runtime::FixedLinkRuntime& runtime) {
 #if PR1_RUNTIME_ROLE == PR1_RUNTIME_ROLE_TX
+ pinMode(0,INPUT_PULLUP);
  runtime.setPayloadHooks(fill,nullptr); return true;
 #else
  runtime.setPayloadHooks(nullptr,receive);

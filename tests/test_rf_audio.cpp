@@ -93,5 +93,23 @@ int main() {
   auto bb=block(s2+1); bb[2]=0x10; bb[3]=0x27; pl.push(bb.data());  // s2 was lost, s2+1 arrives
   assert(pl.render(p.data())); assert(p[0]==0 && p[187]!=0);    // fades in from zero
  }
+ {
+  // Manual start: silent (valid, decodable) blocks with a running seq until play(); a reset never plays.
+  std::array<std::uint8_t,100*8> c4{}; for(unsigned k=0;k<8;k++) c4[k*100+2]=static_cast<std::uint8_t>(k+1);
+  ClipSource man_raw(c4.data(),c4.size(),1,0,true); Plain man{man_raw}; std::array<std::uint8_t,100> o{};
+  for(unsigned n=0;n<6;n++) { assert(man.fill(n*5875U,o.data(),100)); assert(o[0]==n && o[2]==0); }
+  man_raw.play();
+  assert(man.fill(6*5875U,o.data(),100) && o[0]==6 && o[2]==1);        // clip starts at its first block
+  assert(man.fill(7*5875U,o.data(),100) && o[0]==7 && o[2]==2);
+  assert(man.fill(13*5875U,o.data(),100) && o[0]==13 && o[2]==8);      // last block
+  assert(man.fill(14*5875U,o.data(),100) && o[0]==14 && o[2]==0);      // one play, then silence again
+  assert(man_raw.plays==1);
+  man_raw.play(); assert(man.fill(15*5875U,o.data(),100) && o[0]==15 && o[2]==1 && man_raw.plays==2);
+  // Time-diverse copy never reaches back before the clip start.
+  ClipSource md_raw(c4.data(),c4.size(),1,4,true); Plain md{md_raw};
+  for(unsigned n=0;n<10;n++) md.fill(n*2938U,o.data(),100);             // silent lead-in
+  md_raw.play();
+  for(unsigned n=10;n<20;n++) { assert(md.fill(n*2938U,o.data(),100)); assert(o[2]==o[0]-(10*2938U/5875U)+1 || o[2]==o[0]-(10*2938U/5875U)+1-4); }
+ }
  std::cout << "test_rf_audio: PASS\n";
 }

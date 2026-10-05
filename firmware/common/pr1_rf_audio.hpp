@@ -1,5 +1,6 @@
 #pragma once
 #include <array>
+#include <atomic>
 #include <cstdint>
 #include <cstring>
 #include "pr1_ima_adpcm.hpp"
@@ -35,25 +36,38 @@ class ClipSource {
   // from delay_blocks earlier instead of the newest one, so the two copies of a block are
   // ~delay_blocks * 5.9 ms apart and one interference burst rarely removes both. Needs about
   // two packets per block (gap 150 us) and delay_blocks < Jitter::kPrefill.
-  ClipSource(const std::uint8_t* data, std::size_t bytes, std::uint32_t repeats = 0, std::uint32_t delay_blocks = 0)
-      : data_(data), blocks_(bytes/kBlockBytes), repeats_(repeats), delay_(delay_blocks) {}
-  bool finished(std::uint64_t block) const { return repeats_ != 0 && block >= static_cast<std::uint64_t>(blocks_) * repeats_; }
+  // manual_start = true: the source sends silent (valid) blocks until play() is called, so a
+  // power-up or reset never makes sound by itself. play() may be called from another core.
+  ClipSource(const std::uint8_t* data, std::size_t bytes, std::uint32_t repeats = 0, std::uint32_t delay_blocks = 0,
+             bool manual_start = false)
+      : data_(data), blocks_(bytes/kBlockBytes), repeats_(repeats), delay_(delay_blocks),
+        playing_(!manual_start) {}
+  void play() { play_req_.store(true, std::memory_order_release); }
+  bool finished(std::uint64_t block) const {
+    return !playing_ || (repeats_ != 0 && block - start_ >= static_cast<std::uint64_t>(blocks_) * repeats_);
+  }
   bool fill(std::uint32_t now, std::uint8_t* out, std::size_t size) {
     if (!blocks_ || size!=kBlockBytes) return false;
     if (!started_) { last_=now; started_=true; }
     elapsed_ += static_cast<std::uint32_t>(now-last_); last_=now;
     std::uint64_t block=elapsed_/5875U;
+    if (play_req_.load(std::memory_order_acquire) && play_req_.exchange(false)) {
+      start_=block; playing_=true; ++plays;   // the clip restarts at its first block
+    }
     older_ = !older_;
-    if (delay_ != 0 && older_ && block >= delay_) block -= delay_;
+    if (delay_ != 0 && older_ && block >= start_ + delay_) block -= delay_;
     if (finished(block)) std::memset(out,0,kBlockBytes);  // predictor 0, index 0, codes 0 = silence
-    else std::memcpy(out,data_+(block%blocks_)*kBlockBytes,kBlockBytes);
+    else std::memcpy(out,data_+((block-start_)%blocks_)*kBlockBytes,kBlockBytes);
     out[0]=static_cast<std::uint8_t>(block); out[1]=static_cast<std::uint8_t>(block>>8);
     whiten(out,out);  // on-air payload is scrambled; Jitter::push() gets the descrambled block
     return true;
   }
  private:
-  const std::uint8_t* data_; std::size_t blocks_; std::uint32_t repeats_, delay_; bool older_=false;
-  bool started_=false; std::uint32_t last_=0; std::uint64_t elapsed_=0;
+  const std::uint8_t* data_; std::size_t blocks_; std::uint32_t repeats_, delay_; bool playing_; bool older_=false;
+  bool started_=false; std::uint32_t last_=0; std::uint64_t elapsed_=0, start_=0;
+  std::atomic<bool> play_req_{false};
+ public:
+  std::uint32_t plays=0;
 };
 // Single consumer owns this buffer; SPSC transport is outside it.
 class Jitter {
