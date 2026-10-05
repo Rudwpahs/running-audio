@@ -1,0 +1,9 @@
+{
+  "status": "complete",
+  "updated_utc": "2026-10-05T16:29:27.398950Z",
+  "run_id": "C3n2-gap-150us-100000",
+  "gap_us": 150,
+  "target_packets": 100000,
+  "packet_count": 108798,
+  "finished_utc": "2026-10-05T16:29:27.398950Z"
+}

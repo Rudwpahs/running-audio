@@ -106,3 +106,33 @@ Other board facts:
 1. Long C3n2 run (≥ 5 min) for convergence and strike/back-off evidence.
 2. Controlled 2.4 GHz coexistence test with a normal Wi-Fi AP or hotspot: traffic off → on → off.
 3. Report on issue #52, then stop before Gate D.
+
+## 5. Long run, 100 000 frames each, 150 µs (2026-10-06, `gateC3-long/`, predictions in `gateC3-long-PREDICTIONS.md`)
+One pass B1 → C3n2 → C1 (not interleaved). Interference was light this time: B1 lost 0.89 %.
+
+| arm | frames | lost | loss | CRC bad | sched. misses | active at end / min | map changes |
+|---|---|---|---|---|---|---|---|
+| B1 | 108 275 | 960 | 0.879 % | 795 | 1 | – | – |
+| C3n2 | 108 798 | 238 | 0.218 % | 136 | 1 | 15 / 14 | 50 |
+| C1 | 109 080 | 263 | 0.241 % | 150 | 1 | 13 / 12 | 50 |
+
+Pooled loss: C3n2 vs B1 −0.66 pp (95 % CI [−0.72, −0.60], z = −20.9, −75 %). C1 vs B1 −72.6 %. C3n2 vs C1 −0.02 pp
+(CI [−0.06, +0.02], z = −1.1), no difference. Safety: TX/RX map equal, no in-window mismatch, 0 divergence, 0 TX no-ack,
+fingerprint match, scheduler misses 1 in every arm including B1 (so not caused by the adaptive code).
+
+Predictions (written beforehand), judged:
+1. Light session rule (B1 < 1 %: no claim of improvement). **Honoured:** the single non-interleaved pass cannot rule out
+   drift in interference over the 17 minutes, so this is a consistent-direction observation, not a new efficacy claim.
+2. Convergence (map changes lower in minutes 4–5 than 1–2): **not shown.** The activation list on the board holds only the first
+   32 of 50 activations. C3n2: 32 in the first 190 s (≈10/min), last 18 in ≈134 s (≈8/min), roughly flat.
+   C1: ≈17/min then ≈5/min. No per-minute series exists.
+3. Back-off visible: **unobserved.** Event ring holds 160 of 884 events (first 48 s), shorter than the 25.6 s base probe times a second round.
+   Final per-channel counters: C3n2 excluded 30 channels, 48 exclusions / 20 re-inclusions in total; 14 channels were excluded ≥ 2×
+   (C1: 37 channels, 44 / 16, 6 channels ≥ 2×). The counts do not show C3 quarantining less often than C1; they do not show growing quarantine either.
+4. Safety: held (above).
+
+Measured facts / hypotheses / unknowns:
+- **Measured:** C3n2 and C1 are equivalent in loss here; C3n2 keeps 2 more channels active at the end (15 vs 13) with no loss penalty.
+- **Hypothesis:** with light, band-limited interference the C3 strike/neighbour rules fire about as fast as C1's single-loss rule, so both end up in the same place.
+- **Unknown:** whether back-off lengthens probe intervals, and whether map churn decays beyond 5 min. Needs a complete exclusion/activation timeline
+  (raise the activation list and event ring on the RX, cold path only, no change to the post-read path) or a longer, interleaved run.
