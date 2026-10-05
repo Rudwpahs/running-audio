@@ -4,7 +4,7 @@ C3 uses the C1 infrastructure and adds two mechanisms to the C2 values. The boar
 1.3 Mbps CR 3/4, 0 dBm, 116 B) and gap (150 µs) are unchanged. FEC, ARQ, PHY ladder and controller are off.
 Gate D is not started. `main` is untouched.
 
-**Status: interim.** Done: offline replay, two independent code reviews, and the same-session board A/B.
+**Status: closed out 2026-10-06 — see `REPORT_GATE_C3_CLOSEOUT.md` (this file keeps the interim record and §5–§6 runs).** Originally: interim. Done: offline replay, two independent code reviews, and the same-session board A/B.
 **Not done yet:** a long C3 run (convergence, back-off growth) and the controlled Wi-Fi coexistence test.
 
 ## Verdict so far
