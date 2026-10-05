@@ -1,0 +1,6 @@
+FLASH rx <- runs\pr1-dart-layered-20261003\build\B1-rx\rf_rx_compile sha256 743b0626d8c8
+FLASH tx <- runs\pr1-dart-layered-20261003\build\B1-tx-150us\rf_tx_compile sha256 6726358a41f5
+RUN B1-gap-150us-30000 packets=32658 missing=164 loss=0.502% crc_bad=87 rssi=-41 sched_miss=1 ready_p99=1896 spi_to_rearm_p99=231 polls=0 | fp_match=True agree=32539 disagree=0 timeouts=89 resync=1 locks=2 rx_retune_p99=71 tx_retune_p99=63 period_est=2992
+FLASH rx <- runs\pr1-dart-layered-20261003\build\C3n2-rx\rf_rx_compile sha256 662410bc8b7f
+FLASH tx <- runs\pr1-dart-layered-20261003\build\C3n2-tx-150us\rf_tx_compile sha256 301fd065b7e5
+RUN C3n2-gap-150us-30000 packets=32809 missing=78 loss=0.238% crc_bad=45 rssi=-42 sched_miss=1 ready_p99=1891 spi_to_rearm_p99=233 polls=0 | fp_match=True agree=32822 disagree=0 timeouts=46 resync=1 locks=2 rx_retune_p99=72 tx_retune_p99=72 period_est=2982 | C: map_v=20 active=26 min_active=26 events={'suspect': 36, 'excluded': 13, 'proposed': 27, 'committed': 27, 'recovered': 29, 'activated': 11, 'probe_result': 15, 'reincluded': 2} map_equal=True act_lists_equal=True version_mismatch=False in_window_mismatch=False emit_dropped=0 relay={'proposals': 45, 'commits': 45, 'divergence': 0, 'tx_no_ack': 0, 'bad_lines': 0}

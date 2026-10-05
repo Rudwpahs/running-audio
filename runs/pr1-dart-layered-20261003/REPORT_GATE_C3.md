@@ -136,3 +136,30 @@ Measured facts / hypotheses / unknowns:
 - **Hypothesis:** with light, band-limited interference the C3 strike/neighbour rules fire about as fast as C1's single-loss rule, so both end up in the same place.
 - **Unknown:** whether back-off lengthens probe intervals, and whether map churn decays beyond 5 min. Needs a complete exclusion/activation timeline
   (raise the activation list and event ring on the RX, cold path only, no change to the post-read path) or a longer, interleaved run.
+
+## 6. Controlled 2.4 GHz hotspot test (2026-10-06, `gateC3-wifi/`, predictions in `gateC3-wifi-PREDICTIONS.md`)
+Interferer: the operator's phone hotspot (2.4 GHz band requested, channel not read) with a second device streaming video, on the desk
+beside the boards; no jammer. A home Wi-Fi router (always on, ~1 m behind the boards) is in every phase. 30 000 frames per run, 150 µs, each
+run starts from a fresh boot. Phases: W0 hotspot off, W1 hotspot + video, W2 hotspot off again. The first W1 attempt was aborted (the video started late)
+and rerun; the partial was archived. Whether the video was really streaming is operator-reported.
+
+| phase | B1 loss (lost/total) | CRC | C3n2 loss | CRC | map active at end |
+|---|---|---|---|---|---|
+| W0 off | 0.578 % (190/32 877) | 120 | 0.241 % (79/32 820) | 46 | 32 |
+| **W1 on** | **2.802 % (942/33 618)** | 576 | **0.430 % (142/33 010)** | 92 | 12 |
+| W2 off | 0.500 % (164/32 822) | 87 | 0.237 % (78/32 887) | 45 | 26 |
+
+- **Hotspot effect on B1:** +2.22 pp vs W0 (95 % CI [+2.03, +2.42], z = 22.4), ≈ 4.8× W0, mostly CRC errors. Back to 0.50 % in W2.
+- **C3n2 vs B1 in W1:** −2.37 pp (CI [−2.56, −2.18], z = −24.5), **−84.6 %**. C3n2 W1 vs W0: +0.19 pp (z = 4.2): small residual cost.
+- **Which channels:** in W1 the C3n2 map excluded a contiguous block, channels 8–34 (27 of 40, active 12 = the floor); in W0 the router-only exclusions were channels 22–34.
+  Identity of the interferer is Wi-Fi-consistent only (wide contiguous band, traffic dependent).
+- **Safety:** TX/RX divergence 0, tx rejects 0, expired 0, no in-window version mismatch in any run, scheduler misses 1 in every arm (also B1), fingerprint match.
+  **W1 C3n2 has a raw final-state version mismatch** (RX v13, TX v14): the last proposal (id 65, v14, activation at logical 33 662) was committed by both sides;
+  the RX stopped counting at logical 33 273, the TX was read after it passed 33 662. Evidence: `map_agreement` in `result.json`
+  (`pending_rx == pending_tx == [.,14,33662]`, `cut_logical` 33 273, `in_window_activations_equal` true). Treated as snapshot skew, not a divergence;
+  an independent reviewer has not yet looked at this explanation.
+
+Predictions judged: (1) hotspot ≥ 2× B1 loss — **met** (4.8×, CRC-dominated). (2) C3n2 ≤ 50 % of B1 in W1 — **met** (−84.6 %); contiguous exclusions — **met**.
+(3) recovery after the interferer stops — **not testable in this design:** every run starts from a fresh boot, so W2 only shows that nothing stays degraded across
+reboots (C3n2 W2 = W0, z = −0.1); it does not show how fast the map re-includes channels in one run. (4) safety — met except the snapshot-skew item above.
+Still open: recovery time inside one continuous run (hotspot off → on → off without reset; needs the control-plane timeline of re-inclusions) and the back-off/convergence unknowns of §5.
