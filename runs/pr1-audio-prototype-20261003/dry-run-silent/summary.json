@@ -1,0 +1,28 @@
+{
+  "label": "desk, silent dry run (no BOOT press), script check",
+  "window_s": 29.1,
+  "rf": {
+    "crc_good": 8508,
+    "crc_bad": 0,
+    "missing": 2,
+    "rssi_dbm": -42,
+    "scheduler_misses": null,
+    "loss_pct": 0.024
+  },
+  "audio": {
+    "frames": 787532,
+    "missing_blocks": 0,
+    "duplicates": 4316,
+    "late": 3,
+    "invalid": 0,
+    "resets": 0,
+    "queue_dropped": 0,
+    "startup_blocks": 8,
+    "write_errors": 0,
+    "short_writes": 0,
+    "max_decode_us": 48,
+    "concealed_pct": 0.0
+  },
+  "image_sha256": {},
+  "note": "RX counters only; TX not pullable on a power bank"
+}
