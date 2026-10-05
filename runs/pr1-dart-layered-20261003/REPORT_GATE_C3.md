@@ -155,9 +155,9 @@ and rerun; the partial was archived. Whether the video was really streaming is o
   Identity of the interferer is Wi-Fi-consistent only (wide contiguous band, traffic dependent).
 - **Safety:** TX/RX divergence 0, tx rejects 0, expired 0, no in-window version mismatch in any run, scheduler misses 1 in every arm (also B1), fingerprint match.
   **W1 C3n2 has a raw final-state version mismatch** (RX v13, TX v14): the last proposal (id 65, v14, activation at logical 33 662) was committed by both sides;
-  the RX stopped counting at logical 33 273, the TX was read after it passed 33 662. Evidence: `map_agreement` in `result.json`
+  the RX 'h' snapshot (cut_logical) was taken at logical 33 273, i.e. before 33 662, while the quality events were pulled later (~1.7 s skew between pulls). Evidence: `map_agreement` in `result.json`
   (`pending_rx == pending_tx == [.,14,33662]`, `cut_logical` 33 273, `in_window_activations_equal` true). Treated as snapshot skew, not a divergence;
-  an independent reviewer has not yet looked at this explanation.
+  an independent reviewer (code-reviewer agent, tried to falsify it) confirmed it: id 65 committed by both sides with the same activation, activation lists v2–v13 identical, and the RX hop ring shows 256 consecutive good frames after 33 662 including 20 on channel 36, which only the v14 map re-includes, so the RX was already on v14. Reviewer's caveats: the in-window check compares activation logicals, not bits per version; cut_logical and the quality events come from different pulls, so the boundary is only sound if the pulls are close in time.
 
 Predictions judged: (1) hotspot ≥ 2× B1 loss — **met** (4.8×, CRC-dominated). (2) C3n2 ≤ 50 % of B1 in W1 — **met** (−84.6 %); contiguous exclusions — **met**.
 (3) recovery after the interferer stops — **not testable in this design:** every run starts from a fresh boot, so W2 only shows that nothing stays degraded across
