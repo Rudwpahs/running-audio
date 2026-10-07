@@ -1,0 +1,15 @@
+{
+  "label": "5 m LOS repeat",
+  "window_s": 94.1,
+  "crc_good": 30855,
+  "crc_bad": 207,
+  "missing": 295,
+  "rssi_dbm": -71,
+  "loss_pct": 0.947,
+  "concealed_blocks": 9,
+  "concealed_pct": 0.059,
+  "resets": 0,
+  "i2s_errors": 0,
+  "queue_dropped": 0,
+  "flags": []
+}

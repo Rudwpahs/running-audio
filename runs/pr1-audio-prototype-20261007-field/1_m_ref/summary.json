@@ -1,0 +1,15 @@
+{
+  "label": "1 m ref",
+  "window_s": 94.1,
+  "crc_good": 30950,
+  "crc_bad": 192,
+  "missing": 200,
+  "rssi_dbm": -62,
+  "loss_pct": 0.642,
+  "concealed_blocks": 2,
+  "concealed_pct": 0.013,
+  "resets": 0,
+  "i2s_errors": 0,
+  "queue_dropped": 0,
+  "flags": []
+}

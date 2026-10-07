@@ -1,0 +1,16 @@
+PR1T v=1 t_us=90686887 field=device_state value=2
+PR1T v=1 t_us=90686887 field=rssi_dbm value=-79
+PR1T v=1 t_us=90686887 field=crc_good value=29787
+PR1T v=1 t_us=90686887 field=crc_bad value=919
+PR1T v=1 t_us=90686887 field=missing value=1371
+PR1T v=1 t_us=90686887 field=queue_depth value=0
+PR1T v=1 t_us=90686887 field=max_queue_depth value=1
+PR1T v=1 t_us=90686887 field=irq_to_spi_us value=11
+PR1T v=1 t_us=90686887 field=spi_duration_us value=1253
+PR1T v=1 t_us=90686887 field=rx_processing_us value=1254
+PR1T v=1 t_us=90686887 field=spi_end_to_rearm_start_us value=137
+PR1T v=1 t_us=90686887 field=rx_rearm_us value=417
+PR1T v=1 t_us=90686887 field=irq_to_rx_ready_us value=1792
+PR1T v=1 t_us=90686887 field=trace_overwrites value=276322
+PR1T v=1 t_us=90686887 field=capability_mask value=12
+PR1A frames=2882792 missing_blocks=273 duplicates=14723 late=0 invalid=0 resets=0 queue_dropped=0 startup_blocks=11 write_errors=0 short_writes=0 max_decode_us=49

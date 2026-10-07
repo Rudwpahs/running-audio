@@ -1,0 +1,15 @@
+{
+  "label": "1 m ref retry",
+  "window_s": 94.1,
+  "crc_good": 31006,
+  "crc_bad": 44,
+  "missing": 142,
+  "rssi_dbm": -62,
+  "loss_pct": 0.456,
+  "concealed_blocks": 2,
+  "concealed_pct": 0.013,
+  "resets": 0,
+  "i2s_errors": 0,
+  "queue_dropped": 0,
+  "flags": []
+}

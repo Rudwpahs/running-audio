@@ -1,0 +1,15 @@
+{
+  "label": "\uc810\uac80",
+  "window_s": 14.1,
+  "crc_good": 3456,
+  "crc_bad": 25,
+  "missing": 27,
+  "rssi_dbm": -55,
+  "loss_pct": 0.775,
+  "concealed_blocks": 0,
+  "concealed_pct": 0.0,
+  "resets": 0,
+  "i2s_errors": 0,
+  "queue_dropped": 0,
+  "flags": []
+}

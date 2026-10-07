@@ -1,0 +1,15 @@
+{
+  "label": "5 m body",
+  "window_s": 94.1,
+  "crc_good": 28054,
+  "crc_bad": 1945,
+  "missing": 3105,
+  "rssi_dbm": -82,
+  "loss_pct": 9.965,
+  "concealed_blocks": 621,
+  "concealed_pct": 4.052,
+  "resets": 0,
+  "i2s_errors": 0,
+  "queue_dropped": 0,
+  "flags": []
+}
