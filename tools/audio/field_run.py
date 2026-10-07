@@ -5,6 +5,7 @@ at the test position. For each run:
 
     python field_run.py "5 m LOS"            # 90 s window (default)
     python field_run.py "5 m body" --window 90
+    python field_run.py "40 m" --silent --window 90   # long distance: TX placed beforehand, nobody presses BOOT
     python field_run.py "1 m ref" --port COM5   # only if the port is not found automatically
 
 What happens: the script resets the RX (counters start at 0), waits for it to boot, prints GO, waits the window with
@@ -76,7 +77,10 @@ def main():
     if not ok:
         sys.exit(1)
     t0 = time.time()
-    print(time.strftime("%H:%M:%S"), f"GO. Press the TX BOOT button ONCE now, then listen. Window {window:.0f} s.", flush=True)
+    if "--silent" in a:
+        print(time.strftime("%H:%M:%S"), f"GO (silent run). Do NOT press BOOT; leave the TX alone. Window {window:.0f} s.", flush=True)
+    else:
+        print(time.strftime("%H:%M:%S"), f"GO. Press the TX BOOT button ONCE now, then listen. Window {window:.0f} s.", flush=True)
     while time.time() - t0 < window:
         time.sleep(min(15.0, max(0.1, window - (time.time() - t0))))
         left = window - (time.time() - t0)
