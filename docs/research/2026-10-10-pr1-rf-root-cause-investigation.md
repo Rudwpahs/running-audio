@@ -138,3 +138,40 @@ Outputs separate metrics with source SHA256 and caveats; supports old flat and n
 - Turbic et al. 2017 https://doi.org/10.1186/s13638-017-0956-6
 - Su et al. 2023 https://doi.org/10.1109/OJAP.2023.3239369
 - Undermind literature search https://app.undermind.ai/projects/b951fe1e-b03a-4897-8827-4fa1080691c5
+
+
+## E0 update — historical purchase record and four user-provided board photos (2026-10-13 KST)
+
+**Status: partially verified.** This subsection supersedes any earlier suggestion that the purchase option itself is unknown; it does not claim verification of the silicon marking or the RF main PCB revision.
+
+### Historical procurement evidence — high confidence on ordered model, not chip-level verification
+
+- July–August 2026 PR1 conversations and subsequent purchase/delivery records identify **two LILYGO T3-S3 MVSR kits, SKU H594-01, option "SX1280 2.4GHz Without PA + MVSRBoard."** With-PA H658-01, SX1262 and LR1121 were excluded. August 4 purchase and August 12 delivery references describe two of the Without-PA variant.
+- A separate July preliminary candidate was the **H594 T3-S3 V1.2 (without MVSR)**. This was not the later two-kit MVSR SKU. Do NOT equate that catalog title V1.2 with the physical revision of the RF main board inside an H594-01 kit.
+- Project code's V1.1 upstream-reference value is an upstream schematic/software reference only and explicitly does not certify the physical main board.
+- Without-PA selection greatly reduces, but cannot rule out, a shipping or assembly variant mismatch. No configured TX power change until actual hardware and regulatory checks.
+
+### Four user-provided photos — examined locally, NOT published to public GitHub
+
+| Original user attachment | Visible subject | SHA256 |
+|---|---|---|
+| IMG_8872.jpeg | TX sticker unit underside: MVSR daughterboard with small speaker and right-angle gold antenna connector | 5210a92d50d47db497651298e75c423bec3c354621b1c78a47df01f3026603ff |
+| IMG_8873.jpeg | Same TX sticker unit display/USB/TF-slot face with short black external whip-style antenna | 78a57521d897bba32b9759a4077b1ae9d5d9afe0ae1e4778352fbbb379e4491f |
+| IMG_8874.jpeg | Second assembled unit display/USB/TF-slot face, similar external antenna | 8192fde5cb0f14da7ad92f1b29d987588abf470501fafd5585b798326a11f865 |
+| IMG_8875.jpeg | Second assembled unit underside, MVSR audio daughterboard/speaker, gold antenna fitting and small unused coaxial-style socket nearby | 271f0c7fa8f6491c7d5bc24e4143294fc30d68e40cd80b6f3b908207c73ba0b9 |
+
+Photos show LILYGO MVSR silkscreen that appears to read **T3-S3 MVSRBoard V1.1**. This is the **audio expansion board revision**, not the radio-containing T3-S3 RF main board revision. The second unit is tentatively RX by role/context; no component-level confirmation of firmware state was possible from a photo.
+
+**Visible:** External antennas attached, small speakers and MVSR expansion boards installed; no unmistakable gross damage at this resolution.
+
+**Unresolved:** Exact SX1280/PA silicon marking, RF main board PCB V1.1/V1.2, actual RF-switch/antenna-selection resistor, connectivity to external SMA versus coax/U.FL socket, electrical continuity, antenna vendor/model/matching, connector condition, EIRP, exact flashed image hashes, and causes of field loss. An antenna being physically connected does not certify the RF feed is electrically routed to it.
+
+### E0 next steps and restrictions
+
+1. **Recorded:** ordered H594-01 Without-PA variant, two assembled boards, MVSR expansion-board V1.1 printing, attached external antennas.
+2. **Open:** Identify main T3-S3 RF-board's own silkscreen and exact revision from an unpowered device if visible without unsafe disassembly. If not, leave revision unknown.
+3. **Open:** Compare exact main-board revision and RF antenna-selection resistor against manufacturer's schematic. An external antenna alone is not proof of correct resistor routing.
+4. **Open:** Stage small controlled E1/E2 comparisons after identity/geometry manifest; do not purchase replacement boards or modify RF power on these observations.
+5. **Safety:** Never remove an antenna under TX power, desolder RF components, or raise output setting based solely on these photos.
+
+This is photo/record identification only: **no physical electrical verification, software flash or field experiment was performed**.
